@@ -1,0 +1,12 @@
+title: Service selector mismatch
+slug: svc-selector
+tier: beginner
+topic: services
+estimatedMinutes: 5
+concepts:
+  - services
+  - labels
+  - selectors
+  - endpoints
+# namespace the scenario lives in (used by init/verify/reset)
+namespace: kubelings
