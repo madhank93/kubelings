@@ -1,0 +1,24 @@
+# Reproducible toolchain for kubelings.
+#   mise install        # fetch exactly these versions
+#   mise run setup      # install + sanity-check
+#
+# Go module deps are already locked in go.sum; this pins the *tools* (Go toolchain
+# + the CLIs the local runner/TUI shell out to) so a fresh clone or CI gets an
+# identical environment. Versions track the dotfiles Brewfile.
+[tools]
+go      = "1.25.1"
+kubectl = "1.36.1"
+kind    = "0.31.0"
+yq      = "4.53.2"
+
+[tasks.setup]
+description = "Install pinned tools and verify the build"
+run = [
+  "mise install",
+  "go build ./...",
+  "go test ./...",
+]
+
+[tasks.tui]
+description = "Build + launch the TUI"
+run = "go run ./cmd/kubelings"

@@ -62,6 +62,14 @@ iximiuz Labs runs.
 **Prerequisites** (macOS via the dotfiles Brewfile): a Docker runtime
 (OrbStack/Docker), `kind`, `kubectl`, `yq`.
 
+**Reproducible toolchain:** `mise.toml` pins Go + the CLIs; `go.sum` locks the Go
+deps. A fresh clone gets the exact environment with:
+
+```sh
+mise install   # fetch the pinned go/kubectl/kind/yq  (Docker still needed)
+mise run setup # install + go build + go test
+```
+
 ```sh
 scripts/run-challenge-local.sh up                 # one-time: 3-node kind cluster
 scripts/run-challenge-local.sh list               # list runnable lessons
