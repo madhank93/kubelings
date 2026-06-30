@@ -1,62 +1,97 @@
 # kubelings
 
-Learn Kubernetes the rustlings way — fix small, broken-on-purpose cluster
-scenarios one at a time until an automated check passes.
+Learn Kubernetes the **rustlings** way — fix small, broken-on-purpose cluster
+scenarios one at a time until an automated check turns green.
 
-Each exercise is **portable data**, not code, so the same files run on a hosted
-platform (iximiuz Labs, killercoda) or locally on `kind`:
+Each scenario is a self-contained [iximiuz Labs](https://labs.iximiuz.com)
+**challenge** (`index.md` with `init`/`verify` tasks in its frontmatter). The same
+files run on iximiuz Labs *and* locally on `kind` — one source of truth, no
+duplicated scripts.
+
+▶ **Course on iximiuz Labs:** https://labs.iximiuz.com/courses/kubelings-dbd840c8
+
+## Repo layout
 
 ```
-exercises/<NN-topic>/<name>/
-  task.md        # what's broken and what "done" looks like
-  init.sh        # creates the broken scenario in the cluster
-  verify.sh      # polls cluster state; exit 0 = solved, non-zero = not yet
-  hint.md        # progressive hints
-  solution.yaml  # the fix (kept on a separate `solution` branch later)
-  meta.yaml      # title, tier, topic, concepts (for curriculum generation)
+challenges/<slug>/            # one challenge each (authored unit)
+  index.md                    #   frontmatter: playground + init/verify tasks; body: the task + hints
+  solution.md                 #   reference solution
+courses/kubelings/            # the published Course, composed from the challenges
+  index.md                    #   course meta
+  module-N/0.index.md         #   module definition
+  module-N/<n>.<lesson>/      #   lesson = challenge: index.md (tasks) + unit-1.md (prose + check)
+skill-paths/kb-cka-path/      # a track that lists published challenge slugs
+scripts/
+  run-challenge-local.sh      # run any challenge on local kind
+  validators/k8s.sh           # optional local reference helpers (challenges inline their checks)
+tools/
+  scaffold.sh                 # new challenge from template
+  publish.sh                  # register + push a challenge (tracks slugs in .labctl/slugs.tsv)
+  challenge-to-lesson.sh      # convert a challenge into a course lesson
+.labctl/slugs.tsv             # local id -> remote slug map
 ```
 
-`init.sh` and `verify.sh` are plain `kubectl` + `bash`, so a platform's
-"initialize" / "verify" hooks can call them directly, and the local runner uses
-the same scripts.
+## Run a challenge locally
 
-## Run a pilot locally
+Scenarios are portable: `scripts/run-challenge-local.sh` extracts the `init`/`verify`
+task scripts from `challenges/<slug>/index.md` and runs them on a local `kind`
+cluster — the exact scripts iximiuz Labs runs.
 
-Needs `kind` + `kubectl` + Docker.
-
-```sh
-scripts/run-local.sh exercises/01-services/svc-selector up      # one-time: create the kind cluster
-scripts/run-local.sh exercises/01-services/svc-selector init    # apply the broken scenario
-scripts/run-local.sh exercises/01-services/svc-selector verify  # check your fix (re-run after editing)
-scripts/run-local.sh exercises/01-services/svc-selector reset   # wipe + re-apply the broken baseline
-scripts/run-local.sh exercises/01-services/svc-selector solve   # apply the answer (to see it pass)
-```
-
-## Run an iximiuz-format challenge locally
-
-The `challenges/<slug>/` items are authored for iximiuz Labs (one `index.md` with
-`init`/`verify` tasks in the frontmatter). `scripts/run-challenge-local.sh` runs
-those same task scripts on a local `kind` cluster — no separate `init.sh`/`verify.sh`
-needed, so local and lab stay in sync.
-
-Needs `kind` + `kubectl` + `yq` + a Docker runtime (OrbStack/Docker).
+**Prerequisites** (macOS via the dotfiles Brewfile): a Docker runtime
+(OrbStack/Docker), `kind`, `kubectl`, `yq`.
 
 ```sh
 scripts/run-challenge-local.sh up                # one-time: 3-node kind cluster
 scripts/run-challenge-local.sh list              # list challenges
 scripts/run-challenge-local.sh kb-wl-01 init     # build the scenario
-scripts/run-challenge-local.sh kb-wl-01 verify   # check your fix (re-run after editing)
+scripts/run-challenge-local.sh kb-wl-01 verify   # check your fix (re-run after each change)
 scripts/run-challenge-local.sh kb-wl-01 reset    # wipe ns + re-init
-scripts/run-challenge-local.sh kb-wl-01 solution # print solution.md
+scripts/run-challenge-local.sh kb-wl-01 solution # print the reference solution
 scripts/run-challenge-local.sh down              # delete the cluster
 ```
 
-The challenge arg accepts an id (`kb-wl-01`), full slug, or dir path. The
+The challenge arg accepts an id (`kb-wl-01`), a full slug, or a dir path. The
 iximiuz-only `machine:` field is ignored locally (everything runs against your
-kind context).
+current kube-context). Override the cluster with `KIND_WORKERS=N` /
+`KUBELINGS_CLUSTER=name`.
 
-## On iximiuz Labs / killercoda
+### Typical loop
 
-Point the challenge's **init** step at `init.sh` and its **verify/check** step at
-`verify.sh`. The platform provides an isolated cluster per learner — so a broken
-exercise can't affect anyone else, and "reset" is just re-running `init.sh`.
+```sh
+scripts/run-challenge-local.sh up
+scripts/run-challenge-local.sh kb-wl-07 init      # OOMKilled CrashLoop scenario
+kubectl -n kubelings get pods -l app=cache        # diagnose
+kubectl -n kubelings set resources deploy/cache --requests=memory=64Mi --limits=memory=128Mi
+scripts/run-challenge-local.sh kb-wl-07 verify    # ✅ PASS
+```
+
+## Catalog (Workloads & Scheduling)
+
+| id | scenario | type |
+|----|----------|------|
+| kb-wl-01 | Rolling update — fix unsafe `maxSurge`/`maxUnavailable` | Fix-It |
+| kb-wl-02 | Build a node-level log collector DaemonSet | Build-It |
+| kb-wl-03 | StatefulSet + headless Service (stable identity) | Build-It |
+| kb-wl-04 | Make a never-finishing Job complete | Fix-It |
+| kb-wl-05 | Stop CronJob pileup via `concurrencyPolicy` | Fix-It |
+| kb-wl-06 | Autoscale a Deployment with an HPA (1→5) | Build-It |
+| kb-wl-07 | Right-size memory to stop an OOMKill loop | Debug-It |
+
+## Authoring & publishing (iximiuz Labs)
+
+Requires `labctl` (`brew install labctl`) and `labctl auth login`.
+
+```sh
+# new challenge
+tools/scaffold.sh kb-wl-08 "My title" Fix-It cka k8s-omni
+# edit challenges/kb-wl-08/{index.md,solution.md}, test locally, then:
+tools/publish.sh kb-wl-08            # first run registers the suffixed slug + renames dir
+tools/publish.sh kb-wl-08            # re-push after edits
+
+# fold a challenge into the course as a lesson
+tools/challenge-to-lesson.sh challenges/<slug> courses/kubelings/module-2/8.mylesson mylesson mylesson
+labctl content push course kubelings-dbd840c8 --dir courses/kubelings --force
+```
+
+See [`iximiuz/README.md`](iximiuz/README.md) for the full publishing workflow and
+platform gotchas (slug suffixes, `tagz` vs `categories`, playground limits, etc.).
