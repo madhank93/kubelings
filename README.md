@@ -20,17 +20,40 @@ courses/kubelings/                       # THE source of truth (and the publishe
     index.md                             #   lesson: playground + init/verify tasks
     unit-1.md                            #   prose: the task, hints, ::simple-task check, solution
 scripts/
-  run-challenge-local.sh                 # run any lesson on local kind
+  run-challenge-local.sh                 # THE engine: run any lesson on local kind
   validators/k8s.sh                      # optional local reference helpers (lessons inline their checks)
+cmd/kubelings/                           # the TUI entrypoint (Go)
+internal/{course,progress,runner,preflight,ui}/  # TUI internals (UI-only; execs the runner)
 tools/
   scaffold-lesson.sh                     # new lesson from template
+justfile                                 # just tui | doctor | up | down | run <lesson> <verb>
 .labctl/slugs.tsv                        # local id -> remote slug (the course)
 ```
 
 There is no separate `challenges/` directory — the course lessons **are** the
 scenarios. The local runner reads the lesson `index.md` task blocks directly.
 
-## Run a lesson locally
+## Run locally — TUI
+
+The fastest way to practice locally is the interactive TUI (`cmd/kubelings`): a
+list of scenarios grouped by module with progress markers, one-key
+init/verify/reset, hint/solution, a cluster-wired shell, and live cluster status.
+
+```sh
+just tui          # build + launch  (or: go run ./cmd/kubelings)
+just doctor       # headless: env, cluster status, lessons (no TUI)
+```
+
+Keys: `↑/↓` navigate · `i` init · `v` verify · `r` reset · `h` hint ·
+`s` solution (confirms first) · `t` shell wired to the cluster · `u`/`d` cluster
+up/down · `g` refresh · `?` help · `q` quit. Markers: `◌` not started · `◐`
+started · `✓` solved (persisted in `.labctl/progress.tsv`, shared with the CLI).
+
+The TUI is UI-only — it delegates every action to `run-challenge-local.sh`, so the
+CLI and TUI stay in lockstep. Build prereqs: Go ≥ 1.25 (TUI), plus the runner
+prereqs below.
+
+## Run a lesson locally — CLI
 
 `scripts/run-challenge-local.sh` extracts the `init`/`verify` task scripts from a
 lesson's `index.md` and runs them on a local `kind` cluster — the exact scripts

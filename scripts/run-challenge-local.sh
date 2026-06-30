@@ -26,8 +26,20 @@ COURSE="$ROOT/courses/kubelings"
 CLUSTER="${KUBELINGS_CLUSTER:-kubelings}"
 WORKERS="${KIND_WORKERS:-2}"
 NS="${KUBELINGS_NS:-kubelings}"
+PROGRESS="$ROOT/.labctl/progress.tsv"
 
 die() { echo "error: $*" >&2; exit 2; }
+
+# Persist per-lesson progress (last write wins): <lesson>\t<none|started|solved>\t<epoch>
+_set_progress() {
+  local l="$1" s="$2" tmp; tmp="$(mktemp)"
+  mkdir -p "$(dirname "$PROGRESS")"; touch "$PROGRESS"
+  awk -F'\t' -v l="$l" '$1!=l' "$PROGRESS" > "$tmp"
+  printf '%s\t%s\t%s\n' "$l" "$s" "$(date +%s)" >> "$tmp"
+  mv "$tmp" "$PROGRESS"
+}
+# Canonical lesson name from a resolved index.md path (dir basename minus "N.").
+_lesson_name() { local b; b="$(basename "$(dirname "$1")")"; echo "${b#*.}"; }
 for bin in kind kubectl yq; do command -v "$bin" >/dev/null || die "missing dependency: $bin"; done
 
 # YAML frontmatter of a markdown file.
@@ -111,25 +123,34 @@ case "$A1" in
       printf '%-18s %s\n' "$nm" "$title"
     done
     ;;
+  progress)
+    [ -f "$PROGRESS" ] && cat "$PROGRESS" || true
+    ;;
   ""|-h|--help|help)
     print_help
     ;;
   *)
     LESSON="$A1"; VERB="${A2:-verify}"
-    IDX="$(resolve_lesson "$LESSON")"; LDIR="$(dirname "$IDX")"
+    IDX="$(resolve_lesson "$LESSON")"; LDIR="$(dirname "$IDX")"; LNAME="$(_lesson_name "$IDX")"
     case "$VERB" in
       init)
         ensure_context; run_tasks "$IDX" true
+        _set_progress "$LNAME" started
         echo; echo "scenario ready. Solve it, then: $0 $LESSON verify"
         ;;
       verify)
         ensure_context
-        if run_tasks "$IDX" false; then echo; echo "✅ PASS"; else echo; echo "❌ not solved yet"; exit 1; fi
+        if run_tasks "$IDX" false; then
+          _set_progress "$LNAME" solved; echo; echo "✅ PASS"
+        else
+          echo; echo "❌ not solved yet"; exit 1
+        fi
         ;;
       reset)
         ensure_context
         kubectl delete namespace "$NS" --ignore-not-found --wait=true
         run_tasks "$IDX" true
+        _set_progress "$LNAME" started
         echo; echo "scenario reset."
         ;;
       solution)
