@@ -26,9 +26,27 @@ COURSE="$ROOT/courses/kubelings"
 CLUSTER="${KUBELINGS_CLUSTER:-kubelings}"
 WORKERS="${KIND_WORKERS:-2}"
 NS="${KUBELINGS_NS:-kubelings}"
+NODE="${CLUSTER}-control-plane"
 PROGRESS="$ROOT/.labctl/progress.tsv"
 
 die() { echo "error: $*" >&2; exit 2; }
+
+# SECURITY: lesson task scripts are authored content = untrusted code. They run
+# ONLY inside the kind control-plane node container (isolated from the host
+# filesystem/processes), using the node's in-cluster admin kubeconfig — never as
+# bash on the host. Cluster lifecycle (kind create/delete) stays on the host.
+_in_node() {
+  docker exec -i -e KUBECONFIG=/etc/kubernetes/admin.conf "$NODE" bash -c "$1"
+}
+
+# Defense-in-depth: enforce Pod Security 'baseline' on the lesson namespace so an
+# untrusted lesson manifest can't create privileged / hostPath / hostNetwork /
+# hostPID pods — the pod→node→host escape vectors. Non-fatal.
+_harden_ns() {
+  _in_node "kubectl label namespace \"$NS\" \
+    pod-security.kubernetes.io/enforce=baseline \
+    pod-security.kubernetes.io/warn=baseline --overwrite >/dev/null 2>&1 || true"
+}
 
 # Persist per-lesson progress (last write wins): <lesson>\t<none|started|solved>\t<epoch>
 _set_progress() {
@@ -40,19 +58,32 @@ _set_progress() {
 }
 # Canonical lesson name from a resolved index.md path (dir basename minus "N.").
 _lesson_name() { local b; b="$(basename "$(dirname "$1")")"; echo "${b#*.}"; }
-for bin in kind kubectl yq; do command -v "$bin" >/dev/null || die "missing dependency: $bin"; done
+for bin in kind kubectl yq docker; do command -v "$bin" >/dev/null || die "missing dependency: $bin"; done
 
 # YAML frontmatter of a markdown file.
 frontmatter() { awk '/^---$/{c++; next} c==1{print}' "$1"; }
 # Does a lesson index.md declare any tasks?
 has_tasks() { [ "$(frontmatter "$1" | yq -r '.tasks // {} | length')" -gt 0 ] 2>/dev/null; }
 
-# Resolve <lesson> to its index.md path.
+# SECURITY: only ever resolve to an index.md that lives UNDER courses/kubelings.
+# Rejects path traversal / symlinks pointing outside, so the runner can't be
+# tricked into executing an arbitrary file's task blocks.
+_confine() {
+  local p real course_real
+  real="$(cd "$(dirname "$1")" 2>/dev/null && pwd -P)/$(basename "$1")" || die "bad path"
+  course_real="$(cd "$COURSE" && pwd -P)"
+  case "$real" in
+    "$course_real"/*) echo "$real" ;;
+    *) die "refusing to run a lesson outside $COURSE" ;;
+  esac
+}
+
+# Resolve <lesson> to its index.md path (confined to the course tree).
 resolve_lesson() {
   local arg="$1"
   [ -n "$arg" ] || die "lesson required (try: $0 list)"
-  [ -f "$arg/index.md" ] && { echo "$arg/index.md"; return; }
-  [ -f "$arg" ] && { echo "$arg"; return; }
+  [ -f "$arg/index.md" ] && { _confine "$arg/index.md"; return; }
+  [ -f "$arg" ] && [ "$(basename "$arg")" = "index.md" ] && { _confine "$arg"; return; }
   local d base nm name slug
   for d in "$COURSE"/module-*/*/; do
     [ -f "$d/index.md" ] || continue
@@ -60,7 +91,7 @@ resolve_lesson() {
     name="$(frontmatter "$d/index.md" | yq -r '.name // ""')"
     slug="$(frontmatter "$d/index.md" | yq -r '.slug // ""')"
     if [ "$arg" = "$nm" ] || [ "$arg" = "$name" ] || [ "$arg" = "$slug" ]; then
-      echo "$d/index.md"; return
+      _confine "$d/index.md"; return
     fi
   done
   die "no lesson matching '$arg' (try: $0 list)"
@@ -79,16 +110,19 @@ run_tasks() {
     [ "$is_init" = "$want_init" ] || continue
     script="$(echo "$fm" | yq -r ".tasks.\"$k\".run")"
     echo "── task: $k ─────────────────────────────────────────────"
-    bash -c "$script"; trc=$?
+    _in_node "$script"; trc=$?
     [ "$trc" -ne 0 ] && { echo "   ↳ task '$k' exited $trc"; rc=$trc; }
   done <<<"$keys"
   return $rc
 }
 
-ensure_context() {
+# Confine all cluster work to the kind node. Never touches the host's kubeconfig
+# or any other cluster — so a stray KUBECONFIG pointing at prod can't be affected.
+ensure_node() {
   kind get clusters 2>/dev/null | grep -qx "$CLUSTER" \
     || die "kind cluster '$CLUSTER' not found — run: $0 up"
-  kubectl config use-context "kind-$CLUSTER" >/dev/null
+  [ "$(docker inspect -f '{{.State.Running}}' "$NODE" 2>/dev/null)" = "true" ] \
+    || die "node '$NODE' not running — run: $0 up"
 }
 
 print_help() { grep '^#' "$0" | sed 's/^# \{0,1\}//' | sed -n '1,30p'; }
@@ -131,15 +165,17 @@ case "$A1" in
     ;;
   *)
     LESSON="$A1"; VERB="${A2:-verify}"
-    IDX="$(resolve_lesson "$LESSON")"; LDIR="$(dirname "$IDX")"; LNAME="$(_lesson_name "$IDX")"
+    IDX="$(resolve_lesson "$LESSON")"
+    [ -n "$IDX" ] && [ -f "$IDX" ] || die "could not resolve lesson '$LESSON' (rejected or not found)"
+    LDIR="$(dirname "$IDX")"; LNAME="$(_lesson_name "$IDX")"
     case "$VERB" in
       init)
-        ensure_context; run_tasks "$IDX" true
+        ensure_node; run_tasks "$IDX" true; _harden_ns
         _set_progress "$LNAME" started
         echo; echo "scenario ready. Solve it, then: $0 $LESSON verify"
         ;;
       verify)
-        ensure_context
+        ensure_node
         if run_tasks "$IDX" false; then
           _set_progress "$LNAME" solved; echo; echo "✅ PASS"
         else
@@ -147,9 +183,9 @@ case "$A1" in
         fi
         ;;
       reset)
-        ensure_context
-        kubectl delete namespace "$NS" --ignore-not-found --wait=true
-        run_tasks "$IDX" true
+        ensure_node
+        _in_node "kubectl delete namespace \"$NS\" --ignore-not-found --wait=true"
+        run_tasks "$IDX" true; _harden_ns
         _set_progress "$LNAME" started
         echo; echo "scenario reset."
         ;;

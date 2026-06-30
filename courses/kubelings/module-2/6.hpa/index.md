@@ -23,7 +23,8 @@ tasks:
 
       # Ensure metrics-server is present (HPA needs it). Idempotent.
       if ! kubectl get deploy metrics-server -n kube-system >/dev/null 2>&1; then
-        kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+        # Pinned version (not 'latest') — reproducible + avoids a moving supply-chain target.
+        kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.7.2/components.yaml
         kubectl patch deploy metrics-server -n kube-system --type=json -p \
           '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
       fi

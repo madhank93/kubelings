@@ -63,6 +63,11 @@ The TUI is UI-only — it delegates every action to `run-challenge-local.sh`, so
 CLI and TUI stay in lockstep. Build prereqs: Go ≥ 1.25 (TUI), plus the runner
 prereqs below.
 
+> **Security:** lesson task scripts are treated as untrusted code — they run
+> inside the kind node container (not on your host), confined to the course tree
+> and the kind cluster, with Pod Security `baseline` enforced on the lesson
+> namespace. See [`SECURITY.md`](SECURITY.md).
+
 ## Run a lesson locally — CLI
 
 `scripts/run-challenge-local.sh` extracts the `init`/`verify` task scripts from a
