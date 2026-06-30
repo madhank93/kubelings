@@ -3,98 +3,93 @@
 Learn Kubernetes the **rustlings** way — fix small, broken-on-purpose cluster
 scenarios one at a time until an automated check turns green.
 
-Each scenario is a self-contained [iximiuz Labs](https://labs.iximiuz.com)
-**challenge** (`index.md` with `init`/`verify` tasks in its frontmatter). The same
-files run on iximiuz Labs *and* locally on `kind` — one source of truth, no
+Everything lives in one place: the [iximiuz Labs](https://labs.iximiuz.com)
+**Course**. Each lesson carries its own `init`/`verify` tasks, so the same files
+run on iximiuz Labs *and* locally on `kind` — single source of truth, no
 duplicated scripts.
 
-▶ **Course on iximiuz Labs:** https://labs.iximiuz.com/courses/kubelings-dbd840c8
+▶ **Course:** https://labs.iximiuz.com/courses/kubelings-dbd840c8
 
 ## Repo layout
 
 ```
-challenges/<id>/              # SOURCE OF TRUTH — one scenario each (authored unit)
-  index.md                    #   frontmatter: playground + init/verify tasks; body: the task + hints
-  solution.md                 #   reference solution
-courses/kubelings/            # the PUBLISHED Course, composed from the challenges
-  index.md                    #   course meta
-  module-N/0.index.md         #   module definition
-  module-N/<n>.<lesson>/      #   lesson = challenge: index.md (tasks) + unit-1.md (prose + check)
+courses/kubelings/                       # THE source of truth (and the published Course)
+  index.md                               #   course meta
+  module-N/0.index.md                    #   module definition (numeric prefix orders modules)
+  module-N/<n>.<lesson>/
+    index.md                             #   lesson: playground + init/verify tasks
+    unit-1.md                            #   prose: the task, hints, ::simple-task check, solution
 scripts/
-  run-challenge-local.sh      # run any challenge on local kind
-  validators/k8s.sh           # optional local reference helpers (challenges inline their checks)
+  run-challenge-local.sh                 # run any lesson on local kind
+  validators/k8s.sh                      # optional local reference helpers (lessons inline their checks)
 tools/
-  scaffold.sh                 # new challenge from template
-  challenge-to-lesson.sh      # fold a challenge into the course as a lesson
-  publish.sh                  # (optional) publish a single standalone challenge
-.labctl/slugs.tsv             # local id -> remote slug map (the course)
+  scaffold-lesson.sh                     # new lesson from template
+.labctl/slugs.tsv                        # local id -> remote slug (the course)
 ```
 
-The Course is the only thing published on iximiuz Labs. `challenges/` lives in the
-repo as the source of truth: it feeds both the local `kind` runner and the course
-lessons (regenerate with `challenge-to-lesson.sh`).
+There is no separate `challenges/` directory — the course lessons **are** the
+scenarios. The local runner reads the lesson `index.md` task blocks directly.
 
-## Run a challenge locally
+## Run a lesson locally
 
-Scenarios are portable: `scripts/run-challenge-local.sh` extracts the `init`/`verify`
-task scripts from `challenges/<slug>/index.md` and runs them on a local `kind`
-cluster — the exact scripts iximiuz Labs runs.
+`scripts/run-challenge-local.sh` extracts the `init`/`verify` task scripts from a
+lesson's `index.md` and runs them on a local `kind` cluster — the exact scripts
+iximiuz Labs runs.
 
 **Prerequisites** (macOS via the dotfiles Brewfile): a Docker runtime
 (OrbStack/Docker), `kind`, `kubectl`, `yq`.
 
 ```sh
-scripts/run-challenge-local.sh up                # one-time: 3-node kind cluster
-scripts/run-challenge-local.sh list              # list challenges
-scripts/run-challenge-local.sh kb-wl-01 init     # build the scenario
-scripts/run-challenge-local.sh kb-wl-01 verify   # check your fix (re-run after each change)
-scripts/run-challenge-local.sh kb-wl-01 reset    # wipe ns + re-init
-scripts/run-challenge-local.sh kb-wl-01 solution # print the reference solution
-scripts/run-challenge-local.sh down              # delete the cluster
+scripts/run-challenge-local.sh up                 # one-time: 3-node kind cluster
+scripts/run-challenge-local.sh list               # list runnable lessons
+scripts/run-challenge-local.sh rolling-update init # build the scenario
+scripts/run-challenge-local.sh rolling-update verify   # check your fix (re-run after each change)
+scripts/run-challenge-local.sh rolling-update reset     # wipe ns + re-init
+scripts/run-challenge-local.sh rolling-update solution  # print the lesson (incl. solution)
+scripts/run-challenge-local.sh down               # delete the cluster
 ```
 
-The challenge arg accepts an id (`kb-wl-01`), a full slug, or a dir path. The
-iximiuz-only `machine:` field is ignored locally (everything runs against your
-current kube-context). Override the cluster with `KIND_WORKERS=N` /
-`KUBELINGS_CLUSTER=name`.
+`<lesson>` accepts a lesson name (e.g. `rolling-update`), its slug, or a dir path.
+The iximiuz-only `machine:` field is ignored locally (everything runs against your
+current kube-context). Override with `KIND_WORKERS=N` / `KUBELINGS_CLUSTER=name`.
 
 ### Typical loop
 
 ```sh
 scripts/run-challenge-local.sh up
-scripts/run-challenge-local.sh kb-wl-07 init      # OOMKilled CrashLoop scenario
+scripts/run-challenge-local.sh oomkill init       # OOMKilled CrashLoop scenario
 kubectl -n kubelings get pods -l app=cache        # diagnose
 kubectl -n kubelings set resources deploy/cache --requests=memory=64Mi --limits=memory=128Mi
-scripts/run-challenge-local.sh kb-wl-07 verify    # ✅ PASS
+scripts/run-challenge-local.sh oomkill verify     # ✅ PASS
 ```
 
-## Catalog (Workloads & Scheduling)
+## Lessons (Module 2 — Workloads & Scheduling)
 
-| id | scenario | type |
-|----|----------|------|
-| kb-wl-01 | Rolling update — fix unsafe `maxSurge`/`maxUnavailable` | Fix-It |
-| kb-wl-02 | Build a node-level log collector DaemonSet | Build-It |
-| kb-wl-03 | StatefulSet + headless Service (stable identity) | Build-It |
-| kb-wl-04 | Make a never-finishing Job complete | Fix-It |
-| kb-wl-05 | Stop CronJob pileup via `concurrencyPolicy` | Fix-It |
-| kb-wl-06 | Autoscale a Deployment with an HPA (1→5) | Build-It |
-| kb-wl-07 | Right-size memory to stop an OOMKill loop | Debug-It |
+| lesson | scenario | type |
+|--------|----------|------|
+| rolling-update | fix unsafe `maxSurge`/`maxUnavailable` | Fix-It |
+| daemonset | build a node-level log collector | Build-It |
+| statefulset | StatefulSet + headless Service (stable identity) | Build-It |
+| jobs | make a never-finishing Job complete | Fix-It |
+| cronjobs | stop CronJob pileup via `concurrencyPolicy` | Fix-It |
+| hpa | autoscale a Deployment with an HPA (1→5) | Build-It |
+| oomkill | right-size memory to stop an OOMKill loop | Debug-It |
 
-## Authoring & publishing (iximiuz Labs)
+## Add a lesson & publish
 
 Requires `labctl` (`brew install labctl`) and `labctl auth login`.
 
 ```sh
-# new challenge
-tools/scaffold.sh kb-wl-08 "My title" Fix-It cka k8s-omni
-# edit challenges/kb-wl-08/{index.md,solution.md}, test locally, then:
-tools/publish.sh kb-wl-08            # first run registers the suffixed slug + renames dir
-tools/publish.sh kb-wl-08            # re-push after edits
+# scaffold a lesson under a module
+tools/scaffold-lesson.sh module-2 8 ingress "Fix the broken Ingress" k8s-omni
+# edit courses/kubelings/module-2/8.ingress/{index.md,unit-1.md}
 
-# fold a challenge into the course as a lesson
-tools/challenge-to-lesson.sh challenges/<slug> courses/kubelings/module-2/8.mylesson mylesson mylesson
+# test locally
+scripts/run-challenge-local.sh ingress init && scripts/run-challenge-local.sh ingress verify
+
+# publish the whole course
 labctl content push course kubelings-dbd840c8 --dir courses/kubelings --force
 ```
 
-See [`iximiuz/README.md`](iximiuz/README.md) for the full publishing workflow and
-platform gotchas (slug suffixes, `tagz` vs `categories`, playground limits, etc.).
+See [`iximiuz/README.md`](iximiuz/README.md) for the course schema and platform
+gotchas (lesson frontmatter, `tagz` vs `categories`, playground limits, etc.).
