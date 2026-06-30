@@ -32,6 +32,29 @@ scripts/run-local.sh exercises/01-services/svc-selector reset   # wipe + re-appl
 scripts/run-local.sh exercises/01-services/svc-selector solve   # apply the answer (to see it pass)
 ```
 
+## Run an iximiuz-format challenge locally
+
+The `challenges/<slug>/` items are authored for iximiuz Labs (one `index.md` with
+`init`/`verify` tasks in the frontmatter). `scripts/run-challenge-local.sh` runs
+those same task scripts on a local `kind` cluster — no separate `init.sh`/`verify.sh`
+needed, so local and lab stay in sync.
+
+Needs `kind` + `kubectl` + `yq` + a Docker runtime (OrbStack/Docker).
+
+```sh
+scripts/run-challenge-local.sh up                # one-time: 3-node kind cluster
+scripts/run-challenge-local.sh list              # list challenges
+scripts/run-challenge-local.sh kb-wl-01 init     # build the scenario
+scripts/run-challenge-local.sh kb-wl-01 verify   # check your fix (re-run after editing)
+scripts/run-challenge-local.sh kb-wl-01 reset    # wipe ns + re-init
+scripts/run-challenge-local.sh kb-wl-01 solution # print solution.md
+scripts/run-challenge-local.sh down              # delete the cluster
+```
+
+The challenge arg accepts an id (`kb-wl-01`), full slug, or dir path. The
+iximiuz-only `machine:` field is ignored locally (everything runs against your
+kind context).
+
 ## On iximiuz Labs / killercoda
 
 Point the challenge's **init** step at `init.sh` and its **verify/check** step at
