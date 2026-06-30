@@ -41,6 +41,9 @@ func TestDiscover(t *testing.T) {
 			}
 			if l.HasTasks {
 				runnable++
+				if l.Task == "" {
+					t.Errorf("runnable lesson %s has empty Task text", l.Name)
+				}
 				if l.Hint != "" {
 					sawHint = true
 				}

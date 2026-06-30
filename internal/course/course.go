@@ -24,6 +24,7 @@ type Lesson struct {
 	Playground  string
 	Dir         string // absolute lesson dir
 	HasTasks    bool
+	Task        string // unit prose up to the first <details>/::simple-task
 	Hint        string
 	Solution    string
 }
@@ -90,8 +91,10 @@ func Discover(root string) ([]Module, error) {
 				Name: mm[2], Title: fm.Title, Description: strings.TrimSpace(fm.Description),
 				Playground: fm.Playground.Name, Dir: ldir, HasTasks: len(fm.Tasks) > 0,
 			}
-			ls.Hint = extractDetails(filepath.Join(ldir, "unit-1.md"), "hint")
-			ls.Solution = extractDetails(filepath.Join(ldir, "unit-1.md"), "solution")
+			unit := filepath.Join(ldir, "unit-1.md")
+			ls.Task = extractTask(unit)
+			ls.Hint = extractDetails(unit, "hint")
+			ls.Solution = extractDetails(unit, "solution")
 			m.Lessons = append(m.Lessons, ls)
 		}
 		sort.Slice(m.Lessons, func(i, j int) bool { return m.Lessons[i].Order < m.Lessons[j].Order })
@@ -125,6 +128,37 @@ func readFrontmatter(path string) (frontmatter, error) {
 	}
 	block := strings.Join(lines[start+1:end], "\n")
 	return fm, yaml.Unmarshal([]byte(block), &fm)
+}
+
+// extractTask returns the unit prose (after frontmatter) up to the first
+// <details> or ::simple-task block — i.e. the situation + objectives.
+func extractTask(path string) string {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	lines := strings.Split(string(b), "\n")
+	// skip frontmatter
+	start := 0
+	dashes := 0
+	for i, l := range lines {
+		if strings.TrimRight(l, " \t") == "---" {
+			dashes++
+			if dashes == 2 {
+				start = i + 1
+				break
+			}
+		}
+	}
+	var out []string
+	for _, l := range lines[start:] {
+		t := strings.ToLower(strings.TrimSpace(l))
+		if strings.HasPrefix(t, "<details") || strings.HasPrefix(t, "::simple-task") {
+			break
+		}
+		out = append(out, l)
+	}
+	return strings.TrimSpace(strings.Join(out, "\n"))
 }
 
 // extractDetails returns the markdown body of a <details> whose <summary> contains

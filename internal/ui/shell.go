@@ -1,23 +1,23 @@
 package ui
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/madhank93/kubelings/internal/course"
 )
 
-// writeShellEnv prepares an isolated KUBECONFIG for the kind cluster and a bash
-// rcfile that selects the kubelings namespace. Returns (kubeconfigPath, rcPath).
-// Using a dedicated KUBECONFIG means the drop-to-shell never mutates the user's
-// global current-context.
-func writeShellEnv(context string) (string, string, error) {
+// shellEnv prepares an interactive shell wired to the kind cluster for a lesson:
+// an isolated KUBECONFIG (no global context mutation), the lesson task/hint/
+// solution written to files, and helper commands. Returns (kubeconfig, rcfile).
+func shellEnv(repoRoot string, l *course.Lesson) (string, string, error) {
 	dir, err := os.MkdirTemp("", "kubelings-shell")
 	if err != nil {
 		return "", "", err
 	}
-	kubeconfig := filepath.Join(dir, "kubeconfig")
 
-	// Export the kind cluster's kubeconfig into the temp file.
 	cluster := os.Getenv("KUBELINGS_CLUSTER")
 	if cluster == "" {
 		cluster = "kubelings"
@@ -26,20 +26,52 @@ func writeShellEnv(context string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+	kubeconfig := filepath.Join(dir, "kubeconfig")
 	if err := os.WriteFile(kubeconfig, out, 0o600); err != nil {
 		return "", "", err
 	}
 
+	title, name, task, hint, sol := "Kubelings shell", "", "", "(no hint)", "(no solution)"
+	if l != nil {
+		title, name = l.Title, l.Name
+		if l.Task != "" {
+			task = l.Task
+		}
+		if l.Hint != "" {
+			hint = l.Hint
+		}
+		if l.Solution != "" {
+			sol = l.Solution
+		}
+	}
+	_ = os.WriteFile(filepath.Join(dir, "task.md"), []byte(task), 0o600)
+	_ = os.WriteFile(filepath.Join(dir, "hint.md"), []byte(hint), 0o600)
+	_ = os.WriteFile(filepath.Join(dir, "solution.md"), []byte(sol), 0o600)
+
 	rc := filepath.Join(dir, "rc")
-	rcBody := `
-source ~/.bashrc 2>/dev/null || true
-kubectl config set-context --current --namespace=kubelings >/dev/null 2>&1
-alias k=kubectl
-PS1='kubelings:\w$ '
-echo "kubelings shell — context: ` + context + `  ns: kubelings   (type 'exit' to return)"
-`
-	if err := os.WriteFile(rc, []byte(rcBody), 0o600); err != nil {
+	if err := os.WriteFile(rc, []byte(buildRC(repoRoot, name, dir, title)), 0o600); err != nil {
 		return "", "", err
 	}
 	return kubeconfig, rc, nil
+}
+
+// buildRC produces the interactive bash rcfile body. Separated for testing.
+func buildRC(repoRoot, lesson, klDir, title string) string {
+	return fmt.Sprintf(`
+source ~/.bashrc 2>/dev/null || true
+cd %[1]q
+kubectl config set-context --current --namespace=kubelings >/dev/null 2>&1
+alias k=kubectl
+REPO=%[1]q; LESSON=%[2]q; KLDIR=%[3]q
+task()     { cat "$KLDIR/task.md"; }
+hint()     { cat "$KLDIR/hint.md"; }
+solution() { cat "$KLDIR/solution.md"; }
+verify()   { ( cd "$REPO" && scripts/run-challenge-local.sh "$LESSON" verify ); }
+klreset()  { ( cd "$REPO" && scripts/run-challenge-local.sh "$LESSON" reset ); }
+PS1='\[\e[36m\]kubelings\[\e[0m\]:%[2]s \w$ '
+clear
+printf '\e[1;36m%%s\e[0m\n\n' %[4]q
+task
+printf '\n\e[2mcommands:\e[0m \e[36mtask\e[0m · \e[36mhint\e[0m · \e[36mverify\e[0m · \e[36msolution\e[0m · \e[36mklreset\e[0m · k=kubectl · exit\n'
+`, repoRoot, lesson, klDir, title)
 }

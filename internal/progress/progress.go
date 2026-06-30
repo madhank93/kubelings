@@ -3,9 +3,11 @@
 package progress
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type State string
@@ -52,4 +54,35 @@ func Get(m map[string]State, lesson string) State {
 		return s
 	}
 	return None
+}
+
+// Set writes a lesson's state (last-write-wins), matching the bash runner's
+// format. None removes the row.
+func Set(root, lesson string, s State) error {
+	cur := Load(root)
+	if s == None {
+		delete(cur, lesson)
+	} else {
+		cur[lesson] = s
+	}
+	var b strings.Builder
+	now := time.Now().Unix()
+	for l, st := range cur {
+		fmt.Fprintf(&b, "%s\t%s\t%d\n", l, st, now)
+	}
+	if err := os.MkdirAll(filepath.Dir(file(root)), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(file(root), []byte(b.String()), 0o644)
+}
+
+// StartedLessons returns lessons currently in the Started state.
+func StartedLessons(m map[string]State) []string {
+	var out []string
+	for l, s := range m {
+		if s == Started {
+			out = append(out, l)
+		}
+	}
+	return out
 }

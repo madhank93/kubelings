@@ -51,6 +51,16 @@ type model struct {
 	confirm bool // solution reveal prompt
 	w, h    int
 	ready   bool
+
+	// play / shell chaining + switch-scenario guard
+	pendingPlay   *course.Lesson // run init+shell after the cluster comes up
+	openShellNext bool           // after the current init/reset finishes, drop into the shell
+	shellLesson   *course.Lesson
+	lastAction    string
+	confirmSwitch bool
+	switchTarget  *course.Lesson
+	switchOther   string
+	switchShell   bool
 }
 
 type runDoneMsg struct {
@@ -123,14 +133,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.running = false
 		m.prog = progress.Load(m.root)
 		m.status = runner.Status()
+		// init/reset followed by a requested shell drop?
+		if m.openShellNext && msg.ok && (msg.action == "init" || msg.action == "reset") {
+			m.openShellNext = false
+			l := m.shellLesson
+			m.mode = modeDetail
+			m.refreshView()
+			return m, m.execShell(l)
+		}
+		m.openShellNext = false
 		m.mode = modeOutput
-		head := fmt.Sprintf("$ %s %s\n\n", msg.lesson, msg.action)
-		m.vp.SetContent(head + msg.out)
+		m.vp.SetContent(fmt.Sprintf("$ %s %s\n\n", msg.lesson, msg.action) + msg.out)
 		m.vp.GotoTop()
 		return m, nil
 
 	case execDoneMsg:
 		m.reload()
+		// finishing a "play": cluster is up, now init+shell the pending lesson.
+		if m.pendingPlay != nil && m.status.Up {
+			l := m.pendingPlay
+			m.pendingPlay = nil
+			return m.beginInit(l, true)
+		}
+		m.pendingPlay = nil
 		m.refreshView()
 		return m, nil
 
@@ -144,7 +169,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// Solution reveal confirmation captures keys first.
+	// Switch-scenario guard captures keys first.
+	if m.confirmSwitch {
+		switch msg.String() {
+		case "d", "D": // destroy current, then start target
+			m.confirmSwitch = false
+			for _, o := range progress.StartedLessons(m.prog) {
+				if o != m.switchTarget.Name {
+					_ = progress.Set(m.root, o, progress.None)
+				}
+			}
+			m.prog = progress.Load(m.root)
+			return m.launchInit(m.switchTarget, m.switchShell, true /*reset*/)
+		case "k", "K": // keep current resources, init target over it
+			m.confirmSwitch = false
+			return m.launchInit(m.switchTarget, m.switchShell, false)
+		case "c", "C", "esc", "n", "N":
+			m.confirmSwitch = false
+		}
+		return m, nil
+	}
+	// Solution reveal confirmation.
 	if m.confirm {
 		switch msg.String() {
 		case "y", "Y":
@@ -199,8 +244,20 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if l := m.current(); l != nil && l.Solution != "" {
 			m.confirm = true
 		}
-	case "i", "enter":
-		return m.runAction("init")
+	case "enter", " ": // PLAY: cluster up (if needed) -> init -> shell
+		l := m.current()
+		if l == nil || !l.HasTasks {
+			return m, nil
+		}
+		if !m.status.Up {
+			m.pendingPlay = l
+			return m, tea.ExecProcess(runner.Cmd(m.root, "up"), func(error) tea.Msg { return execDoneMsg{} })
+		}
+		return m.beginInit(l, true)
+	case "i":
+		if l := m.current(); l != nil && l.HasTasks {
+			return m.beginInit(l, false)
+		}
 	case "v":
 		return m.runAction("verify")
 	case "r":
@@ -210,7 +267,9 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "d":
 		return m, tea.ExecProcess(runner.Cmd(m.root, "down"), func(error) tea.Msg { return execDoneMsg{} })
 	case "t":
-		return m.openShell()
+		if l := m.current(); l != nil {
+			return m, m.execShell(l)
+		}
 	case "pgup", "pgdown", "ctrl+u", "ctrl+d":
 		var cmd tea.Cmd
 		m.vp, cmd = m.vp.Update(msg)
@@ -219,9 +278,42 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// beginInit starts a lesson, prompting first if a different scenario is still active.
+func (m model) beginInit(l *course.Lesson, withShell bool) (tea.Model, tea.Cmd) {
+	if !m.status.Up {
+		m.mode = modeOutput
+		m.vp.SetContent("cluster not up — press u (or enter to play).")
+		return m, nil
+	}
+	for _, o := range progress.StartedLessons(m.prog) {
+		if o != l.Name {
+			m.confirmSwitch = true
+			m.switchTarget = l
+			m.switchOther = o
+			m.switchShell = withShell
+			return m, nil
+		}
+	}
+	return m.launchInit(l, withShell, false)
+}
+
+// launchInit runs init (or reset) for a lesson, optionally chaining into the shell.
+func (m model) launchInit(l *course.Lesson, withShell, reset bool) (tea.Model, tea.Cmd) {
+	action := "init"
+	if reset {
+		action = "reset"
+	}
+	m.openShellNext = withShell
+	m.shellLesson = l
+	return m.runAction(action)
+}
+
 // runAction launches a lesson action via the runner, with a cluster pre-check.
 func (m model) runAction(action string) (tea.Model, tea.Cmd) {
 	l := m.current()
+	if m.shellLesson != nil && (action == "init" || action == "reset") {
+		l = m.shellLesson
+	}
 	if l == nil {
 		return m, nil
 	}
@@ -232,6 +324,7 @@ func (m model) runAction(action string) (tea.Model, tea.Cmd) {
 	}
 	m.running = true
 	m.runLbl = action + " " + l.Name
+	m.lastAction = action
 	root, name := m.root, l.Name
 	return m, tea.Batch(
 		m.spin.Tick,
@@ -242,23 +335,24 @@ func (m model) runAction(action string) (tea.Model, tea.Cmd) {
 	)
 }
 
-// openShell drops into an interactive shell wired to the kind cluster, isolated
-// via a temp KUBECONFIG so the user's global context is untouched.
-func (m model) openShell() (tea.Model, tea.Cmd) {
+// execShell drops into an interactive shell wired to the cluster, showing the
+// lesson task and exposing task/hint/verify/solution commands. Isolated via a
+// temp KUBECONFIG so the user's global context is untouched.
+func (m model) execShell(l *course.Lesson) tea.Cmd {
 	if !m.status.Up {
 		m.mode = modeOutput
 		m.vp.SetContent("cluster not up — press u to start it before opening a shell.")
-		return m, nil
+		return nil
 	}
-	kubeconfig, rc, err := writeShellEnv(m.status.Context)
+	kubeconfig, rc, err := shellEnv(m.root, l)
 	if err != nil {
 		m.mode = modeOutput
 		m.vp.SetContent("could not prepare shell: " + err.Error())
-		return m, nil
+		return nil
 	}
 	c := exec.Command("bash", "--rcfile", rc, "-i")
 	c.Env = append(os.Environ(), "KUBECONFIG="+kubeconfig)
-	return m, tea.ExecProcess(c, func(error) tea.Msg { return execDoneMsg{} })
+	return tea.ExecProcess(c, func(error) tea.Msg { return execDoneMsg{} })
 }
 
 func (m *model) layout() {

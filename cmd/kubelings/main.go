@@ -27,9 +27,20 @@ func main() {
 		case "list", "doctor", "--list", "--doctor":
 			doctor(root)
 			return
+		case "shell":
+			if len(os.Args) < 3 {
+				fmt.Fprintln(os.Stderr, "usage: kubelings shell <lesson>")
+				os.Exit(2)
+			}
+			if err := ui.Shell(root, os.Args[2]); err != nil {
+				fmt.Fprintln(os.Stderr, "kubelings:", err)
+				os.Exit(1)
+			}
+			return
 		case "-h", "--help", "help":
-			fmt.Println("kubelings           launch the TUI")
-			fmt.Println("kubelings doctor    print env, cluster status, and lessons (no TUI)")
+			fmt.Println("kubelings              launch the TUI")
+			fmt.Println("kubelings doctor       env, cluster status, lessons (no TUI)")
+			fmt.Println("kubelings shell <l>    shell wired to the cluster for lesson <l>")
 			return
 		}
 	}

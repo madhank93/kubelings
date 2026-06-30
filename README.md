@@ -44,10 +44,20 @@ just tui          # build + launch  (or: go run ./cmd/kubelings)
 just doctor       # headless: env, cluster status, lessons (no TUI)
 ```
 
-Keys: `↑/↓` navigate · `i` init · `v` verify · `r` reset · `h` hint ·
-`s` solution (confirms first) · `t` shell wired to the cluster · `u`/`d` cluster
-up/down · `g` refresh · `?` help · `q` quit. Markers: `◌` not started · `◐`
-started · `✓` solved (persisted in `.labctl/progress.tsv`, shared with the CLI).
+Keys: **`↵`/`space` play** (cluster up if needed → init → drop into shell) ·
+`i` init · `v` verify · `r` reset · `h` hint · `s` solution (confirms first) ·
+`t` shell · `u`/`d` cluster up/down · `g` refresh · `?` help · `q` quit. Markers:
+`◌` not started · `◐` started · `✓` solved (in `.labctl/progress.tsv`, shared with
+the CLI). Starting a different scenario while one is still active prompts
+**destroy / keep / cancel**.
+
+The cluster shell (`t`, or the play key) opens pre-wired to `kind-kubelings` / ns
+`kubelings` and **prints the task**, with helper commands: `task`, `hint`,
+`verify`, `solution`, `klreset`, `k`=kubectl. Open it standalone too:
+
+```sh
+kubelings shell rolling-update      # task + cluster-wired shell for one lesson
+```
 
 The TUI is UI-only — it delegates every action to `run-challenge-local.sh`, so the
 CLI and TUI stay in lockstep. Build prereqs: Go ≥ 1.25 (TUI), plus the runner
