@@ -6,59 +6,45 @@ with frontmatter + body). Each challenge's `init:`/`verify:` tasks use plain
 
 ## Layout
 
-- `challenges/<slug>/` — one challenge each (`index.md` + `solution.md` + `__static__/`).
+- `challenges/<id>/` — **source of truth**: one scenario each (`index.md` +
+  `solution.md`). Feeds the local `kind` runner and the course lessons. Not
+  published standalone — the Course is the only published product.
 - `courses/kubelings/` — the **Course**, composed from the challenges as lessons.
-- `skill-paths/<slug>/` — composes published challenges into a track.
 - `scripts/validators/k8s.sh` — **optional** local reference lib (NOT sourced at
   runtime; mirror its logic when inlining a check).
 - `tools/scaffold.sh` — generate a new challenge from the proven template.
-- `tools/publish.sh` — register (first run) + push a challenge; maintains
-  `.labctl/slugs.tsv` (challenge id → remote slug).
-- `tools/challenge-to-lesson.sh` — convert a challenge into a course lesson.
+- `tools/challenge-to-lesson.sh` — fold a challenge into the course as a lesson.
+- `tools/publish.sh` — (optional) publish a single standalone challenge; maintains
+  `.labctl/slugs.tsv` (id → remote slug).
 
 ## Catalog (live)
 
 | id | kind | slug / URL |
 |----|------|------------|
 | kubelings | course | https://labs.iximiuz.com/courses/kubelings-dbd840c8 |
-| kb-wl-01 | challenge | https://labs.iximiuz.com/challenges/kb-wl-01-53e1821a |
-| kb-wl-02 | challenge | https://labs.iximiuz.com/challenges/kb-wl-02-6c8af3fb |
-| kb-wl-03 | challenge | https://labs.iximiuz.com/challenges/kb-wl-03-e73bdf82 |
-| kb-wl-04 | challenge | https://labs.iximiuz.com/challenges/kb-wl-04-a6bb83fd |
-| kb-wl-05 | challenge | https://labs.iximiuz.com/challenges/kb-wl-05-723804ee |
-| kb-wl-06 | challenge | https://labs.iximiuz.com/challenges/kb-wl-06-6c1df5e8 |
-| kb-wl-07 | challenge | https://labs.iximiuz.com/challenges/kb-wl-07-d4d9a2d1 |
-| kb-cka-path | skill-path | https://labs.iximiuz.com/skill-paths/kb-cka-path-85a1808a |
 
-All `kb-wl-*` were verified end-to-end on a `k8s-omni` playground
+All 7 Workloads scenarios were verified end-to-end on a `k8s-omni` playground
 (init builds the scenario, verify fails pre-fix, passes post-fix).
 
-## Workflow
+## Workflow (add a scenario to the Course)
 
 ```sh
 brew install labctl          # in dotfiles Brewfile
 labctl auth login            # one-time
 
-# new challenge:
+# 1. author the scenario (source of truth)
 tools/scaffold.sh kb-wl-08 "My title" Fix-It cka k8s-omni
-# edit challenges/kb-wl-08/{index.md,solution.md}
-tools/publish.sh kb-wl-08    # first run registers the suffixed slug + renames dir
+# edit challenges/kb-wl-08/{index.md,solution.md}; test locally:
+scripts/run-challenge-local.sh kb-wl-08 init && scripts/run-challenge-local.sh kb-wl-08 verify
 
-# re-publish after edits:
-tools/publish.sh kb-wl-08
-```
-
-Skill-paths and courses are published manually (publish.sh handles `challenge` only):
-
-```sh
-# skill-path
-labctl content create skill-path <name> --dir /tmp/empty   # once; note the slug
-labctl content push  skill-path <slug> --dir skill-paths/<slug> --force
-
-# course (kubelings) — fold a challenge in as a lesson, then push the whole course
-tools/challenge-to-lesson.sh challenges/<slug> courses/kubelings/module-2/8.foo foo foo
+# 2. fold it into the course as a lesson, then push the whole course
+tools/challenge-to-lesson.sh challenges/kb-wl-08 courses/kubelings/module-2/8.foo foo foo
 labctl content push course kubelings-dbd840c8 --dir courses/kubelings --force
 ```
+
+> Publishing a one-off standalone challenge is still possible with
+> `tools/publish.sh <id>` (registers a suffixed slug), but the Course is the
+> shipped product.
 
 ### Course structure
 

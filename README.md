@@ -13,23 +13,26 @@ duplicated scripts.
 ## Repo layout
 
 ```
-challenges/<slug>/            # one challenge each (authored unit)
+challenges/<id>/              # SOURCE OF TRUTH — one scenario each (authored unit)
   index.md                    #   frontmatter: playground + init/verify tasks; body: the task + hints
   solution.md                 #   reference solution
-courses/kubelings/            # the published Course, composed from the challenges
+courses/kubelings/            # the PUBLISHED Course, composed from the challenges
   index.md                    #   course meta
   module-N/0.index.md         #   module definition
   module-N/<n>.<lesson>/      #   lesson = challenge: index.md (tasks) + unit-1.md (prose + check)
-skill-paths/kb-cka-path/      # a track that lists published challenge slugs
 scripts/
   run-challenge-local.sh      # run any challenge on local kind
   validators/k8s.sh           # optional local reference helpers (challenges inline their checks)
 tools/
   scaffold.sh                 # new challenge from template
-  publish.sh                  # register + push a challenge (tracks slugs in .labctl/slugs.tsv)
-  challenge-to-lesson.sh      # convert a challenge into a course lesson
-.labctl/slugs.tsv             # local id -> remote slug map
+  challenge-to-lesson.sh      # fold a challenge into the course as a lesson
+  publish.sh                  # (optional) publish a single standalone challenge
+.labctl/slugs.tsv             # local id -> remote slug map (the course)
 ```
+
+The Course is the only thing published on iximiuz Labs. `challenges/` lives in the
+repo as the source of truth: it feeds both the local `kind` runner and the course
+lessons (regenerate with `challenge-to-lesson.sh`).
 
 ## Run a challenge locally
 
