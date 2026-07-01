@@ -187,11 +187,83 @@ func (m model) detail(l *course.Lesson) string {
 	b.WriteString(titleStyle.Render(l.Title) + "\n\n")
 	b.WriteString(textStyle.Render(l.Description) + "\n\n")
 	b.WriteString(dimStyle.Render("lesson:     ") + textStyle.Render(l.Name) + "\n")
-	b.WriteString(dimStyle.Render("playground: ") + textStyle.Render(l.Playground) + "\n")
 	b.WriteString(dimStyle.Render("status:     ") + markerStyle(state).Render(state.Marker()+" "+string(state)) + "\n\n")
-	b.WriteString(keybar([2]string{"↵", "play (cluster + init + shell)"}) + "\n")
+	b.WriteString(m.clusterBlock(l))
+	b.WriteString("\n" + keybar([2]string{"↵", "play (cluster + init + shell)"}) + "\n")
 	b.WriteString(keybar([2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}))
 	return b.String()
+}
+
+// clusterBlock describes the local cluster the scenario runs in + its lifecycle.
+func (m model) clusterBlock(l *course.Lesson) string {
+	st := m.status
+	var b strings.Builder
+	b.WriteString(headerStyle.Render("Cluster") + "\n")
+	if st.Up {
+		ver := st.Version
+		if ver == "" {
+			ver = "?"
+		}
+		b.WriteString(dimStyle.Render("  local:   ") + okStyle.Render("● "+st.Context) +
+			textStyle.Render(fmt.Sprintf(" · %d nodes · %s", st.Nodes, ver)) + "\n")
+	} else {
+		b.WriteString(dimStyle.Render("  local:   ") + dimStyle.Render("○ down") +
+			textStyle.Render(" — press ") + keyStyle.Render("u") + textStyle.Render("/") + keyStyle.Render("↵") +
+			textStyle.Render(" to create a 3-node kind cluster") + "\n")
+	}
+	b.WriteString(dimStyle.Render("  namespace:") + textStyle.Render(" kubelings") + "\n")
+	b.WriteString(dimStyle.Render("  mirrors:  ") + textStyle.Render(" iximiuz playground ") + textStyle.Render(l.Playground) + "\n")
+	b.WriteString(dimStyle.Render("  lifecycle:") + textStyle.Render(" created on ") + keyStyle.Render("u") +
+		textStyle.Render("/") + keyStyle.Render("↵") + textStyle.Render(", persists across lessons & quit, destroyed on ") +
+		keyStyle.Render("d") + "\n")
+	return b.String()
+}
+
+var linkStyle = lipgloss.NewStyle().Underline(true).Foreground(lipgloss.Color("39"))
+
+// splashView is the golings-style welcome screen shown on launch.
+func (m model) splashView() string {
+	st := m.status
+	cluster := dimStyle.Render("3-node kind (mirrors iximiuz k8s-omni), ns ") + textStyle.Render("kubelings")
+	if st.Up {
+		ver := st.Version
+		if ver == "" {
+			ver = "?"
+		}
+		cluster = okStyle.Render("● up") + textStyle.Render(fmt.Sprintf(" · %s · %d nodes · %s", st.Context, st.Nodes, ver))
+	}
+
+	var b strings.Builder
+	b.WriteString("☸  " + titleStyle.Render("kubelings") + "\n")
+	b.WriteString(dimStyle.Render("Learn Kubernetes the rustlings way — fix broken clusters until the check passes") + "\n\n")
+
+	row := func(k, v string) string { return dimStyle.Render(padRight(k, 12)) + v + "\n" }
+	b.WriteString(row("Repo", linkStyle.Render("https://github.com/madhank93/kubelings")))
+	b.WriteString(row("Site", linkStyle.Render("https://kubelings.madhan.app")))
+	b.WriteString(row("Maintainer", textStyle.Render("Madhan Kumaravelu  ")+dimStyle.Render("(@madhank93)")))
+	b.WriteString("\n")
+
+	b.WriteString(headerStyle.Render("How it works") + "\n")
+	bullet := func(s string) string { return dimStyle.Render("  • ") + textStyle.Render(s) + "\n" }
+	b.WriteString(dimStyle.Render("  • ") + textStyle.Render("Pick a scenario, press ") + keyStyle.Render("↵") +
+		textStyle.Render(" play — spins up a local ") + keyStyle.Render("kind") + textStyle.Render(" cluster,") + "\n")
+	b.WriteString(dimStyle.Render("    ") + textStyle.Render("builds the broken scenario, and drops you into a cluster shell") + "\n")
+	b.WriteString(bullet("Fix the cluster with kubectl — the task is shown in the shell"))
+	b.WriteString(dimStyle.Render("  • ") + textStyle.Render("Run ") + keyStyle.Render("verify") +
+		textStyle.Render(" — the check turns green   ") +
+		noneStyle.Render("◌")+dimStyle.Render(" not started · ")+startedStyle.Render("◐")+dimStyle.Render(" started · ")+solvedStyle.Render("✓")+dimStyle.Render(" solved") + "\n\n")
+
+	b.WriteString(headerStyle.Render("Cluster") + "  " + cluster + "\n")
+	b.WriteString(dimStyle.Render("        ") + textStyle.Render("created on ") + keyStyle.Render("u")+textStyle.Render("/")+keyStyle.Render("↵") +
+		textStyle.Render(" · persists across lessons & quit · destroyed only on ") + keyStyle.Render("d") + "\n\n")
+
+	b.WriteString(dimStyle.Render("Keys  ") + keybar(
+		[2]string{"↑↓/jk", "move"}, [2]string{"↵", "play"}, [2]string{"i", "init"}, [2]string{"v", "verify"},
+		[2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}, [2]string{"d", "down"}, [2]string{"q", "quit"}) + "\n\n")
+	b.WriteString(warnStyle.Render("press any key to start →"))
+
+	box := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("87")).Padding(1, 3).Render(b.String())
+	return lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, box)
 }
 
 func helpText() string {
@@ -206,6 +278,7 @@ func helpText() string {
 		row("t", "drop into a shell wired to the cluster") +
 		row("u / d", "cluster up / down") +
 		row("g", "refresh status & progress") +
+		row("a", "about / welcome screen") +
 		row("esc", "back to lesson detail") +
 		row("? / q", "toggle help / quit") + "\n" +
 		dimStyle.Render("markers: ") + noneStyle.Render("◌ not started") + dimStyle.Render(" · ") +

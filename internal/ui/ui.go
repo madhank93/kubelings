@@ -51,6 +51,7 @@ type model struct {
 	confirm bool // solution reveal prompt
 	w, h    int
 	ready   bool
+	splash  bool // show the welcome splash
 
 	// play / shell chaining + switch-scenario guard
 	pendingPlay   *course.Lesson // run init+shell after the cluster comes up
@@ -73,7 +74,7 @@ type execDoneMsg struct{}
 func New(root string) model {
 	sp := spinner.New()
 	sp.Spinner = spinner.Dot
-	m := model{root: root, spin: sp, mode: modeDetail}
+	m := model{root: root, spin: sp, mode: modeDetail, splash: true}
 	m.reload()
 	return m
 }
@@ -169,6 +170,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// Splash: any key dismisses (q/ctrl+c still quits).
+	if m.splash {
+		switch msg.String() {
+		case "q", "ctrl+c":
+			return m, tea.Quit
+		default:
+			m.splash = false
+			m.refreshView()
+			return m, nil
+		}
+	}
 	// Switch-scenario guard captures keys first.
 	if m.confirmSwitch {
 		switch msg.String() {
@@ -237,6 +249,8 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.mode = modeHelp
 		}
 		m.refreshView()
+	case "a":
+		m.splash = true
 	case "h":
 		m.mode = modeHint
 		m.refreshView()
@@ -371,6 +385,9 @@ func (m *model) layout() {
 func (m model) View() string {
 	if !m.ready {
 		return "loading…"
+	}
+	if m.splash {
+		return m.splashView()
 	}
 	var b strings.Builder
 	b.WriteString(m.headerBar() + "\n")

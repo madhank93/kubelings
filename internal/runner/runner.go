@@ -3,6 +3,7 @@
 package runner
 
 import (
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,10 +25,12 @@ func Capture(root string, args ...string) (string, bool) {
 	return string(out), err == nil
 }
 
-// ClusterStatus reports whether the kind cluster is up and its node count.
+// ClusterStatus reports whether the kind cluster is up, its node count, the
+// Kubernetes server version, and the context name.
 type ClusterStatus struct {
 	Up      bool
 	Nodes   int
+	Version string
 	Context string
 }
 
@@ -61,5 +64,24 @@ func Status() ClusterStatus {
 			}
 		}
 	}
+	st.Version = serverVersion(st.Context)
 	return st
+}
+
+// serverVersion returns the Kubernetes server gitVersion for the given context
+// (explicit --context so it never queries the host's current-context).
+func serverVersion(context string) string {
+	out, err := exec.Command("kubectl", "--context", context, "version", "-o", "json").Output()
+	if err != nil {
+		return ""
+	}
+	var v struct {
+		ServerVersion struct {
+			GitVersion string `json:"gitVersion"`
+		} `json:"serverVersion"`
+	}
+	if json.Unmarshal(out, &v) != nil {
+		return ""
+	}
+	return v.ServerVersion.GitVersion
 }
