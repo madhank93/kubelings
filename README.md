@@ -9,6 +9,7 @@ run on iximiuz Labs *and* locally on `kind` — single source of truth, no
 duplicated scripts.
 
 ▶ **Course:** https://labs.iximiuz.com/courses/kubelings-dbd840c8
+📖 **Docs:** https://kubelings.madhan.app (source in [`docs/`](docs/), Astro Starlight)
 
 ## Repo layout
 

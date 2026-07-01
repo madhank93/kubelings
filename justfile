@@ -30,3 +30,10 @@ run lesson verb="verify":
 # List lessons.
 list:
     scripts/run-challenge-local.sh list
+
+# Docs site (Astro Starlight, in docs/).
+docs-dev:
+    cd docs && npm install && npm run dev
+
+docs-build:
+    cd docs && npm install && npm run build

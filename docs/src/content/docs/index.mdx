@@ -1,0 +1,49 @@
+---
+title: Kubelings
+description: Learn Kubernetes the rustlings way — fix broken-on-purpose clusters until an automated check passes.
+template: splash
+hero:
+  tagline: Learn Kubernetes the rustlings way — fix broken-on-purpose clusters until an automated check passes.
+  actions:
+    - text: Get started
+      link: /getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/madhank93/kubelings
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What is Kubelings?
+
+**Kubelings** is hands-on Kubernetes practice in the spirit of *rustlings* and
+*golings*: a sequence of small, broken-on-purpose clusters, each with an automated
+check that only passes when you've genuinely fixed the problem.
+
+Every scenario runs on iximiuz Labs **and** locally on `kind` from a single source
+of truth — the [course](https://labs.iximiuz.com/courses/kubelings-dbd840c8).
+
+<CardGrid stagger>
+  <Card title="Interactive TUI" icon="laptop">
+    A terminal UI: scenarios grouped by module, progress markers, one-key
+    play (cluster → init → shell). See [The TUI](/guides/tui/).
+  </Card>
+  <Card title="Runs locally on kind" icon="rocket">
+    One engine drives both the platform and local `kind`. See
+    [Getting Started](/getting-started/).
+  </Card>
+  <Card title="Check-driven" icon="approve-check">
+    Each lesson ships init + verify tasks; the check turns green only when the
+    cluster is in the target state.
+  </Card>
+  <Card title="Hardened" icon="shield">
+    Lesson code is treated as untrusted and confined away from your host. See
+    [Security](/reference/security/).
+  </Card>
+</CardGrid>
+
+---
+
+Maintained by **Madhan Kumaravelu** ([@madhank93](https://github.com/madhank93)).
