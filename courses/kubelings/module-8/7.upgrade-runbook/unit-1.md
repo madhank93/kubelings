@@ -27,7 +27,11 @@ kubectl            vN±1
 Two operational consequences:
 
 - **Control plane first, always.** A kubelet newer than its API server is
-  unsupported territory.
+  unsupported territory. And skew rules bind *within* a node too: CircleCI's
+  [2023-03-14 outage](https://discuss.circleci.com/t/incident-report-2023-03-14-delays-starting-jobs/47555)
+  came from kubelet and kube-proxy at incompatible versions mid-upgrade —
+  the iptables ruleset format changed between them, every sync corrupted the
+  node's rules a little more, and recovery was a node-by-node restart.
 - **Never skip minors.** 1.28 → 1.30 means 1.28 → 1.29 → 1.30, control plane
   then nodes, each step. (The kubelet's N-3 allowance is what lets huge
   fleets upgrade nodes on a slower cadence than control planes.)
