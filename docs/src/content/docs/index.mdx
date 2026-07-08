@@ -4,6 +4,9 @@ description: Learn Kubernetes the rustlings way — fix broken-on-purpose cluste
 template: splash
 hero:
   tagline: Learn Kubernetes the rustlings way — fix broken-on-purpose clusters until an automated check passes.
+  image:
+    file: ../../assets/kubernetes.svg
+    alt: Kubernetes logo
   actions:
     - text: Get started
       link: /getting-started/
@@ -25,7 +28,12 @@ check that only passes when you've genuinely fixed the problem.
 Every scenario runs on iximiuz Labs **and** locally on `kind` from a single source
 of truth — the [course](https://labs.iximiuz.com/courses/kubelings-dbd840c8).
 
-<CardGrid stagger>
+The [nine-module curriculum](/guides/curriculum/) runs from first pod to
+control-plane internals, with real cited production incidents — the
+[Incident Library](/reference/incident-library/) — reproduced as runnable lessons
+along the way.
+
+<CardGrid>
   <Card title="Interactive TUI" icon="laptop">
     A terminal UI: scenarios grouped by module, progress markers, one-key
     play (cluster → init → shell). See [The TUI](/guides/tui/).
@@ -38,7 +46,7 @@ of truth — the [course](https://labs.iximiuz.com/courses/kubelings-dbd840c8).
     Each lesson ships init + verify tasks; the check turns green only when the
     cluster is in the target state.
   </Card>
-  <Card title="Hardened" icon="shield">
+  <Card title="Hardened" icon="approve-check-circle">
     Lesson code is treated as untrusted and confined away from your host. See
     [Security](/reference/security/).
   </Card>

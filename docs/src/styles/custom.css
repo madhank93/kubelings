@@ -1,0 +1,51 @@
+/* Kubelings docs — layout tuning over Starlight defaults.
+   Goal: narrower side nav, wider/centred content, and a splash card grid
+   that fills the available width instead of hugging the left edge. */
+
+:root {
+  /* Left sidebar: trimmer than the 18.75rem default. */
+  --sl-sidebar-width: 15rem;
+  /* Doc content column: a touch wider than the 45rem default. */
+  --sl-content-width: 50rem;
+}
+
+/* Header: keep the K8s logo mark sized to the wordmark. */
+.site-title img {
+  height: 1.6rem;
+  width: auto;
+}
+
+/* --- Splash / landing page --------------------------------------------- */
+
+/* The splash hero and body sit in `.sl-container`, capped narrow and
+   left-aligned on wide screens. Give it a generous, centred max width. */
+[data-has-hero] .sl-container {
+  max-width: 60rem;
+  margin-inline: auto;
+}
+
+/* Let the card grid breathe within the wider container. */
+[data-has-hero] .card-grid {
+  gap: 1.25rem;
+}
+
+/* Cards: consistent height + subtle hover lift for polish. */
+[data-has-hero] .card {
+  height: 100%;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+[data-has-hero] .card:hover {
+  border-color: var(--sl-color-accent);
+  transform: translateY(-2px);
+}
+
+/* --- Doc pages --------------------------------------------------------- */
+
+/* On very wide viewports Starlight leaves a large empty right gutter once
+   the right-hand TOC is absent; centre the content so it isn't stranded. */
+@media (min-width: 72rem) {
+  .main-pane {
+    margin-inline: auto;
+  }
+}
