@@ -32,5 +32,10 @@ that only passes when you've genuinely fixed the problem.
 Every lesson runs in its own live, multi-node cluster — no setup, no cleanup.
 Read the situation, fix the cluster with `kubectl`, and watch the check go green.
 
-Work the modules top to bottom. You can also run every scenario locally on `kind`
-— see the project repo for the local runner.
+Work the modules top to bottom: Foundations → Workloads → Config & Storage →
+Networking → Scheduling → Security → **Internals** → Observability & SRE →
+**War Stories** — capstone replays of real, cited production postmortems (the
+Zalando ndots DNS outage is already a runnable lesson in Networking).
+
+You can also run every scenario locally on `kind` — see the project repo for the
+local runner and the full incident library.
