@@ -24,6 +24,8 @@ type Lesson struct {
 	Playground  string
 	Dir         string // absolute lesson dir
 	HasTasks    bool
+	Type        string // "lab" | "replay" (real cited incident) | "drill" (synthetic pattern) | "read" (no tasks)
+	Source      string // citation URL for replay lessons (frontmatter `source:`)
 	Task        string // unit prose up to the first <details>/::simple-task
 	Hint        string
 	Solution    string
@@ -41,6 +43,7 @@ type frontmatter struct {
 	Title       string                 `yaml:"title"`
 	Description string                 `yaml:"description"`
 	Name        string                 `yaml:"name"`
+	Source      string                 `yaml:"source"`
 	Playground  struct{ Name string }  `yaml:"playground"`
 	Tasks       map[string]interface{} `yaml:"tasks"`
 }
@@ -90,7 +93,9 @@ func Discover(root string) ([]Module, error) {
 				Module: e.Name(), ModuleTitle: m.Title, Order: order,
 				Name: mm[2], Title: fm.Title, Description: strings.TrimSpace(fm.Description),
 				Playground: fm.Playground.Name, Dir: ldir, HasTasks: len(fm.Tasks) > 0,
+				Source: strings.TrimSpace(fm.Source),
 			}
+			ls.Type = lessonType(ls)
 			unit := filepath.Join(ldir, "unit-1.md")
 			ls.Task = extractTask(unit)
 			ls.Hint = extractDetails(unit, "hint")
@@ -102,6 +107,25 @@ func Discover(root string) ([]Module, error) {
 	}
 	sort.Slice(mods, func(i, j int) bool { return mods[i].Order < mods[j].Order })
 	return mods, nil
+}
+
+// lessonType classifies a lesson for the UI:
+//
+//	read   — guided reading, no runnable tasks
+//	replay — replay of a real, cited production incident (incident-* slug)
+//	drill  — synthetic composite failure pattern (pattern-* slug)
+//	lab    — standard hands-on concept lesson
+func lessonType(l Lesson) string {
+	switch {
+	case !l.HasTasks:
+		return "read"
+	case strings.HasPrefix(l.Name, "incident-"):
+		return "replay"
+	case strings.HasPrefix(l.Name, "pattern-"):
+		return "drill"
+	default:
+		return "lab"
+	}
 }
 
 // readFrontmatter parses the YAML block between the first two "---" lines.

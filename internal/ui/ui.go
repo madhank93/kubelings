@@ -40,6 +40,7 @@ type model struct {
 	rows    []row
 	sel     []int // indices into rows that are lessons
 	cursor  int
+	listOff int // first visible row in the left list (scroll offset)
 	prog    map[string]progress.State
 	status  runner.ClusterStatus
 	issues  []preflight.Issue
@@ -102,6 +103,30 @@ func (m *model) reload() {
 	m.prog = progress.Load(m.root)
 	m.status = runner.Status()
 	m.issues = preflight.Check()
+	m.clampListOff()
+}
+
+// clampListOff scrolls the left list just enough to keep the cursor visible,
+// pulling the module header along when the cursor sits right under it.
+func (m *model) clampListOff() {
+	bodyH := m.vp.Height
+	if bodyH <= 0 || len(m.sel) == 0 {
+		m.listOff = 0
+		return
+	}
+	cur := m.sel[m.cursor]
+	top := cur
+	if top > 0 && m.rows[top-1].header != "" {
+		top--
+	}
+	if top < m.listOff {
+		m.listOff = top
+	}
+	if cur >= m.listOff+bodyH {
+		m.listOff = cur - bodyH + 1
+	}
+	m.listOff = min(m.listOff, max(0, len(m.rows)-bodyH))
+	m.listOff = max(m.listOff, 0)
 }
 
 func (m model) current() *course.Lesson {
@@ -228,12 +253,14 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.cursor > 0 {
 			m.cursor--
 		}
+		m.clampListOff()
 		m.mode = modeDetail
 		m.refreshView()
 	case "down", "j":
 		if m.cursor < len(m.sel)-1 {
 			m.cursor++
 		}
+		m.clampListOff()
 		m.mode = modeDetail
 		m.refreshView()
 	case "esc":
@@ -260,7 +287,17 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	case "enter", " ": // PLAY: cluster up (if needed) -> init -> shell
 		l := m.current()
-		if l == nil || !l.HasTasks {
+		if l == nil {
+			return m, nil
+		}
+		if !l.HasTasks { // reading lesson: enter toggles read/unread
+			s := progress.Solved
+			if progress.Get(m.prog, l.Name) == progress.Solved {
+				s = progress.None
+			}
+			_ = progress.Set(m.root, l.Name, s)
+			m.prog = progress.Load(m.root)
+			m.refreshView()
 			return m, nil
 		}
 		if !m.status.Up {
@@ -380,6 +417,7 @@ func (m *model) layout() {
 		rightW = 10
 	}
 	m.vp = viewport.New(rightW, bodyH)
+	m.clampListOff()
 }
 
 func (m model) View() string {

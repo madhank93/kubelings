@@ -27,7 +27,40 @@ var (
 	solvedStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("42"))
 	startedStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("214"))
 	noneStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
+
+	replayStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("203")) // real cited incident
+	drillStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("140")) // synthetic pattern
+	readStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("110")) // guided reading
 )
+
+// badgeText is the plain identifier shown after a lesson name; "" for plain labs.
+func badgeText(t string) string {
+	switch t {
+	case "replay":
+		return "⟲replay"
+	case "drill":
+		return "◇drill"
+	case "read":
+		return "¶read"
+	}
+	return ""
+}
+
+// badge renders the colored identifier for a lesson type ("" for labs).
+func badge(t string) string {
+	b := badgeText(t)
+	if b == "" {
+		return ""
+	}
+	switch t {
+	case "replay":
+		return replayStyle.Render(b)
+	case "drill":
+		return drillStyle.Render(b)
+	default:
+		return readStyle.Render(b)
+	}
+}
 
 // keybar renders "key label · key label" with colored keys.
 func keybar(pairs ...[2]string) string {
@@ -98,7 +131,8 @@ func (m model) listView() string {
 	inner := lw - 4 // border + padding
 	bodyH := m.vp.Height
 	var lines []string
-	for i, r := range m.rows {
+	for i := m.listOff; i < len(m.rows); i++ {
+		r := m.rows[i]
 		if len(lines) >= bodyH {
 			break
 		}
@@ -109,15 +143,38 @@ func (m model) listView() string {
 		l := r.lesson
 		state := progress.Get(m.prog, l.Name)
 		mk := markerStyle(state).Render(state.Marker())
-		name := truncate(l.Name, inner-2)
+		bt := badgeText(l.Type)
+		nameW := inner - 2
+		if bt != "" {
+			nameW -= len([]rune(bt)) + 1
+		}
+		name := truncate(l.Name, nameW)
 		if m.isCursor(i) {
-			lines = append(lines, cursorStyle.Render(padRight(" "+mk+" "+name, inner)))
+			// plain badge inside the cursor bar so the highlight stays unbroken
+			row := " " + mk + " " + name
+			if bt != "" {
+				row += " " + bt
+			}
+			lines = append(lines, cursorStyle.Render(padRight(row, inner)))
 		} else {
-			lines = append(lines, " "+mk+" "+textStyle.Render(name))
+			row := " " + mk + " " + textStyle.Render(name)
+			if bt != "" {
+				row += " " + badge(l.Type)
+			}
+			lines = append(lines, row)
 		}
 	}
 	for len(lines) < bodyH {
 		lines = append(lines, "")
+	}
+	// overflow markers so it's obvious the list scrolls (skipped when the row
+	// already fills the pane, e.g. the cursor bar)
+	if m.listOff > 0 && lipgloss.Width(lines[0]) <= inner-2 {
+		lines[0] = padRight(lines[0], inner-2) + dimStyle.Render("↑")
+	}
+	last := len(lines) - 1
+	if m.listOff+bodyH < len(m.rows) && lipgloss.Width(lines[last]) <= inner-2 {
+		lines[last] = padRight(lines[last], inner-2) + dimStyle.Render("↓")
 	}
 	content := strings.Join(lines, "\n")
 	return paneStyle.Width(lw - 2).Height(bodyH).Render(content)
@@ -187,10 +244,28 @@ func (m model) detail(l *course.Lesson) string {
 	b.WriteString(titleStyle.Render(l.Title) + "\n\n")
 	b.WriteString(textStyle.Render(l.Description) + "\n\n")
 	b.WriteString(dimStyle.Render("lesson:     ") + textStyle.Render(l.Name) + "\n")
-	b.WriteString(dimStyle.Render("status:     ") + markerStyle(state).Render(state.Marker()+" "+string(state)) + "\n\n")
+	b.WriteString(dimStyle.Render("status:     ") + markerStyle(state).Render(state.Marker()+" "+string(state)) + "\n")
+	switch l.Type {
+	case "replay":
+		b.WriteString(dimStyle.Render("type:       ") + replayStyle.Render("⟲ replay — real production incident (cited)") + "\n")
+	case "drill":
+		b.WriteString(dimStyle.Render("type:       ") + drillStyle.Render("◇ drill — synthetic failure pattern") + "\n")
+	case "read":
+		b.WriteString(dimStyle.Render("type:       ") + readStyle.Render("¶ read — guided reading, no tasks") + "\n")
+	default:
+		b.WriteString(dimStyle.Render("type:       ") + textStyle.Render("lab — hands-on concept lesson") + "\n")
+	}
+	if l.Source != "" {
+		b.WriteString(dimStyle.Render("source:     ") + readStyle.Render(l.Source) + "\n")
+	}
+	b.WriteString("\n")
 	b.WriteString(m.clusterBlock(l))
-	b.WriteString("\n" + keybar([2]string{"↵", "play (cluster + init + shell)"}) + "\n")
-	b.WriteString(keybar([2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}))
+	if l.HasTasks {
+		b.WriteString("\n" + keybar([2]string{"↵", "play (cluster + init + shell)"}) + "\n")
+		b.WriteString(keybar([2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}))
+	} else {
+		b.WriteString("\n" + keybar([2]string{"↵", "mark read / unread"}, [2]string{"t", "shell (explore the cluster)"}))
+	}
 	return b.String()
 }
 
@@ -282,7 +357,11 @@ func helpText() string {
 		row("esc", "back to lesson detail") +
 		row("? / q", "toggle help / quit") + "\n" +
 		dimStyle.Render("markers: ") + noneStyle.Render("◌ not started") + dimStyle.Render(" · ") +
-		startedStyle.Render("◐ started") + dimStyle.Render(" · ") + solvedStyle.Render("✓ solved") + "\n\n" +
+		startedStyle.Render("◐ started") + dimStyle.Render(" · ") + solvedStyle.Render("✓ solved") + "\n" +
+		dimStyle.Render("types:   ") + textStyle.Render("lab (unmarked) hands-on") + dimStyle.Render(" · ") +
+		replayStyle.Render("⟲replay real cited incident") + dimStyle.Render(" · ") +
+		drillStyle.Render("◇drill synthetic pattern") + dimStyle.Render(" · ") +
+		readStyle.Render("¶read guided reading") + "\n\n" +
 		dimStyle.Render("in the shell: ") + keyStyle.Render("task") + dimStyle.Render(" · ") +
 		keyStyle.Render("hint") + dimStyle.Render(" · ") + keyStyle.Render("verify") + dimStyle.Render(" · ") +
 		keyStyle.Render("solution") + dimStyle.Render(" · ") + keyStyle.Render("k=kubectl")
