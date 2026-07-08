@@ -271,7 +271,7 @@ func (m model) detail(l *course.Lesson) string {
 		b.WriteString(dimStyle.Render("  cited source: ") + linkStyle.Render(l.Source) + "\n")
 	}
 	b.WriteString(dimStyle.Render("  full lesson:  ") + linkStyle.Render("https://labs.iximiuz.com/courses/kubelings-dbd840c8") + "\n")
-	b.WriteString("\n" + keybar([2]string{"↵", "mark read / unread"}, [2]string{"t", "shell (explore)"}))
+	b.WriteString("\n" + keybar([2]string{"↵", "mark read / unread"}))
 	return b.String()
 }
 
