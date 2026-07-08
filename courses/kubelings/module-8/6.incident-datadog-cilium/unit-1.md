@@ -96,5 +96,17 @@ monitors.* (Zalando's monitoring-needs-DNS trap, at company scale.)
 - **Run monitoring out-of-band.** Status pages, paging, and the dashboards you
   need *during* the incident live on infrastructure that fails separately.
 
+## History rhymed
+
+Two years later it happened again to someone else:
+[Heroku's June 10, 2025 outage](https://www.heroku.com/blog/summary-of-june-10-outage/)
+— an unattended system update made unplanned changes across production and
+flushed network routes fleet-wide, ~24 hours of platform downtime. Their
+corrective actions read like this lesson's checklist: immutability controls
+so automated processes can't mutate production, disabling the auto-upgrade
+channel, auditing base images. Postmortems from other companies are only
+valuable if they change *your* fleet — this failure mode has now taken down
+two major platforms, publicly, with the same root shape.
+
 *No check — study, then advance. Module 9 shows what these cascades look like
 from inside the incident channel.*

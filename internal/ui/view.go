@@ -259,12 +259,18 @@ func (m model) detail(l *course.Lesson) string {
 		b.WriteString(dimStyle.Render("source:     ") + readStyle.Render(l.Source) + "\n")
 	}
 	b.WriteString("\n")
-	b.WriteString(m.clusterBlock(l))
 	if l.HasTasks {
+		b.WriteString(m.clusterBlock(l))
 		b.WriteString("\n" + keybar([2]string{"↵", "play (cluster + init + shell)"}) + "\n")
 		b.WriteString(keybar([2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}))
-	} else {
-		b.WriteString("\n" + keybar([2]string{"↵", "mark read / unread"}, [2]string{"t", "shell (explore the cluster)"}))
+		return b.String()
+	}
+	// Reading lesson: the unit body (with its source links) IS the content —
+	// render it inline so the TUI reader never dead-ends on a description card.
+	b.WriteString(keybar([2]string{"↵", "mark read / unread"}, [2]string{"PgUp/PgDn", "scroll"}, [2]string{"t", "shell (explore)"}) + "\n")
+	if l.Task != "" {
+		b.WriteString("\n" + sepStyle.Render(strings.Repeat("─", 40)) + "\n\n")
+		b.WriteString(textStyle.Render(l.Task) + "\n")
 	}
 	return b.String()
 }

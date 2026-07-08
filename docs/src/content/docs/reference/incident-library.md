@@ -14,7 +14,7 @@ Two kinds of entries, honestly labeled:
 - **`[PATTERN]`** — a synthetic composite of a failure mode seen across many
   clusters. No company attached, because attaching one would be fiction.
 
-All source links below were reachability-checked on 2026-07-07. (Medium links may
+All source links below were reachability-checked on 2026-07-08. (Medium links may
 show a bot-check to crawlers but open fine in a browser.)
 
 ## `[REAL]` incidents
@@ -62,6 +62,8 @@ show a bot-check to crawlers but open fine in a browser.)
 | FREE NOW | New K8s workers unable to join cluster | node bootstrap, spot instances | M8 | [postmortem PDF](https://github.com/freenowtech/postmortems/blob/master/2019-09-19%20-%20New%20K8s%20workers%20unable%20to%20join%20cluster.pdf) |
 | Tinder | Move to K8s at scale — 250k rps DNS, conntrack races, ARP cache outage (Jan 2019) | DNS at scale, conntrack, node kernel limits | M4 · [case study](/incidents/tinder-scale-migration/) | [blog](https://medium.com/tinder/tinders-move-to-kubernetes-cda2a6372f44) |
 | CircleCI | 2023-03-14 — kubelet/kube-proxy version skew corrupted iptables mid-upgrade; 7h+ outage, two follow-on incidents | version skew, kube-proxy sync, upgrade staging | M8 · [case study](/incidents/circleci-version-skew/) | [incident report](https://discuss.circleci.com/t/incident-report-2023-03-14-delays-starting-jobs/47555) |
+| Heroku | 2025-06-10 — unattended system update flushed network routes fleet-wide; ~24h platform outage (Datadog's 2023 failure mode, recurring) | immutable infra, auto-updates, host-OS × CNI | M8 · see `incident-datadog-cilium` | [official summary](https://www.heroku.com/blog/summary-of-june-10-outage/) · [status](https://status.heroku.com/incidents/2822) |
+| Neon | 2025-05 — IP exhaustion in K8s subnets (AWS CNI) + control-plane overload; repeat incident from a remediation regression | IP planning, CNI limits, change-induced repeats | M4 | [postmortem](https://neon.com/blog/postmortem-delayed-start-compute-operations) |
 | Chick-fil-A | Bare-metal k3s in every restaurant — 2,800+ edge clusters, field-failure lessons | edge k8s, fleet ops, node observability gaps | M8 | [blog](https://medium.com/chick-fil-atech/bare-metal-k8s-clustering-at-chick-fil-a-scale-929a0e6d29e5) · [evolution](https://medium.com/chick-fil-atech/how-our-edge-kubernetes-platform-has-evolved-12609006bc92) |
 
 *More cited incidents are added as each source is verified — the upstream index is
