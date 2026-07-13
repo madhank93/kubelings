@@ -19,9 +19,9 @@ lessons carry a verified `source:` URL (see
 - [x] 8.liveness-vs-readiness · [x] 9.startup-probe · [x] 10.init-containers
 - [x] 11.pdb-blocks-drain · [x] 12.qos-classes · [x] 13.blue-green-canary
 - [x] 14.incident-cpu-throttling [REAL Omio/Buffer]
-- [ ] 15.ephemeral-containers · [ ] 16.multi-container-patterns
-- [ ] 17.pattern-readiness-flap [DRILL] · [ ] 18.pattern-zombie-cronjobs [DRILL]
-- [ ] 19.pattern-rolling-update-deadlock [DRILL]
+- [x] 15.ephemeral-containers · [x] 16.multi-container-patterns
+- [x] 17.pattern-readiness-flap [DRILL] · [x] 18.pattern-zombie-cronjobs [DRILL]
+- [x] 19.pattern-rolling-update-deadlock [DRILL]
 - [ ] 20.vpa (recommender-only manifests) · [ ] 21.keda-autoscaling (cpu/cron
       trigger — no Prometheus dependency)
 

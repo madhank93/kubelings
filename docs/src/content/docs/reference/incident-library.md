@@ -76,11 +76,11 @@ show a bot-check to crawlers but open fine in a browser.)
 |---|---|---|---|
 | PVC stuck `Terminating` | finalizers, storage protection | M3/M7 | [read](/incidents/pattern-pvc-terminating/) |
 | Noisy-neighbor CPU throttling | requests/limits, QoS | M2/M5 | coming soon |
-| Readiness probe flaps under load | probes, endpoint churn | M2 · drill `pattern-readiness-flap` | coming soon |
-| Zombie CronJobs pile up | Job history limits, TTL | M2 · drill `pattern-zombie-cronjobs` | coming soon |
+| Readiness probe flaps under load | probes, endpoint churn | M2 · drill `pattern-readiness-flap` | [read](/incidents/pattern-readiness-flap/) |
+| Zombie CronJobs pile up | Job history limits, TTL | M2 · drill `pattern-zombie-cronjobs` | [read](/incidents/pattern-zombie-cronjobs/) |
 | Ghost endpoints after scale-down | graceful shutdown | M3 · drill `pattern-ghost-endpoints` | coming soon |
 | Secret rotated, pods never noticed | mounts vs env, reload | M3 · drill `pattern-secret-not-reloaded` | coming soon |
-| Rolling update deadlock | maxUnavailable=0 + maxSurge=0 | M2 · drill `pattern-rolling-update-deadlock` | coming soon |
+| Rolling update deadlock | maxUnavailable=0, no schedulable headroom | M2 · drill `pattern-rolling-update-deadlock` | [read](/incidents/pattern-rolling-update-deadlock/) |
 | Namespace stuck `Terminating` | finalizer removal, CRD lifecycle | M3 · drill `pattern-namespace-terminating` | coming soon |
 | PDB blocks all evictions | PDB misconfiguration, maintenance headroom | M2 · runnable `pdb-blocks-drain` | coming soon |
 | HPA thrashing from conflicting signals | HPA stabilization, custom metrics | M2 | coming soon |
