@@ -22,7 +22,7 @@ lessons carry a verified `source:` URL (see
 - [x] 15.ephemeral-containers · [x] 16.multi-container-patterns
 - [x] 17.pattern-readiness-flap [DRILL] · [x] 18.pattern-zombie-cronjobs [DRILL]
 - [x] 19.pattern-rolling-update-deadlock [DRILL]
-- [ ] 20.vpa (recommender-only manifests) · [ ] 21.keda-autoscaling (cpu/cron
+- [x] 20.vpa (recommender-only manifests) · [x] 21.keda-autoscaling (cpu/cron
       trigger — no Prometheus dependency)
 
 ## Module 3 — Config & Storage
