@@ -13,6 +13,13 @@ Progress top to bottom; later modules assume the earlier ones.
 
 ## The ten modules
 
+✅ means the lessons are **live on both platforms**: every lesson runs on
+[iximiuz Labs](https://labs.iximiuz.com/courses/kubelings-dbd840c8) *and*
+locally on `kind`, from one source of truth — there are no platform-exclusive
+modules. (A handful of runbook *readings* cover host-level topics you practice
+on an iximiuz VM or a throwaway kind node; they're marked `read` in the
+[catalog](/guides/lessons/).)
+
 | # | Module | You learn | Status |
 |---|--------|-----------|--------|
 | 1 | **Foundations** | pods, Deployments, Services, namespaces, labels & selectors, the triage loop (`describe` → `logs` → fix → watch) | ✅ 7 lessons live |
