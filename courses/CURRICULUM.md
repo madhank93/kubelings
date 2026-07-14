@@ -101,12 +101,12 @@ lessons carry a verified `source:` URL (see
 - [x] 7.final-boss [multi-fault, no hints] (renumbered from 5. on 2026-07-13)
 
 ## Module 10 — Platform Engineering (NEW)
-- [ ] 1.gitops-argocd (pinned install.yaml; verify via kubectl jsonpath — no
+- [x] 1.gitops-argocd (pinned install.yaml; verify via kubectl jsonpath — no
       argocd CLI assumption)
-- [ ] 2.gitops-argocd-appofapps · [ ] 3.gitops-flux2 (pinned install.yaml,
+- [x] 2.gitops-argocd-appofapps · [x] 3.gitops-flux2 (pinned install.yaml,
       not `flux bootstrap`)
-- [ ] 4.multi-tenancy-capsule · [ ] 5.cluster-api-intro [reading]
-- [ ] 6.crossplane-compositions
+- [x] 4.multi-tenancy-capsule · [x] 5.cluster-api-intro [reading]
+- [x] 6.crossplane-compositions
 
 ## Incident library (docs)
 - [x] Index seeded with 40+ verified [REAL] rows + 14 [PATTERN] stubs; runnable/reading
@@ -123,15 +123,21 @@ lessons carry a verified `source:` URL (see
 - Host-level exam topics (kubeadm upgrade exec, etcdctl restore exec, AppArmor
   profiles, Falco install) are **readings** with full runbooks — lesson scripts
   are kubectl-only by design (see the security confinement commit).
-- NetworkPolicy labs verify objects; kind's default kindnet does NOT enforce
-  them (called out in the units) — enforcement testing happens on the iximiuz
-  playground CNI.
+- NetworkPolicy enforcement on local kind: current kind/kindnet DOES enforce
+  policies (verified 2026-07-14 — Argo CD's shipped netpols wedge its own
+  controller under kindnet; the gitops-argocd init removes them as a lab
+  simplification). Older units saying "kindnet does not enforce" predate this;
+  treat enforcement behavior as CNI-specific either way.
 - Out of scope on purpose: image *building* (CKAD) — no container tooling in
   the lesson shell. (helm hands-on was here too — resolved 2026-07-13: lessons
   that need helm/trivy/cosign install a pinned binary in init_scenario.)
-- Third-party installs (ArgoCD, Kyverno, Gatekeeper, KEDA, VPA, Flux, Capsule,
-  Crossplane, prometheus-operator) use pinned official YAML manifests, never
-  `helm install`.
+- Third-party installs (ArgoCD, Kyverno, Gatekeeper, KEDA, VPA, Flux,
+  prometheus-operator) use pinned official YAML manifests, never `helm install`.
+  Exception (2026-07-14): Capsule and Crossplane publish charts only — no
+  static manifests, and Capsule's chart carries CRD/hook Jobs that break under
+  `helm template`. Their inits install the pinned helm binary and
+  `helm upgrade --install` a pinned chart version; the release state is
+  init-owned plumbing, never learner-facing.
 - Dedup record (2026-07-13, gap-analysis pass — do NOT re-add): standalone
   CircleCI + Heroku reading lessons (already covered via upgrade-runbook /
   incident-datadog-cilium + case studies); pattern-pdb-eviction-block (dup of
