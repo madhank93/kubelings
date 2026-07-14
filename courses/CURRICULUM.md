@@ -41,10 +41,10 @@ lessons carry a verified `source:` URL (see
 - [x] 6.incident-graceful-shutdown [REAL Ravelin] · [x] 7.ingress-wiring
 - [x] 8.gateway-api (init fetches pinned CRDs — needs internet from cplane-01)
 - [x] 9.kube-proxy-dataplane [reading: iptables/IPVS/nftables mechanics]
-- [ ] 10.cni-basics [reading: conflist anatomy, kubelet↔CNI, crictl triage —
+- [x] 10.cni-basics [reading: conflist anatomy, kubelet↔CNI, crictl triage —
       also covers the old M7 "CNI hands-on" backlog; NetworkPolicy debugging
       stays in 2.networkpolicy-blackhole]
-- [ ] 11.kubeconfig-contexts
+- [x] 11.kubeconfig-contexts
 
 ## Module 5 — Scheduling & Placement
 - [x] 1.incident-same-node [REAL Moonlight] · [x] 2.taints-tolerations
