@@ -42,6 +42,9 @@ Existing Secrets stay plaintext until rewritten:
 `kubectl get secrets -A -o json | kubectl replace -f -` — the documented
 migration step people forget, leaving half-encrypted stores.
 
+*Deep dive → lesson 6.16 `encryption-at-rest`: the full runbook, etcdctl
+proof, and lockout-free key rotation.*
+
 ## 2 · Audit logging
 
 **What it stops:** flying blind after a breach. The cryptominer incident
@@ -56,6 +59,9 @@ log drowns itself. Ship them off-node (remember Datadog, M8: the observer
 must not share fate with the observed).
 
 **On-call reflex it enables:** `who deleted that namespace?` becomes a grep.
+
+*Deep dive → lesson 6.17 `audit-policy`: a production-shaped policy file,
+the apiserver wiring, and the greps that answer incident questions.*
 
 ## 3 · API server flags (the kube-bench section-1 canon)
 
@@ -107,6 +113,9 @@ connection to a mining pool" (exactly the 6.2 detection story).
 because syscalls are node-level. Rules are the product: start from the stock
 ruleset, tune the noisy 10%, and *route alerts to a human within minutes* —
 a runtime alert nobody reads is a postmortem footnote.
+
+*Deep dive → lesson 6.18 `falco-runtime-detection`: architecture, the rules
+language, and the shell-in-container rule end to end.*
 
 ## 6 · Sandboxed runtimes
 

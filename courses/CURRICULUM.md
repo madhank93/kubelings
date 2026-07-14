@@ -57,15 +57,15 @@ lessons carry a verified `source:` URL (see
 - [x] 5.serviceaccount-tokens · [x] 6.container-hardening · [x] 7.cis-kube-bench
 - [x] 8.control-plane-hardening [reading: encryption at rest, audit, supply chain, runtime]
 - [x] 9.egress-lockdown · [x] 10.image-digests
-- [ ] 11.opa-gatekeeper · [ ] 12.kyverno-policies
-- [ ] 13.image-scanning-pipeline (init installs pinned trivy)
-- [ ] 14.sbom-cosign (init installs pinned cosign; client-side verify lab)
-- [ ] 15.apparmor-seccomp (hands-on seccomp RuntimeDefault; AppArmor as
+- [x] 11.opa-gatekeeper · [x] 12.kyverno-policies
+- [x] 13.image-scanning-pipeline (init installs pinned trivy)
+- [x] 14.sbom-cosign (init installs pinned cosign; client-side verify lab)
+- [x] 15.apparmor-seccomp (hands-on seccomp RuntimeDefault; AppArmor as
       reading section — host-level per confinement policy)
-- [ ] 16.encryption-at-rest [reading: runbook — deep dive from
+- [x] 16.encryption-at-rest [reading: runbook — deep dive from
       8.control-plane-hardening §1]
-- [ ] 17.audit-policy [reading: runbook — deep dive from §2]
-- [ ] 18.falco-runtime-detection [reading: runbook — deep dive from §5]
+- [x] 17.audit-policy [reading: runbook — deep dive from §2]
+- [x] 18.falco-runtime-detection [reading: runbook — deep dive from §5]
 
 ## Module 7 — Internals
 - [x] 1.reconcile-loop · [x] 2.scheduler-nodename · [x] 3.etcd-truth
