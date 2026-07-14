@@ -1,0 +1,47 @@
+{
+  "name": "kubelings",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  // Docker-in-Docker so `kind` clusters live inside the container — no coupling
+  // to the host Docker, and it works the same in GitHub Codespaces and locally.
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "installDockerBuildx": true
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+
+  // mise installs the pinned toolchain (go, kubectl, kind, yq) from mise.toml —
+  // the same versions local contributors get. Put its shims + bin on PATH so
+  // `just`, `go`, `kubectl`, `kind` resolve in every shell and task.
+  "remoteEnv": {
+    "PATH": "/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:${containerEnv:PATH}"
+  },
+
+  // kind needs a few kernel knobs; raise inotify limits for busy clusters.
+  "runArgs": ["--init"],
+
+  "onCreateCommand": "bash .devcontainer/setup.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "redhat.vscode-yaml",
+        "astro-build.astro-vscode",
+        "nefrob.vscode-just-syntax",
+        "timonwong.shellcheck"
+      ],
+      "settings": {
+        "go.toolsManagement.checkForUpdates": "off",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
+}

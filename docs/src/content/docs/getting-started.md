@@ -37,6 +37,20 @@ mise install    # fetch the pinned go / kubectl / kind / yq
 mise run setup  # install + go build + go test
 ```
 
+### Dev container / Codespaces
+
+Prefer zero local toolchain setup? The repo ships a
+[`.devcontainer/`](https://github.com/madhank93/kubelings/tree/main/.devcontainer)
+with Docker-in-Docker (for `kind`), the pinned `mise` toolchain, `just`, and Node
+for the docs. Open it either way:
+
+- **VS Code** — install the *Dev Containers* extension, then **Reopen in
+  Container**.
+- **GitHub Codespaces** — **Code → Codespaces → Create codespace** on the repo.
+
+First launch provisions the toolchain automatically; then `just tui`, `just up`,
+or `just docs-dev` all work inside the container — clusters and all.
+
 ### Clone
 
 ```sh
