@@ -73,11 +73,11 @@ lessons carry a verified `source:` URL (see
 - [x] 5.crd-operators · [x] 6.etcd-backup-restore [reading: snapshot/restore runbook]
 - [x] 7.admission-mutations · [x] 8.watch-informers [reading, incl. APF]
 - [x] 9.build-an-operator [reading: controller walkthrough capstone]
-- [ ] 10.kubeadm-bootstrap [reading: init→join runbook — cannot run inside
+- [x] 10.kubeadm-bootstrap [reading: init→join runbook — cannot run inside
       k8s-omni; practice on iximiuz multi-VM playground]
-- [ ] 11.ha-control-plane [reading: stacked vs external etcd, kind 3-CP
+- [x] 11.ha-control-plane [reading: stacked vs external etcd, kind 3-CP
       concept config]
-- [ ] 12.cert-rotation [reading: kubeadm certs check-expiration/renew runbook]
+- [x] 12.cert-rotation [reading: kubeadm certs check-expiration/renew runbook]
 - [ ] backlog: CSI hands-on (CNI reading now covered by M4 10.cni-basics)
 
 ## Module 8 — Observability & SRE
