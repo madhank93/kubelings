@@ -85,11 +85,11 @@ lessons carry a verified `source:` URL (see
 - [x] 3.quota-exhausted · [x] 4.node-notready · [x] 5.pattern-disk-pressure [DRILL]
 - [x] 6.incident-datadog-cilium [REAL Datadog, reading]
 - [x] 7.upgrade-runbook [reading: version skew, kubeadm, drain/uncordon]
-- [ ] 8.node-maintenance (cordon/drain/uncordon full cycle — contrasts with
+- [x] 8.node-maintenance (cordon/drain/uncordon full cycle — contrasts with
       M2 pdb-blocks-drain where drain was the *problem*)
-- [ ] 9.slo-errorbudget (prometheus-operator bundle manifests, NOT Helm;
+- [x] 9.slo-errorbudget (prometheus-operator bundle manifests, NOT Helm;
       merged with the platform-SLO-dashboards idea — one lab, both bugs)
-- [ ] 10.otel-collector-pipeline (collector Deployment + Jaeger all-in-one)
+- [x] 10.otel-collector-pipeline (collector Deployment + Jaeger all-in-one)
 
 ## Module 9 — War Stories (capstone)
 - [x] 1.incident-monzo-cascade [REAL Monzo, reading]
