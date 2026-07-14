@@ -17,6 +17,21 @@ Two kinds of entries, honestly labeled:
 All source links below were reachability-checked on 2026-07-08. (Medium links may
 show a bot-check to crawlers but open fine in a browser.)
 
+<div id="incident-filter" class="incident-filter" hidden>
+  <div class="if-group" data-filter="type">
+    <span class="if-label">Show</span>
+    <button type="button" data-type="all" class="active">All</button>
+    <button type="button" data-type="real">Real</button>
+    <button type="button" data-type="pattern">Pattern</button>
+    <button type="button" data-type="runnable">Runnable</button>
+  </div>
+  <div class="if-group" data-filter="module">
+    <span class="if-label">Module</span>
+    <select id="if-module"><option value="all">All modules</option></select>
+  </div>
+  <span class="if-count" id="if-count"></span>
+</div>
+
 ## `[REAL]` incidents
 
 | Company | Incident | Teaches | Module | Source |
@@ -96,3 +111,82 @@ the concept** (e.g. Zalando's ndots amplifier → Module 4, lesson
 `incident-dns-ndots`). Multi-concept cascades (Monzo, Target) become **Module 9
 capstone labs**. Every runnable incident lesson links back to its cited source —
 you fix the same class of failure the original team fixed.
+
+<script is:inline>
+(() => {
+  const init = () => {
+    const bar = document.getElementById('incident-filter');
+    if (!bar) return;
+    const content = bar.closest('.sl-markdown-content') || document;
+    const tables = [...content.querySelectorAll('table')];
+    if (tables.length < 1) return;
+
+    // Tag every row: type (real|pattern), modules (m4,m7…), runnable.
+    const modules = new Set();
+    tables.forEach((table, ti) => {
+      const isPattern = ti === tables.length - 1; // last table = [PATTERN]
+      table.dataset.incidentTable = isPattern ? 'pattern' : 'real';
+      table.querySelectorAll('tbody tr').forEach((tr) => {
+        const txt = tr.textContent || '';
+        tr.dataset.type = isPattern ? 'pattern' : 'real';
+        tr.dataset.runnable = /runnable/i.test(txt) ? '1' : '0';
+        const mods = [...txt.matchAll(/M(\d+)/g)].map((m) => 'm' + m[1]);
+        [...new Set(mods)].forEach((m) => modules.add(m));
+        tr.dataset.modules = ' ' + [...new Set(mods)].join(' ') + ' ';
+      });
+    });
+
+    // Populate module dropdown, sorted numerically.
+    const sel = document.getElementById('if-module');
+    [...modules]
+      .sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1)))
+      .forEach((m) => {
+        const o = document.createElement('option');
+        o.value = m;
+        o.textContent = 'Module ' + m.slice(1);
+        sel.appendChild(o);
+      });
+
+    let type = 'all';
+    let mod = 'all';
+    const countEl = document.getElementById('if-count');
+
+    const apply = () => {
+      let shown = 0;
+      tables.forEach((table) => {
+        let visibleRows = 0;
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+          const okType =
+            type === 'all' ||
+            (type === 'runnable' ? tr.dataset.runnable === '1' : tr.dataset.type === type);
+          const okMod = mod === 'all' || tr.dataset.modules.includes(' ' + mod + ' ');
+          const ok = okType && okMod;
+          tr.hidden = !ok;
+          if (ok) { visibleRows++; shown++; }
+        });
+        // Hide a whole table (and its heading) when it has no visible rows.
+        const heading = table.previousElementSibling;
+        table.style.display = visibleRows ? '' : 'none';
+        if (heading && /^H[1-6]$/.test(heading.tagName)) {
+          heading.style.display = visibleRows ? '' : 'none';
+        }
+      });
+      countEl.textContent = shown + ' shown';
+    };
+
+    bar.querySelectorAll('[data-type]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        type = btn.dataset.type;
+        bar.querySelectorAll('[data-type]').forEach((b) => b.classList.toggle('active', b === btn));
+        apply();
+      });
+    });
+    sel.addEventListener('change', () => { mod = sel.value; apply(); });
+
+    bar.hidden = false;
+    apply();
+  };
+  if (document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
+</script>

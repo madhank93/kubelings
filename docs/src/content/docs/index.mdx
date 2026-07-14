@@ -1,17 +1,22 @@
 ---
 title: Kubelings
-description: Learn Kubernetes the rustlings way — fix broken-on-purpose clusters until an automated check passes.
+description: 107 hands-on Kubernetes lessons — fix broken-on-purpose clusters until an automated check passes. For CKA/CKAD/CKS prep and production troubleshooting muscle memory.
 template: splash
 hero:
-  tagline: Learn Kubernetes the rustlings way — fix broken-on-purpose clusters until an automated check passes.
+  tagline: Fix broken-on-purpose clusters until an automated check passes — the rustlings way. 107 lessons for engineers building real Kubernetes muscle memory, from first pod to platform engineering.
   image:
     file: ../../assets/kubernetes.svg
     alt: Kubernetes logo
   actions:
-    - text: Get started
-      link: /getting-started/
+    - text: Start on iximiuz Labs
+      link: https://labs.iximiuz.com/courses/kubelings-dbd840c8
+      icon: external
+      variant: primary
+    - text: View curriculum
+      link: /guides/curriculum/
       icon: right-arrow
-    - text: View on GitHub
+      variant: secondary
+    - text: GitHub
       link: https://github.com/madhank93/kubelings
       icon: external
       variant: minimal
@@ -19,36 +24,88 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
+<ul class="stat-row">
+  <li><span class="stat-num">107</span><span class="stat-label">Lessons</span></li>
+  <li><span class="stat-num">10</span><span class="stat-label">Modules</span></li>
+  <li><span class="stat-num">40+</span><span class="stat-label">Real incidents</span></li>
+</ul>
+
 ## What is Kubelings?
 
 **Kubelings** is hands-on Kubernetes practice in the spirit of *rustlings* and
 *golings*: a sequence of small, broken-on-purpose clusters, each with an automated
 check that only passes when you've genuinely fixed the problem.
 
-Every scenario runs on iximiuz Labs **and** locally on `kind` from a single source
-of truth — the [course](https://labs.iximiuz.com/courses/kubelings-dbd840c8).
+**Best for** engineers preparing for **CKA / CKAD / CKS**, or anyone who wants
+Kubernetes reflexes — not just theory. Beginner → advanced, free, and it runs the
+same on a browser VM or your own laptop.
 
-The [ten-module curriculum](/guides/curriculum/) — 107 lessons — runs from first
-pod to control-plane internals and platform engineering, with real cited
-production incidents — the [Incident Library](/reference/incident-library/) —
-reproduced as runnable lessons along the way.
+## Two ways to run
 
 <CardGrid>
-  <Card title="Interactive TUI" icon="laptop">
-    A terminal UI: scenarios grouped by module, progress markers, one-key
-    play (cluster → init → shell). See [The TUI](/guides/tui/).
+  <Card title="☁ No setup — fastest" icon="rocket">
+    Run instantly in your browser on
+    [iximiuz Labs](https://labs.iximiuz.com/courses/kubelings-dbd840c8) — zero
+    install, real clusters, nothing to clean up. Best way to start.
   </Card>
-  <Card title="Runs locally on kind" icon="rocket">
-    One engine drives both the platform and local `kind`. See
-    [Getting Started](/getting-started/).
+  <Card title="💻 Local — offline / air-gap" icon="laptop">
+    Clone the repo and run on `kind` with the TUI or CLI. See
+    [Getting Started](/getting-started/). One source of truth drives both — the
+    checks are identical.
+  </Card>
+</CardGrid>
+
+## The ten-module curriculum
+
+From first pod to control-plane internals and platform engineering, with real,
+cited production incidents reproduced as runnable lessons along the way.
+
+| # | Module | You learn | Lessons |
+|---|--------|-----------|---------|
+| 01 | **Foundations** | pods, Deployments, Services, the triage loop | 7 |
+| 02 | **Workloads** | HPA, StatefulSets, PDBs, OOMKill, probes, VPA, KEDA | 21 |
+| 03 | **Config & Storage** | ConfigMaps, Secrets, PV/PVC, Helm, Kustomize | 10 |
+| 04 | **Networking** | Ingress, Gateway API, NetworkPolicy, CoreDNS, CNI | 11 |
+| 05 | **Scheduling & Placement** | affinity, taints, topology spread, preemption | 5 |
+| 06 | **Security** | RBAC, Pod Security, Gatekeeper, Kyverno, Falco, cosign | 18 |
+| 07 | **Internals** | API server, etcd, scheduler, CRDs, operators, HA | 12 |
+| 08 | **Observability & SRE** | SLO burn-rate, OTel tracing, node triage, upgrades | 10 |
+| 09 | **War Stories (capstone)** | multi-concept cascades from real postmortems | 7 |
+| 10 | **Platform Engineering** | Argo CD, Flux, Capsule, Cluster API, Crossplane | 6 |
+
+[View the full curriculum with skill outcomes →](/guides/curriculum/)
+
+Every lesson is one of four types:
+
+<ul class="kind-legend">
+  <li><span class="kind-tag lab">lab</span> concept lesson, verify-gated</li>
+  <li><span class="kind-tag replay">replay</span> real production incident, reproduced</li>
+  <li><span class="kind-tag drill">drill</span> synthetic failure pattern</li>
+  <li><span class="kind-tag read">read</span> guided runbook, no tasks</li>
+</ul>
+
+## What makes it different
+
+<CardGrid>
+  <Card title="Interactive Go TUI" icon="laptop">
+    Press `↵` on a lesson — it spins up a 3-node `kind` cluster, injects the
+    broken state, and drops you into a shell. Progress markers per lesson, no YAML
+    editing to start. See [The TUI](/guides/tui/).
+  </Card>
+  <Card title="Real incidents, reproduced" icon="random">
+    40+ cited production postmortems — Zalando, Reddit, OpenAI, Monzo, Grafana —
+    reproduced as runnable lessons on the same broken state the original team
+    faced. [`REAL`] vs [`PATTERN`] is labeled honestly. See the
+    [Incident Library](/reference/incident-library/).
   </Card>
   <Card title="Check-driven" icon="approve-check">
-    Each lesson ships init + verify tasks; the check turns green only when the
-    cluster is in the target state.
+    Each lesson ships `init` + `verify` tasks; the check turns green only when the
+    cluster is genuinely in the target state — no self-grading.
   </Card>
-  <Card title="Hardened" icon="approve-check-circle">
-    Lesson code is treated as untrusted and confined away from your host. See
-    [Security](/reference/security/).
+  <Card title="Hardened by design" icon="approve-check-circle">
+    `init`/`verify` scripts run in a confined context — they can't reach outside
+    the cluster. Your host filesystem, credentials, and network are never touched.
+    See [Security](/reference/security/).
   </Card>
 </CardGrid>
 

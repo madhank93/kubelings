@@ -6,6 +6,16 @@ description: What Kubelings is and how the check-driven lessons work.
 Kubelings teaches Kubernetes the way *rustlings* teaches Rust: a series of small,
 broken-on-purpose scenarios you fix one at a time.
 
+:::note[Is this for you?]
+- **Best for** — engineers prepping for **CKA / CKAD / CKS**, or anyone who wants
+  production troubleshooting reflexes instead of slide-deck theory.
+- **Assumes** — you can run `kubectl` and read a Pod spec. Concepts are taught;
+  basic terminal comfort is not.
+- **Time** — ~30–50 hours for all 107 lessons; each lesson is bite-sized and
+  self-contained, so you can stop anywhere.
+- **Cost** — free. Runs in-browser on iximiuz Labs or locally on `kind`.
+:::
+
 ## The loop
 
 1. **Read the situation** — each lesson explains what's broken (or what to build)

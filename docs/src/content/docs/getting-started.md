@@ -3,7 +3,24 @@ title: Getting Started
 description: Install the prerequisites and run your first Kubelings lesson locally.
 ---
 
-## Prerequisites
+There are two ways to run Kubelings. Both drive the **same** lessons from one
+source of truth — the checks are identical.
+
+## Option 1 · No setup (fastest) ☁
+
+Run instantly in your browser — zero local install, real clusters, nothing to
+clean up:
+
+**→ [Open Kubelings on iximiuz Labs](https://labs.iximiuz.com/courses/kubelings-dbd840c8)**
+
+Pick a lesson, get a live playground, fix the cluster, watch the check turn green.
+This is the recommended way to start.
+
+## Option 2 · Run locally 💻
+
+For offline / air-gapped use, or if you prefer your own terminal. Runs on `kind`.
+
+### Prerequisites
 
 A Docker runtime plus a few CLIs. On macOS these come from the dotfiles Brewfile:
 
@@ -20,14 +37,14 @@ mise install    # fetch the pinned go / kubectl / kind / yq
 mise run setup  # install + go build + go test
 ```
 
-## Clone
+### Clone
 
 ```sh
 git clone https://github.com/madhank93/kubelings
 cd kubelings
 ```
 
-## Run the TUI
+### Run the TUI
 
 ```sh
 just tui        # build + launch  (or: go run ./cmd/kubelings)
@@ -39,7 +56,7 @@ task and helper commands (`task`, `hint`, `verify`, `solution`, `k`=kubectl).
 
 Full walkthrough: [The TUI](/guides/tui/).
 
-## Or use the CLI
+### Or use the CLI
 
 No TUI needed:
 
@@ -52,7 +69,7 @@ scripts/run-challenge-local.sh down               # destroy the cluster
 
 See [CLI](/guides/cli/).
 
-## Cluster lifecycle
+### Cluster lifecycle
 
 The kind cluster is **created on demand** (`u` / play) and **persists** across
 lessons and TUI restarts — quitting does **not** destroy it. It is removed only
