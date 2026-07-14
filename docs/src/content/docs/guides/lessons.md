@@ -1,6 +1,6 @@
 ---
 title: Lessons
-description: The full Kubelings lesson catalog (72 lessons, 9 modules) and how to add a new one.
+description: The full Kubelings lesson catalog (107 lessons, 10 modules) and how to add a new one.
 ---
 
 Lessons live under `courses/kubelings/module-N/<n>.<name>/`. Each has:
@@ -48,6 +48,13 @@ Four lesson types (the TUI shows a badge for each):
 | `qos-classes` | Guaranteed / Burstable / BestEffort and who dies first | lab |
 | `blue-green-canary` | flip traffic with one selector change; keep the way back | lab |
 | `incident-cpu-throttling` | Omio/Buffer's latency tax — read cpu.stat, fix the limit | replay |
+| `ephemeral-containers` | no shell, no exec, no problem — `kubectl debug --target` | lab |
+| `multi-container-patterns` | sidecar, ambassador, adapter — one bug each | lab |
+| `pattern-readiness-flap` | hair-trigger probe evicts healthy pods — 502 roulette | drill |
+| `pattern-zombie-cronjobs` | history limits at 50 — the Job pile that slows the API | drill |
+| `pattern-rolling-update-deadlock` | maxUnavailable 0 meets an unschedulable revision | drill |
+| `vpa` | the recommender watched a renamed-away Deployment | lab |
+| `keda-autoscaling` | cron trigger with hour 25 — ScaledObject never Ready | lab |
 
 ## Module 3 — Config & Storage
 
@@ -59,6 +66,10 @@ Four lesson types (the TUI shows a badge for each):
 | `access-modes` | RWO vs RWX and the pod that can't schedule | lab |
 | `pattern-pvc-terminating` | PVC stuck Terminating — finalizers, done safely | drill |
 | `kustomize-overlays` | kill config drift with base + prod overlay (`kubectl apply -k`) | lab |
+| `helm-releases` | failed upgrade → history, rollback, re-ship (init installs pinned helm) | lab |
+| `pattern-ghost-endpoints` | grace period 0 + no preStop = 503 bursts on every deploy | drill |
+| `pattern-secret-not-reloaded` | rotated Secret, stale env var — mounts vs env | drill |
+| `pattern-namespace-terminating` | orphaned CRD finalizer blocks deletion — the one legit strip | drill |
 
 ## Module 4 — Networking
 
@@ -73,6 +84,8 @@ Four lesson types (the TUI shows a badge for each):
 | `ingress-wiring` | ingress backend name+port chain, two breaks | lab |
 | `gateway-api` | GatewayClass → Gateway → HTTPRoute, the app team's half | lab |
 | `kube-proxy-dataplane` | there is no proxy — iptables, IPVS, and the DNAT dice roll | read |
+| `cni-basics` | conflist anatomy, kubelet↔CNI, crictl — the ContainerCreating triage tree | read |
+| `kubeconfig-contexts` | current-context points at prod — switch, merge, flatten | lab |
 
 ## Module 5 — Scheduling & Placement
 
@@ -98,6 +111,14 @@ Four lesson types (the TUI shows a badge for each):
 | `control-plane-hardening` | encryption at rest, audit, API flags, supply chain, runtime | read |
 | `egress-lockdown` | deny-all egress + DNS and one business flow back | lab |
 | `image-digests` | tags lie — pin the deployment to a verified digest | lab |
+| `opa-gatekeeper` | the Rego that reads a nonexistent field — always-allow policy | lab |
+| `kyverno-policies` | unscoped Enforce policy bricks every namespace — scope, mutate, deny | lab |
+| `image-scanning-pipeline` | trivy-scan nginx:1.14, pin the clean fix by digest | lab |
+| `sbom-cosign` | keyless-verify a signed image; SBOMs, attestation, admission tie-in | lab |
+| `apparmor-seccomp` | RuntimeDefault seccomp hands-on + AppArmor runbook | lab |
+| `encryption-at-rest` | EncryptionConfiguration end to end — etcdctl proof, key rotation | read |
+| `audit-policy` | who touched that Secret? policy levels, wiring, the greps | read |
+| `falco-runtime-detection` | eBPF sensor, rules language, shell-in-container alert | read |
 
 ## Module 7 — Internals
 
@@ -112,6 +133,9 @@ Four lesson types (the TUI shows a badge for each):
 | `admission-mutations` | watch admission rewrite your YAML (LimitRange, both halves) | lab |
 | `watch-informers` | list+watch, resourceVersion, informers, APF | read |
 | `build-an-operator` | the 60 lines that make an operator — annotated | read |
+| `kubeadm-bootstrap` | init → join, the full ceremony and its triage table | read |
+| `ha-control-plane` | three of everything — quorum, VIPs, leader election | read |
+| `cert-rotation` | the outage scheduled a year in advance — check-expiration, renew | read |
 
 ## Module 8 — Observability & SRE
 
@@ -124,6 +148,9 @@ Four lesson types (the TUI shows a badge for each):
 | `pattern-disk-pressure` | Evicted: the disk you forgot to budget | drill |
 | `incident-datadog-cilium` | the OS update that wiped CNI routes fleet-wide | read |
 | `upgrade-runbook` | version skew, kubeadm sequence, drain → uncordon | read |
+| `node-maintenance` | cordon → drain past both refusals → uncordon, with a paper trail | lab |
+| `slo-errorbudget` | the burn-rate alert that never fired — three rule bugs | lab |
+| `otel-collector-pipeline` | traces into the void — fix the exporter endpoint | lab |
 
 ## Module 9 — War Stories (capstone)
 
@@ -133,7 +160,20 @@ Four lesson types (the TUI shows a badge for each):
 | `incident-openai-cascade` | telemetry rollout locks operators out of the fix | read |
 | `incident-reddit-piday` | one renamed label collapses the pod network | read |
 | `incident-black-friday` | Jobs overload kills the dashboard at peak | read |
+| `incident-target-cascade` | Kafka blip → Consul gossip poisoning, five systems down | read |
+| `incident-spotify-delete` | deleting every cluster, twice — IaC as the recovery story | read |
 | `final-boss` | three faults, no hints | lab |
+
+## Module 10 — Platform Engineering
+
+| Lesson | Scenario | Type |
+|--------|----------|------|
+| `gitops-argocd` | the Application that refuses to sync — conditions, sync, health | lab |
+| `gitops-argocd-appofapps` | one bad child in the fleet — sync waves, revision pins | lab |
+| `gitops-flux2` | the Kustomization starved by its GitRepository's dead ref | lab |
+| `multi-tenancy-capsule` | tenant quota exhausted — resize, self-serve, prove the walls | lab |
+| `cluster-api-intro` | clusters as custom resources — MachineDeployments and providers | read |
+| `crossplane-compositions` | the Composition missing its provider — claim stuck Synced=False | lab |
 
 ## Running a lesson
 
