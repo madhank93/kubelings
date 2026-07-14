@@ -29,10 +29,10 @@ lessons carry a verified `source:` URL (see
 - [x] 1.configmap-wiring · [x] 2.secret-not-mounted · [x] 3.pvc-pending
 - [x] 4.access-modes · [x] 5.pattern-pvc-terminating [DRILL]
 - [x] 6.kustomize-overlays
-- [ ] 7.helm-releases (init installs a pinned helm binary — unblocks the old
+- [x] 7.helm-releases (init installs a pinned helm binary — unblocks the old
       "helm not guaranteed" note)
-- [ ] 8.pattern-ghost-endpoints [DRILL] · [ ] 9.pattern-secret-not-reloaded [DRILL]
-- [ ] 10.pattern-namespace-terminating [DRILL]
+- [x] 8.pattern-ghost-endpoints [DRILL] · [x] 9.pattern-secret-not-reloaded [DRILL]
+- [x] 10.pattern-namespace-terminating [DRILL]
 
 ## Module 4 — Networking
 - [x] 1.incident-dns-ndots [REAL Zalando] · [x] 2.networkpolicy-blackhole
