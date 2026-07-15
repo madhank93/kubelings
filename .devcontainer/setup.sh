@@ -27,4 +27,4 @@ echo "==> Warming the Go build cache"
 eval "$(mise activate bash --shims)"
 go build ./... || echo "note: go build reported issues (non-fatal for provisioning)"
 
-echo "==> Done. Try:  just doctor   |   just up   |   just tui   |   just docs-dev"
+echo "==> Done. Try:  just doctor   |   just up   |   just tui"

@@ -8,9 +8,6 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "moby": true,
       "installDockerBuildx": true
-    },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "lts"
     }
   },
 
@@ -32,7 +29,6 @@
         "golang.go",
         "ms-kubernetes-tools.vscode-kubernetes-tools",
         "redhat.vscode-yaml",
-        "astro-build.astro-vscode",
         "nefrob.vscode-just-syntax",
         "timonwong.shellcheck"
       ],

@@ -41,15 +41,16 @@ mise run setup  # install + go build + go test
 
 Prefer zero local toolchain setup? The repo ships a
 [`.devcontainer/`](https://github.com/madhank93/kubelings/tree/main/.devcontainer)
-with Docker-in-Docker (for `kind`), the pinned `mise` toolchain, `just`, and Node
-for the docs. Open it either way:
+with Docker-in-Docker (for `kind`), the pinned `mise` toolchain, and `just` — the
+full lesson runtime. Open it either way:
 
 - **VS Code** — install the *Dev Containers* extension, then **Reopen in
   Container**.
 - **GitHub Codespaces** — **Code → Codespaces → Create codespace** on the repo.
 
 First launch provisions the toolchain automatically; then `just tui`, `just up`,
-or `just docs-dev` all work inside the container — clusters and all.
+and the lessons all work inside the container — clusters and all. (The container
+targets the lesson runtime; the docs site needs Node, so build it on your host.)
 
 ### Clone
 
