@@ -1,0 +1,342 @@
+---
+// src/pages/catalog.astro
+// Standalone (non-Starlight) page: a filterable browse view of every lesson.
+// Data is server-rendered from src/data/catalog.ts (derived from the course).
+import { CATALOG, MODULES } from '../data/catalog';
+
+const totalLessons   = CATALOG.length;
+const totalIncidents = CATALOG.filter((e) => e.type === 'incident').length;
+const totalLabs      = CATALOG.filter((e) => e.type === 'lab').length;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catalog — Kubelings</title>
+  <meta name="description" content="Every Kubelings lesson, lab, incident, and drill in one filterable table — 107 lessons across 10 modules." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sl-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sl-nav-height: 4rem;
+      --sl-text-xs: 0.8125rem; --sl-text-sm: 0.875rem; --sl-text-base: 1rem;
+      --sl-text-lg: 1.125rem; --sl-text-xl: 1.25rem; --sl-text-2xl: 1.5rem;
+    }
+    :root, [data-theme="dark"] {
+      --sl-color-black: hsl(224,10%,10%); --sl-color-gray-6: hsl(224,14%,16%);
+      --sl-color-gray-5: hsl(224,10%,23%); --sl-color-gray-4: hsl(224,7%,36%);
+      --sl-color-gray-3: hsl(224,6%,56%); --sl-color-gray-2: hsl(224,6%,77%);
+      --sl-color-gray-1: hsl(224,20%,94%); --sl-color-white: hsl(0,0%,100%);
+      --sl-color-accent-low: hsl(224,54%,20%); --sl-color-accent: hsl(224,100%,60%);
+      --sl-color-accent-high: hsl(224,100%,85%);
+      --sl-color-bg: var(--sl-color-black); --sl-color-bg-nav: var(--sl-color-gray-6);
+      --sl-color-text: var(--sl-color-gray-2); --sl-color-text-accent: var(--sl-color-accent-high);
+      --sl-color-hairline: var(--sl-color-gray-6); --sl-color-hairline-light: var(--sl-color-gray-5);
+    }
+    [data-theme="light"] {
+      --sl-color-black: hsl(0,0%,100%); --sl-color-gray-1: hsl(224,14%,16%);
+      --sl-color-gray-2: hsl(224,10%,23%); --sl-color-gray-3: hsl(224,7%,36%);
+      --sl-color-gray-4: hsl(224,6%,56%); --sl-color-gray-5: hsl(224,6%,77%);
+      --sl-color-gray-6: hsl(224,20%,94%); --sl-color-gray-7: hsl(224,19%,97%);
+      --sl-color-accent-high: hsl(234,80%,30%); --sl-color-accent: hsl(234,90%,60%);
+      --sl-color-accent-low: hsl(234,88%,90%);
+      --sl-color-bg: var(--sl-color-black); --sl-color-bg-nav: var(--sl-color-gray-7);
+      --sl-color-text: var(--sl-color-gray-2); --sl-color-text-accent: var(--sl-color-accent);
+      --sl-color-hairline: var(--sl-color-gray-5); --sl-color-hairline-light: var(--sl-color-gray-6);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      font-size: var(--sl-text-base); background: var(--sl-color-bg);
+      color: var(--sl-color-text); min-height: 100dvh; line-height: 1.75;
+    }
+    a { color: var(--sl-color-text-accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button { cursor: pointer; font: inherit; }
+
+    .site-header {
+      position: sticky; top: 0; z-index: 50; height: var(--sl-nav-height);
+      background: var(--sl-color-bg-nav); border-bottom: 1px solid var(--sl-color-hairline);
+      display: flex; align-items: center; padding: 0 1.5rem; gap: 0.75rem;
+    }
+    .logo { display: flex; align-items: center; gap: 0.55rem; color: var(--sl-color-white);
+      font-weight: 600; font-size: var(--sl-text-lg); text-decoration: none; }
+    .breadcrumb { font-size: var(--sl-text-sm); color: var(--sl-color-gray-3); }
+    .breadcrumb span { color: var(--sl-color-gray-2); }
+    .spacer { flex: 1; }
+    .theme-toggle { background: none; border: 1px solid var(--sl-color-gray-5);
+      color: var(--sl-color-gray-2); border-radius: 0.375rem; padding: 0.25rem 0.6rem;
+      font-size: var(--sl-text-xs); display: flex; align-items: center; gap: 0.3rem;
+      transition: border-color 0.15s, color 0.15s; }
+    .theme-toggle:hover { border-color: var(--sl-color-accent); color: var(--sl-color-white); }
+
+    .wrap { max-width: 72rem; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+    .page-title { font-size: var(--sl-text-2xl); font-weight: 700; color: var(--sl-color-white); margin-bottom: 0.35rem; }
+    .page-sub { font-size: var(--sl-text-sm); color: var(--sl-color-gray-3); margin-bottom: 1.75rem; }
+
+    .stats { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.75rem; list-style: none; }
+    .stats li { flex: 1 1 7rem; text-align: center; border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.6rem; padding: 0.75rem 1rem; background: var(--sl-color-black); }
+    .stat-num { display: block; font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+      font-family: var(--sl-font-mono); font-weight: 700; line-height: 1;
+      color: var(--sl-color-accent-high); font-variant-numeric: tabular-nums; }
+    .stat-lbl { display: block; margin-top: 0.3rem; font-size: var(--sl-text-xs);
+      color: var(--sl-color-gray-3); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .filter-bar { position: sticky; top: var(--sl-nav-height); z-index: 40;
+      background: var(--sl-color-bg); border-bottom: 1px solid var(--sl-color-hairline);
+      padding: 0.65rem 0; margin-bottom: 1rem; }
+    .filter-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+    .filter-label { font-size: var(--sl-text-xs); text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--sl-color-gray-3); white-space: nowrap; }
+    .filter-group { display: flex; align-items: center; gap: 0.35rem; }
+    .pill { border: 1px solid var(--sl-color-gray-5); background: transparent;
+      color: var(--sl-color-gray-2); font-size: var(--sl-text-xs); padding: 0.2rem 0.7rem;
+      border-radius: 999px; transition: all 0.15s; }
+    .pill:hover { border-color: var(--sl-color-accent); color: var(--sl-color-white); }
+    .pill.active { background: var(--sl-color-accent); border-color: var(--sl-color-accent);
+      color: var(--sl-color-black); font-weight: 600; }
+    .mod-select, .search-input { font: inherit; font-size: var(--sl-text-xs);
+      border: 1px solid var(--sl-color-gray-5); background: var(--sl-color-black);
+      color: var(--sl-color-white); border-radius: 0.35rem; padding: 0.25rem 0.5rem;
+      transition: border-color 0.15s; }
+    .search-input { min-width: 190px; }
+    .search-input::placeholder { color: var(--sl-color-gray-4); }
+    .search-input:focus, .mod-select:focus { outline: none; border-color: var(--sl-color-accent); }
+    .result-count { margin-left: auto; font-size: var(--sl-text-xs); color: var(--sl-color-gray-3);
+      font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: var(--sl-text-sm); }
+    thead th { text-align: left; font-size: var(--sl-text-xs); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-gray-3);
+      padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--sl-color-hairline-light);
+      background: var(--sl-color-bg); position: sticky; top: calc(var(--sl-nav-height) + 3rem);
+      z-index: 30; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--sl-color-hairline); transition: background 0.1s; }
+    tbody tr:hover { background: color-mix(in oklab, var(--sl-color-accent) 5%, transparent); }
+    td { padding: 0.5rem 0.75rem; vertical-align: middle; }
+
+    tr.mod-header td { background: var(--sl-color-gray-6); color: var(--sl-color-white);
+      font-weight: 600; font-size: var(--sl-text-xs); text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 0.4rem 0.75rem; border-top: 2px solid var(--sl-color-hairline); }
+    tr.mod-header .m-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      margin-right: 0.5rem; vertical-align: middle; }
+
+    .mod-chip { display: inline-block; font-family: var(--sl-font-mono); font-size: 0.7rem;
+      font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 0.3rem; color: #fff; white-space: nowrap; }
+
+    .lesson-slug { font-family: var(--sl-font-mono); font-size: 0.8rem; color: var(--sl-color-gray-1); }
+
+    .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.55rem;
+      border-radius: 999px; white-space: nowrap; }
+    .badge-lab { background: color-mix(in oklab, var(--sl-color-accent) 22%, transparent); color: var(--sl-color-accent-high); }
+    .badge-incident { background: color-mix(in oklab, #f85149 22%, transparent); color: #ff8a80; }
+    .badge-drill { background: color-mix(in oklab, #d29922 25%, transparent); color: #e3b341; }
+    .badge-read { background: color-mix(in oklab, var(--sl-color-gray-3) 28%, transparent); color: var(--sl-color-gray-1); }
+
+    .plat-dots { display: flex; gap: 0.35rem; }
+    .plat-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .plat-dot.ixim { background: #4f98a3; }
+    .plat-dot.kind { background: #9b5de5; }
+    .plat-dot.off { background: transparent; border: 1.5px solid var(--sl-color-gray-5); }
+
+    .plat-legend { display: flex; gap: 1rem; margin-top: 0.75rem; font-size: var(--sl-text-xs); color: var(--sl-color-gray-3); }
+    .plat-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+    .empty-state { display: none; text-align: center; padding: 3rem 1rem;
+      color: var(--sl-color-gray-3); font-size: var(--sl-text-sm); }
+
+    @media (max-width: 640px) { .col-plat, .col-mod { display: none; } .search-input { min-width: 130px; } }
+    @media (max-width: 480px) { .filter-inner { gap: 0.4rem 0.6rem; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="logo">
+      <svg aria-label="Kubelings" width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <polygon points="13,2 24,8 24,18 13,24 2,18 2,8" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.4"/>
+        <polygon points="13,6 20,10 20,16 13,20 6,16 6,10" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.7"/>
+        <circle cx="13" cy="13" r="2.5" fill="currentColor"/>
+      </svg>
+      Kubelings
+    </a>
+    <span class="breadcrumb">/ <span>catalog</span></span>
+    <div class="spacer"></div>
+    <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      Theme
+    </button>
+  </header>
+
+  <main class="wrap">
+    <h1 class="page-title">Catalog</h1>
+    <p class="page-sub">All lessons, labs, incidents, and drills — the full curriculum in one filterable table. <a href="/guides/curriculum/">Module overview →</a></p>
+
+    <ul class="stats">
+      <li><span class="stat-num">{totalLessons}</span><span class="stat-lbl">Lessons</span></li>
+      <li><span class="stat-num">10</span><span class="stat-lbl">Modules</span></li>
+      <li><span class="stat-num">{totalIncidents}</span><span class="stat-lbl">Incidents</span></li>
+      <li><span class="stat-num">{totalLabs}</span><span class="stat-lbl">Labs</span></li>
+    </ul>
+
+    <div class="filter-bar" role="search" aria-label="Filter catalog">
+      <div class="filter-inner">
+        <div class="filter-group">
+          <span class="filter-label">Type</span>
+          <button class="pill active" data-type="all">All</button>
+          <button class="pill" data-type="lab">🧪 Lab</button>
+          <button class="pill" data-type="incident">⚡ Incident</button>
+          <button class="pill" data-type="drill">🔁 Drill</button>
+          <button class="pill" data-type="read">📖 Read</button>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="modFilter">Module</label>
+          <select class="mod-select" id="modFilter" aria-label="Filter by module">
+            <option value="all">All modules</option>
+            {Object.entries(MODULES).map(([key, mod]) => (
+              <option value={key}>{key} · {mod.label}</option>
+            ))}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="searchInput">Search</label>
+          <input id="searchInput" class="search-input" type="search"
+            placeholder="slug, scenario…" autocomplete="off" spellcheck="false" />
+        </div>
+        <span class="result-count" id="resultCount">{totalLessons} of {totalLessons}</span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="catalogTable" aria-label="Kubelings lesson catalog">
+        <thead>
+          <tr>
+            <th class="col-mod" style="width:60px">Mod</th>
+            <th style="width:230px">Lesson</th>
+            <th>Scenario</th>
+            <th style="width:96px">Type</th>
+            <th class="col-plat" style="width:60px" title="iximiuz · kind">Plat</th>
+          </tr>
+        </thead>
+        <tbody id="catalogBody">
+          {(() => {
+            let lastMod = '';
+            return CATALOG.flatMap((e) => {
+              const rows: any[] = [];
+              const color = MODULES[e.module].color;
+              if (e.module !== lastMod) {
+                lastMod = e.module;
+                rows.push(
+                  <tr class="mod-header" data-mod={e.module}>
+                    <td colspan="5">
+                      <span class="m-dot" style={`background:${color}`}></span>
+                      {e.module} — {MODULES[e.module].label}
+                    </td>
+                  </tr>
+                );
+              }
+              rows.push(
+                <tr
+                  data-type={e.type}
+                  data-mod={e.module}
+                  data-search={`${e.slug} ${e.scenario} ${e.type} ${e.module}`.toLowerCase()}
+                >
+                  <td class="col-mod"><span class="mod-chip" style={`background:${color}`}>{e.module}</span></td>
+                  <td><span class="lesson-slug">{e.slug}</span></td>
+                  <td style="color:var(--sl-color-gray-2)">{e.scenario}</td>
+                  <td><span class={`badge badge-${e.type}`}>{e.type}</span></td>
+                  <td class="col-plat">
+                    <span class="plat-dots">
+                      <span class={`plat-dot ${e.iximiuz ? 'ixim' : 'off'}`} title={e.iximiuz ? 'iximiuz Labs' : 'not on iximiuz'}></span>
+                      <span class={`plat-dot ${e.kind ? 'kind' : 'off'}`} title={e.kind ? 'kind (local)' : 'reading — no kind lab'}></span>
+                    </span>
+                  </td>
+                </tr>
+              );
+              return rows;
+            });
+          })()}
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState">
+        No lessons match your filters — try clearing the search or selecting a different type.
+      </div>
+    </div>
+
+    <div class="plat-legend">
+      <span><span class="plat-dot ixim"></span> iximiuz Labs (in-browser)</span>
+      <span><span class="plat-dot kind"></span> kind (local)</span>
+      <span><span class="plat-dot off"></span> not available</span>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const html = document.documentElement;
+      const btn = document.querySelector('[data-theme-toggle]');
+      let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      html.setAttribute('data-theme', theme);
+      btn?.addEventListener('click', () => {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', theme);
+      });
+    })();
+
+    const tbody = document.getElementById('catalogBody')!;
+    const emptyState = document.getElementById('emptyState')!;
+    const counter = document.getElementById('resultCount')!;
+    const searchEl = document.getElementById('searchInput') as HTMLInputElement;
+    const modSel = document.getElementById('modFilter') as HTMLSelectElement;
+    const pills = document.querySelectorAll<HTMLButtonElement>('.pill[data-type]');
+    const allRows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr[data-type]'));
+    const modRows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr.mod-header'));
+    const total = allRows.length;
+    let activeType = 'all';
+
+    function applyFilters() {
+      const q = searchEl.value.toLowerCase().trim();
+      const mod = modSel.value;
+      let visible = 0;
+      allRows.forEach((row) => {
+        const typeMatch = activeType === 'all' || row.dataset.type === activeType;
+        const modMatch = mod === 'all' || row.dataset.mod === mod;
+        const searchMatch = !q || (row.dataset.search || '').includes(q);
+        const show = typeMatch && modMatch && searchMatch;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      modRows.forEach((mrow) => {
+        const m = mrow.dataset.mod!;
+        const any = allRows.some((r) => r.dataset.mod === m && r.style.display !== 'none');
+        mrow.style.display = any ? '' : 'none';
+      });
+      counter.textContent = `${visible} of ${total}`;
+      emptyState.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    pills.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        pills.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        activeType = btn.dataset.type!;
+        applyFilters();
+      });
+    });
+    modSel.addEventListener('change', applyFilters);
+    searchEl.addEventListener('input', applyFilters);
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchEl.focus();
+        searchEl.select();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+// src/data/catalog.ts
+// AUTO-DERIVED from courses/kubelings/ (the source of truth). 107 lessons.
+// Regenerate when lessons change; do not hand-edit entries.
+
+export type CatalogEntry = {
+  module: string;
+  slug: string;
+  scenario: string;
+  type: 'lab' | 'incident' | 'drill' | 'read';
+  iximiuz: boolean;
+  kind: boolean;
+};
+
+export const MODULES: Record<string, { label: string; color: string }> = {
+  M1:  { label: "Foundations", color: '#7c6af5' },
+  M2:  { label: "Workloads", color: '#3b9eff' },
+  M3:  { label: "Config & Storage", color: '#d29922' },
+  M4:  { label: "Networking", color: '#4fa86d' },
+  M5:  { label: "Scheduling & Placement", color: '#9b5de5' },
+  M6:  { label: "Security", color: '#c53030' },
+  M7:  { label: "Internals", color: '#e36f0e' },
+  M8:  { label: "Observability & SRE", color: '#1f8a9c' },
+  M9:  { label: "War Stories", color: '#e85d9f' },
+  M10: { label: "Platform Engineering", color: '#db6d28' },
+};
+
+export const CATALOG: CatalogEntry[] = [
+  // ── M1 Foundations ──────
+  { module:"M1", slug:"welcome", scenario:"Welcome to Kubelings", type:"read", iximiuz:true, kind:false },
+  { module:"M1", slug:"crashloop-triage", scenario:"CrashLoopBackOff: read the logs before you guess", type:"lab", iximiuz:true, kind:true },
+  { module:"M1", slug:"expose-web", scenario:"Expose a Deployment: your first Service", type:"lab", iximiuz:true, kind:true },
+  { module:"M1", slug:"selector-mismatch", scenario:"The Service that routes to nothing", type:"lab", iximiuz:true, kind:true },
+  { module:"M1", slug:"namespace-basics", scenario:"Namespaces: walls, names, and crossing them", type:"lab", iximiuz:true, kind:true },
+  { module:"M1", slug:"imagepull-backoff", scenario:"ImagePullBackOff: the tag that never existed", type:"lab", iximiuz:true, kind:true },
+  { module:"M1", slug:"kubectl-detective", scenario:"kubectl detective: find the broken one", type:"lab", iximiuz:true, kind:true },
+  // ── M2 Workloads ──────
+  { module:"M2", slug:"rolling-update", scenario:"Fix the Rolling Update: unsafe maxSurge/maxUnavailable", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"daemonset", scenario:"Build a Node-Level Log Collector DaemonSet", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"statefulset", scenario:"StatefulSet with Stable Pod Identity + Headless Service", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"jobs", scenario:"The Job That Never Finishes", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"cronjobs", scenario:"CronJob Pileup: fix the concurrencyPolicy", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"hpa", scenario:"Autoscale a Deployment with an HPA (1 → 5)", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"oomkill", scenario:"OOMKilled CrashLoop: right-size the memory limit", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"liveness-vs-readiness", scenario:"The liveness probe that kills healthy pods", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"startup-probe", scenario:"Slow starter vs impatient liveness", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"init-containers", scenario:"Stuck at Init: the gate that never opens", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"pdb-blocks-drain", scenario:"The drain that never finishes", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"qos-classes", scenario:"QoS classes: who gets killed first", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"blue-green-canary", scenario:"Blue/green: the deploy you can undo in one second", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"incident-cpu-throttling", scenario:"CPU throttling: the latency tax nobody sees", type:"incident", iximiuz:true, kind:true },
+  { module:"M2", slug:"ephemeral-containers", scenario:"No shell, no exec, no problem", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"multi-container-patterns", scenario:"Three pods, three broken patterns", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"pattern-readiness-flap", scenario:"Drill — the readiness probe that flaps", type:"drill", iximiuz:true, kind:true },
+  { module:"M2", slug:"pattern-zombie-cronjobs", scenario:"Drill — zombie CronJobs pile up", type:"drill", iximiuz:true, kind:true },
+  { module:"M2", slug:"pattern-rolling-update-deadlock", scenario:"Drill — the rolling update that deadlocks", type:"drill", iximiuz:true, kind:true },
+  { module:"M2", slug:"vpa", scenario:"VPA: the recommender that watched the wrong app", type:"lab", iximiuz:true, kind:true },
+  { module:"M2", slug:"keda-autoscaling", scenario:"KEDA: the ScaledObject that never scaled", type:"lab", iximiuz:true, kind:true },
+  // ── M3 Config & Storage ──────
+  { module:"M3", slug:"configmap-wiring", scenario:"CreateContainerConfigError: the key that isn't there", type:"lab", iximiuz:true, kind:true },
+  { module:"M3", slug:"secret-not-mounted", scenario:"ContainerCreating forever: the Secret that isn't", type:"lab", iximiuz:true, kind:true },
+  { module:"M3", slug:"pvc-pending", scenario:"PVC Pending: a claim nobody answers", type:"lab", iximiuz:true, kind:true },
+  { module:"M3", slug:"access-modes", scenario:"One disk, two nodes: the access-mode trap", type:"lab", iximiuz:true, kind:true },
+  { module:"M3", slug:"pattern-pvc-terminating", scenario:"Drill — the PVC stuck Terminating", type:"drill", iximiuz:true, kind:true },
+  { module:"M3", slug:"kustomize-overlays", scenario:"Kustomize: one base, many environments, zero drift", type:"lab", iximiuz:true, kind:true },
+  { module:"M3", slug:"helm-releases", scenario:"Helm: history, rollback, and the failed release", type:"lab", iximiuz:true, kind:true },
+  { module:"M3", slug:"pattern-ghost-endpoints", scenario:"Drill — ghost endpoints after scale-down", type:"drill", iximiuz:true, kind:true },
+  { module:"M3", slug:"pattern-secret-not-reloaded", scenario:"Drill — the Secret that was rotated but never reloaded", type:"drill", iximiuz:true, kind:true },
+  { module:"M3", slug:"pattern-namespace-terminating", scenario:"Drill — the namespace stuck Terminating", type:"drill", iximiuz:true, kind:true },
+  // ── M4 Networking ──────
+  { module:"M4", slug:"incident-dns-ndots", scenario:"Incident replay — the ndots:5 DNS amplifier (Zalando, Jan 2019)", type:"incident", iximiuz:true, kind:true },
+  { module:"M4", slug:"networkpolicy-blackhole", scenario:"NetworkPolicy blackhole: default-deny ate my traffic", type:"lab", iximiuz:true, kind:true },
+  { module:"M4", slug:"broken-targetport", scenario:"Connection refused: port vs targetPort", type:"lab", iximiuz:true, kind:true },
+  { module:"M4", slug:"nodeport-vs-clusterip", scenario:"Service types: open a door to the outside", type:"lab", iximiuz:true, kind:true },
+  { module:"M4", slug:"incident-conntrack", scenario:"Incident file — conntrack: the invisible table that fills up", type:"read", iximiuz:true, kind:false },
+  { module:"M4", slug:"incident-graceful-shutdown", scenario:"Incident replay — 502s on every deploy (Ravelin's endpoint secret)", type:"incident", iximiuz:true, kind:true },
+  { module:"M4", slug:"ingress-wiring", scenario:"Ingress: three names that must agree", type:"lab", iximiuz:true, kind:true },
+  { module:"M4", slug:"gateway-api", scenario:"Gateway API: routing with a role for everyone", type:"lab", iximiuz:true, kind:true },
+  { module:"M4", slug:"kube-proxy-dataplane", scenario:"kube-proxy: there is no proxy", type:"read", iximiuz:true, kind:false },
+  { module:"M4", slug:"cni-basics", scenario:"CNI: who wires the pod, and what breaks when nobody does", type:"read", iximiuz:true, kind:false },
+  { module:"M4", slug:"kubeconfig-contexts", scenario:"kubeconfig: contexts, the merge, and the prod you almost touched", type:"lab", iximiuz:true, kind:true },
+  // ── M5 Scheduling & Placement ──────
+  { module:"M5", slug:"incident-same-node", scenario:"Incident replay — all replicas on the failing node (Moonlight)", type:"incident", iximiuz:true, kind:true },
+  { module:"M5", slug:"taints-tolerations", scenario:"Everything Pending: who tainted the nodes?", type:"lab", iximiuz:true, kind:true },
+  { module:"M5", slug:"topology-spread", scenario:"Topology spread: balance, not just separation", type:"lab", iximiuz:true, kind:true },
+  { module:"M5", slug:"incident-priority-preemption", scenario:"Incident replay — the priority that ate production (Grafana Labs)", type:"incident", iximiuz:true, kind:true },
+  { module:"M5", slug:"pattern-noisy-neighbor", scenario:"Drill — the noisy neighbor", type:"drill", iximiuz:true, kind:true },
+  // ── M6 Security ──────
+  { module:"M6", slug:"rbac-least-privilege", scenario:"cluster-admin for a bot: scope it down", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"incident-cryptominer", scenario:"Incident replay — the exposed dashboard (JW Player's cryptominer)", type:"incident", iximiuz:true, kind:true },
+  { module:"M6", slug:"incident-webhook-outage", scenario:"Incident replay — the webhook that froze the cluster (Jetstack)", type:"incident", iximiuz:true, kind:true },
+  { module:"M6", slug:"pod-security-baseline", scenario:"Pod Security: the privileged pod that shouldn't exist", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"serviceaccount-tokens", scenario:"The token in every pod (and who's using yours)", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"container-hardening", scenario:"Hardening: take away everything the workload doesn't use", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"cis-kube-bench", scenario:"Audit the cluster: CIS benchmark with kube-bench", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"control-plane-hardening", scenario:"The hardening you can't kubectl: control plane, supply chain, runtime", type:"read", iximiuz:true, kind:false },
+  { module:"M6", slug:"egress-lockdown", scenario:"Egress lockdown: the miner needs a phone line", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"image-digests", scenario:"Tags lie, digests don't: pin the supply chain", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"opa-gatekeeper", scenario:"Gatekeeper: the policy that rejected nothing", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"kyverno-policies", scenario:"Kyverno: the policy that blocked kube-system", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"image-scanning-pipeline", scenario:"Scan it, then pin it: trivy and the digest", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"sbom-cosign", scenario:"Signatures and SBOMs: trust, but verify with cosign", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"apparmor-seccomp", scenario:"seccomp on, AppArmor understood", type:"lab", iximiuz:true, kind:true },
+  { module:"M6", slug:"encryption-at-rest", scenario:"Encryption at rest: the full runbook", type:"read", iximiuz:true, kind:false },
+  { module:"M6", slug:"audit-policy", scenario:"Audit policy: who touched that Secret?", type:"read", iximiuz:true, kind:false },
+  { module:"M6", slug:"falco-runtime-detection", scenario:"Falco: alarms for the attack you didn't prevent", type:"read", iximiuz:true, kind:false },
+  // ── M7 Internals ──────
+  { module:"M7", slug:"reconcile-loop", scenario:"The reconcile loop: why deleted pods come back", type:"lab", iximiuz:true, kind:true },
+  { module:"M7", slug:"scheduler-nodename", scenario:"What the scheduler actually does (bypass it to find out)", type:"lab", iximiuz:true, kind:true },
+  { module:"M7", slug:"etcd-truth", scenario:"etcd: the one source of truth", type:"lab", iximiuz:true, kind:true },
+  { module:"M7", slug:"control-plane-tour", scenario:"The control-plane tour: request flow, kubelet, leases", type:"read", iximiuz:true, kind:false },
+  { module:"M7", slug:"crd-operators", scenario:"CRDs: teach the API server a new noun", type:"lab", iximiuz:true, kind:true },
+  { module:"M7", slug:"etcd-backup-restore", scenario:"etcd backup & restore: the runbook you rehearse before you need it", type:"read", iximiuz:true, kind:false },
+  { module:"M7", slug:"admission-mutations", scenario:"Admission: the API server edits your YAML before storing it", type:"lab", iximiuz:true, kind:true },
+  { module:"M7", slug:"watch-informers", scenario:"Watch: how every controller hears the cluster", type:"read", iximiuz:true, kind:false },
+  { module:"M7", slug:"build-an-operator", scenario:"Build an operator: the verb for your noun", type:"read", iximiuz:true, kind:false },
+  { module:"M7", slug:"kubeadm-bootstrap", scenario:"kubeadm: a cluster from three commands", type:"read", iximiuz:true, kind:false },
+  { module:"M7", slug:"ha-control-plane", scenario:"HA control plane: three of everything", type:"read", iximiuz:true, kind:false },
+  { module:"M7", slug:"cert-rotation", scenario:"Certificates: the outage scheduled a year in advance", type:"read", iximiuz:true, kind:false },
+  // ── M8 Observability & SRE ──────
+  { module:"M8", slug:"events-forensics", scenario:"Events forensics: reconstruct the crime", type:"lab", iximiuz:true, kind:true },
+  { module:"M8", slug:"incident-node-oom", scenario:"Incident replay — the node that OOMed itself (Blue Matador)", type:"incident", iximiuz:true, kind:true },
+  { module:"M8", slug:"quota-exhausted", scenario:"Deploy blocked: the quota nobody mentioned", type:"lab", iximiuz:true, kind:true },
+  { module:"M8", slug:"node-notready", scenario:"The morning after NotReady", type:"lab", iximiuz:true, kind:true },
+  { module:"M8", slug:"pattern-disk-pressure", scenario:"Pattern drill: evicted — the disk you forgot to budget", type:"drill", iximiuz:true, kind:true },
+  { module:"M8", slug:"incident-datadog-cilium", scenario:"Incident file — the OS under the cluster (Datadog, 2023)", type:"read", iximiuz:true, kind:false },
+  { module:"M8", slug:"upgrade-runbook", scenario:"The upgrade runbook: version skew, kubeadm, and not becoming a war story", type:"read", iximiuz:true, kind:false },
+  { module:"M8", slug:"node-maintenance", scenario:"Node maintenance: drain like you mean it", type:"lab", iximiuz:true, kind:true },
+  { module:"M8", slug:"slo-errorbudget", scenario:"SLOs: the burn-rate alert that never fired", type:"lab", iximiuz:true, kind:true },
+  { module:"M8", slug:"otel-collector-pipeline", scenario:"OTel pipeline: traces into the void", type:"lab", iximiuz:true, kind:true },
+  // ── M9 War Stories ──────
+  { module:"M9", slug:"incident-monzo-cascade", scenario:"Incident file — the cascade (Monzo's bank-stopping outage)", type:"read", iximiuz:true, kind:false },
+  { module:"M9", slug:"incident-openai-cascade", scenario:"Incident file — locked out of the control plane (OpenAI, 2024)", type:"read", iximiuz:true, kind:false },
+  { module:"M9", slug:"incident-reddit-piday", scenario:"Incident file — the Pi-Day outage (Reddit, 2023)", type:"read", iximiuz:true, kind:false },
+  { module:"M9", slug:"incident-black-friday", scenario:"Incident file — killing the dashboard on Black Friday (Algolia)", type:"read", iximiuz:true, kind:false },
+  { module:"M9", slug:"incident-target-cascade", scenario:"Incident file — the five-system cascade (Target, 2019)", type:"read", iximiuz:true, kind:false },
+  { module:"M9", slug:"incident-spotify-delete", scenario:"Incident file — deleting every cluster, twice (Spotify, 2019)", type:"read", iximiuz:true, kind:false },
+  { module:"M9", slug:"final-boss", scenario:"Final boss: three faults, no hints", type:"lab", iximiuz:true, kind:true },
+  // ── M10 Platform Engineering ──────
+  { module:"M10", slug:"gitops-argocd", scenario:"Argo CD: the app that refuses to sync", type:"lab", iximiuz:true, kind:true },
+  { module:"M10", slug:"gitops-argocd-appofapps", scenario:"App of apps: one bad child in the fleet", type:"lab", iximiuz:true, kind:true },
+  { module:"M10", slug:"gitops-flux2", scenario:"Flux: the Kustomization that can't find its source", type:"lab", iximiuz:true, kind:true },
+  { module:"M10", slug:"multi-tenancy-capsule", scenario:"Capsule: the tenant that hit its walls", type:"lab", iximiuz:true, kind:true },
+  { module:"M10", slug:"cluster-api-intro", scenario:"Cluster API: clusters as custom resources", type:"read", iximiuz:true, kind:false },
+  { module:"M10", slug:"crossplane-compositions", scenario:"Crossplane: the composition missing its provider", type:"lab", iximiuz:true, kind:true },
+];

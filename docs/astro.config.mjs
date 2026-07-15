@@ -100,6 +100,7 @@ export default defineConfig({
         {
           label: 'Guides',
           items: [
+            { label: 'Catalog', link: '/catalog' },
             { label: 'The Curriculum', slug: 'guides/curriculum' },
             { label: 'The TUI', slug: 'guides/tui' },
             { label: 'Lessons', slug: 'guides/lessons' },
