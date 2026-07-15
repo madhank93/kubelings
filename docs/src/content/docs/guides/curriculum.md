@@ -18,7 +18,7 @@ Progress top to bottom; later modules assume the earlier ones.
 locally on `kind`, from one source of truth — there are no platform-exclusive
 modules. (A handful of runbook *readings* cover host-level topics you practice
 on an iximiuz VM or a throwaway kind node; they're marked `read` in the
-[catalog](/guides/lessons/).)
+[catalog](/catalog/).)
 
 | # | Module | You learn | Status |
 |---|--------|-----------|--------|
@@ -68,7 +68,7 @@ the module that teaches the concept** — you get the same broken state the
 original team faced, on your own `kind` cluster, with a check that only passes
 when you've fixed it. Multi-concept cascades land in Module 9.
 
-Browse them all in the [Incident Library](/reference/incident-library/): every
+Browse them all in the [Catalog](/catalog/): every
 `[REAL]` entry cites its public postmortem; synthetic composites are labeled
 `[PATTERN]`.
 

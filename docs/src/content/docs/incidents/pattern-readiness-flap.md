@@ -6,7 +6,7 @@ description: "[PATTERN] Synthetic composite — hair-trigger readiness probes cy
 > **[PATTERN] scenario** — a synthetic composite of a failure mode reported
 > across many production clusters. **No specific company**; details are
 > representative, not cited. (Real, cited incidents are marked `[REAL]` in the
-> [Incident Library](/reference/incident-library/).)
+> [Incident Library](/catalog/).)
 
 ## Situation
 

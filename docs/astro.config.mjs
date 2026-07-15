@@ -5,6 +5,11 @@ import starlight from '@astrojs/starlight';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://kubelings.madhan.app',
+  // The Incident Library folded into /catalog (cited sources live on each row +
+  // a "further reading" appendix). Keep the old URL alive.
+  redirects: {
+    '/reference/incident-library/': '/catalog/',
+  },
   integrations: [
     starlight({
       title: 'Kubelings',
@@ -103,14 +108,13 @@ export default defineConfig({
             { label: 'Catalog', link: '/catalog' },
             { label: 'The Curriculum', slug: 'guides/curriculum' },
             { label: 'The TUI', slug: 'guides/tui' },
-            { label: 'Lessons', slug: 'guides/lessons' },
             { label: 'CLI', slug: 'guides/cli' },
+            { label: 'Authoring lessons', slug: 'guides/lessons' },
           ],
         },
         {
-          label: 'Incidents',
+          label: 'Case Studies',
           items: [
-            { label: 'Incident Library', slug: 'reference/incident-library' },
             {
               label: 'Real incidents',
               collapsed: true,

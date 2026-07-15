@@ -75,13 +75,14 @@ cited production incidents reproduced as runnable lessons along the way.
 
 [View the full curriculum with skill outcomes →](/guides/curriculum/)
 
-Every lesson is one of four types:
+Every lesson is one of four types — three **hands-on** (you fix a live cluster,
+verify-gated) and one **read-only**:
 
 <ul class="kind-legend">
-  <li><span class="kind-tag lab">lab</span> concept lesson, verify-gated</li>
-  <li><span class="kind-tag replay">replay</span> real production incident, reproduced</li>
-  <li><span class="kind-tag drill">drill</span> synthetic failure pattern</li>
-  <li><span class="kind-tag read">read</span> guided runbook, no tasks</li>
+  <li><span class="kind-tag lab">lab</span> hands-on concept lesson</li>
+  <li><span class="kind-tag incident">incident</span> hands-on real production incident, reproduced</li>
+  <li><span class="kind-tag drill">drill</span> hands-on synthetic failure pattern</li>
+  <li><span class="kind-tag read">read</span> read-only runbook, no tasks</li>
 </ul>
 
 ## What makes it different
@@ -95,8 +96,8 @@ Every lesson is one of four types:
   <Card title="Real incidents, reproduced" icon="random">
     40+ cited production postmortems — Zalando, Reddit, OpenAI, Monzo, Grafana —
     reproduced as runnable lessons on the same broken state the original team
-    faced. [`REAL`] vs [`PATTERN`] is labeled honestly. See the
-    [Incident Library](/reference/incident-library/).
+    faced. Real vs synthetic is labeled honestly. Browse them in the
+    [Catalog](/catalog/).
   </Card>
   <Card title="Check-driven" icon="approve-check">
     Each lesson ships `init` + `verify` tasks; the check turns green only when the

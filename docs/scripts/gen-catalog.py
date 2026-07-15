@@ -50,6 +50,52 @@ def get_title(fm):
 def has_tasks(fm):
     return re.search(r'(?m)^tasks:\s*$', fm) is not None
 
+def get_description(fm):
+    lines = fm.splitlines()
+    for i, ln in enumerate(lines):
+        m = re.match(r'^description:\s*(.*)$', ln)
+        if not m:
+            continue
+        val = m.group(1).strip()
+        if val in ('|', '|-', '|+', '>', '>-', '>+', ''):
+            # block scalar: gather following indented lines
+            buf = []
+            for nxt in lines[i + 1:]:
+                if nxt.strip() == '':
+                    buf.append('')
+                    continue
+                if nxt[:1] in (' ', '\t'):
+                    buf.append(nxt.strip())
+                else:
+                    break
+            return ' '.join(x for x in buf if x != '').strip()
+        if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+            q = val[0]
+            val = val[1:-1].replace(q + q, q) if q == "'" else val[1:-1].replace('\\"', '"')
+        return val.strip()
+    return ''
+
+# Real, cited company incidents reproduced or documented as lessons.
+# slug -> (company, source_url, case_study_path_or_None)
+INCIDENTS = {
+    "incident-cpu-throttling":     ("Omio",         "https://medium.com/omio-engineering/cpu-limits-and-aggressive-throttling-in-kubernetes-c5b20bd8a718", None),
+    "incident-dns-ndots":          ("Zalando",      "https://github.com/zalando-incubator/kubernetes-on-aws/blob/dev/docs/postmortems/jan-2019-dns-outage.md", "/incidents/zalando-dns-outage/"),
+    "incident-graceful-shutdown":  ("Ravelin",      "https://philpearl.github.io/post/k8s_ingress/", "/incidents/ravelin-graceful-shutdown/"),
+    "incident-same-node":          ("Moonlight",    "https://updates.moonlightwork.com/outage-post-mortem-87370", "/incidents/moonlight-same-node/"),
+    "incident-priority-preemption":("Grafana Labs", "https://grafana.com/blog/2019/07/24/how-a-production-outage-was-caused-using-kubernetes-pod-priorities/", "/incidents/grafana-priority-preemption/"),
+    "incident-cryptominer":        ("JW Player",    "https://medium.com/jw-player-engineering/how-a-cryptocurrency-miner-made-its-way-onto-our-internal-kubernetes-clusters-9b09c4704205", "/incidents/jwplayer-cryptominer/"),
+    "incident-webhook-outage":     ("Jetstack",     "https://blog.jetstack.io/blog/gke-webhook-outage", "/incidents/jetstack-webhook-outage/"),
+    "incident-node-oom":           ("Blue Matador", "https://www.bluematador.com/blog/post-mortem-kubernetes-node-oom", "/incidents/bluematador-node-oom/"),
+    "incident-conntrack":          ("loveholidays", "https://deploy.live/blog/kubernetes-networking-problems-due-to-the-conntrack/", "/incidents/conntrack-exhaustion/"),
+    "incident-datadog-cilium":     ("Datadog",      "https://www.datadoghq.com/blog/2023-03-08-multiregion-infrastructure-connectivity-issue/", "/incidents/datadog-cilium-routes/"),
+    "incident-monzo-cascade":      ("Monzo",        "https://community.monzo.com/t/resolved-current-account-payments-may-fail-major-outage-27-10-2017/26296/95", "/incidents/monzo-cascade/"),
+    "incident-openai-cascade":     ("OpenAI",       "https://status.openai.com/incidents/ctrsv3lwd797", "/incidents/openai-telemetry-cascade/"),
+    "incident-reddit-piday":       ("Reddit",       "https://www.reddit.com/r/RedditEng/comments/11xx5o0/you_broke_reddit_the_piday_outage/", "/incidents/reddit-piday/"),
+    "incident-black-friday":       ("Algolia",      "https://www.youtube.com/watch?v=Fjyg7cxRZQs", "/incidents/algolia-black-friday/"),
+    "incident-target-cascade":     ("Target",       "https://medium.com/@daniel.p.woods/on-infrastructure-at-scale-a-cascading-failure-of-distributed-systems-7cff2a3cd2df", "/incidents/target-cascade/"),
+    "incident-spotify-delete":     ("Spotify",      "https://www.youtube.com/watch?v=ix0Tw8uinWs", "/incidents/spotify-delete/"),
+}
+
 entries = []
 for n in range(1, 11):
     mod = f"M{n}"
@@ -65,6 +111,7 @@ for n in range(1, 11):
             continue
         fm = parse_frontmatter(f)
         title = get_title(fm) or slug
+        desc = get_description(fm)
         tasks = has_tasks(fm)
         if not tasks:
             typ = "read"
@@ -74,9 +121,15 @@ for n in range(1, 11):
             typ = "incident"
         else:
             typ = "lab"
+        inc = INCIDENTS.get(slug)
         entries.append({
             "module": mod, "slug": slug, "scenario": title,
             "type": typ, "iximiuz": True, "kind": tasks,
+            "handsOn": tasks, "description": desc,
+            "real": inc is not None,
+            "company": inc[0] if inc else None,
+            "source": inc[1] if inc else None,
+            "caseStudy": inc[2] if inc else None,
         })
 
 # ---- emit catalog.ts ----
@@ -95,6 +148,12 @@ out.append("  scenario: string;")
 out.append("  type: 'lab' | 'incident' | 'drill' | 'read';")
 out.append("  iximiuz: boolean;")
 out.append("  kind: boolean;")
+out.append("  handsOn: boolean;")
+out.append("  description: string;")
+out.append("  real: boolean;              // reproduces a cited, real company incident")
+out.append("  company?: string;")
+out.append("  source?: string;            // link to the public postmortem")
+out.append("  caseStudy?: string;         // local /incidents/* write-up, if any")
 out.append("};")
 out.append("")
 out.append("export const MODULES: Record<string, { label: string; color: string }> = {")
@@ -108,12 +167,24 @@ for e in entries:
     if e["module"] != last:
         last = e["module"]
         out.append(f"  // ── {e['module']} {MODULES[e['module']][0]} " + "─" * 6)
-    out.append(
-        "  { module:%s, slug:%s, scenario:%s, type:%s, iximiuz:%s, kind:%s },"
-        % (esc(e["module"]), esc(e["slug"]), esc(e["scenario"]),
-           esc(e["type"]), "true" if e["iximiuz"] else "false",
-           "true" if e["kind"] else "false")
-    )
+    parts = [
+        "module:%s" % esc(e["module"]),
+        "slug:%s" % esc(e["slug"]),
+        "scenario:%s" % esc(e["scenario"]),
+        "type:%s" % esc(e["type"]),
+        "iximiuz:%s" % ("true" if e["iximiuz"] else "false"),
+        "kind:%s" % ("true" if e["kind"] else "false"),
+        "handsOn:%s" % ("true" if e["handsOn"] else "false"),
+        "description:%s" % esc(e["description"]),
+        "real:%s" % ("true" if e["real"] else "false"),
+    ]
+    if e["company"]:
+        parts.append("company:%s" % esc(e["company"]))
+    if e["source"]:
+        parts.append("source:%s" % esc(e["source"]))
+    if e["caseStudy"]:
+        parts.append("caseStudy:%s" % esc(e["caseStudy"]))
+    out.append("  { " + ", ".join(parts) + " },")
 out.append("];")
 out.append("")
 
