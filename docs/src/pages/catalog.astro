@@ -49,6 +49,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     <span><b class="ho">🖐 Hands-on</b> — you fix a live cluster; an automated check gates completion (types: Lab, Incident, Drill).</span>
     <span><b class="ro">📖 Read-only</b> — a guided runbook for host-level topics; no cluster tasks (type: Reading).</span>
     <span><b class="rl">⚡ Real incident</b> — reproduces a cited, real company outage; open the row for the write-up and postmortem.</span>
+    <span>Platform column: <b class="pi">iximiuz</b> — runs in the browser on iximiuz Labs · <b class="pk">kind</b> — runs locally on a <code>kind</code> cluster.</span>
   </div>
 
   <div class="cat-filters" role="search" aria-label="Filter catalog">
@@ -89,7 +90,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
           <th style="width:56px" class="c-mod">Mod</th>
           <th style="width:15rem">Lesson</th>
           <th>Scenario</th>
-          <th style="width:64px" class="c-plat" title="iximiuz · kind">Plat</th>
+          <th style="width:118px" class="c-plat">Platform</th>
         </tr>
       </thead>
       <tbody id="catBody">
@@ -134,9 +135,9 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
                 </td>
                 <td class="scn">{e.scenario}<span class="exp">▸</span></td>
                 <td class="c-plat">
-                  <span class="pdots">
-                    <span class={`pdot ${e.iximiuz ? 'ix' : 'off'}`} title={e.iximiuz ? 'iximiuz Labs' : '—'}></span>
-                    <span class={`pdot ${e.kind ? 'kd' : 'off'}`} title={e.kind ? 'kind (local)' : 'reading — no kind lab'}></span>
+                  <span class="plabels">
+                    {e.iximiuz && <span class="plabel ix" title="Runs on iximiuz Labs (browser)">iximiuz</span>}
+                    {e.kind && <span class="plabel kd" title="Runs locally on kind">kind</span>}
                   </span>
                 </td>
               </tr>
@@ -265,6 +266,8 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     .cat-legend b.ho { color: var(--sl-color-accent-high); }
     .cat-legend b.ro { color: var(--sl-color-gray-1); }
     .cat-legend b.rl { color: #ff8a80; }
+    .cat-legend b.pi { color: #8fd3dc; }
+    .cat-legend b.pk { color: #c9a6f0; }
 
     /* Sticky offsets are measured at runtime into --cat-filter-h; a hardcoded
        guess is what previously parked the header mid-table. */
@@ -274,9 +277,10 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       position: sticky; top: var(--sl-nav-height); z-index: 3; }
     .cat-filters .fg { display: flex; align-items: center; gap: 0.35rem; }
     .cat-filters .fl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-gray-3); }
-    .pill { cursor: pointer; border: 1px solid var(--sl-color-gray-5); background: transparent;
-      color: var(--sl-color-gray-2); font: inherit; font-size: 0.78rem; padding: 0.18rem 0.6rem;
-      border-radius: 999px; transition: all 0.12s; }
+    .pill { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;
+      height: 1.85rem; line-height: 1; cursor: pointer; border: 1px solid var(--sl-color-gray-5);
+      background: transparent; color: var(--sl-color-gray-2); font: inherit; font-size: 0.78rem;
+      padding: 0 0.7rem; border-radius: 999px; transition: all 0.12s; }
     .pill:hover { border-color: var(--sl-color-accent); color: var(--sl-color-white); }
     .pill.active { background: var(--sl-color-accent); border-color: var(--sl-color-accent); color: var(--sl-color-black); font-weight: 600; }
     .cat-filters select, .cat-filters input { font: inherit; font-size: 0.78rem; border: 1px solid var(--sl-color-gray-5);
@@ -336,10 +340,11 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     .scn .exp { float: right; color: var(--sl-color-gray-4); }
     .lz-row:hover .exp { color: var(--sl-color-accent); }
 
-    .pdots { display: flex; gap: 0.3rem; }
-    .pdot { width: 9px; height: 9px; border-radius: 50%; }
-    .pdot.ix { background: #4f98a3; } .pdot.kd { background: #9b5de5; }
-    .pdot.off { background: transparent; border: 1.5px solid var(--sl-color-gray-5); }
+    .plabels { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+    .plabel { font-size: 0.62rem; font-weight: 600; padding: 0.08rem 0.34rem; border-radius: 0.3rem;
+      white-space: nowrap; letter-spacing: 0.01em; }
+    .plabel.ix { color: #8fd3dc; background: color-mix(in oklab, #4f98a3 26%, transparent); }
+    .plabel.kd { color: #c9a6f0; background: color-mix(in oklab, #9b5de5 26%, transparent); }
 
     .cat-empty { text-align: center; padding: 2.5rem 1rem; color: var(--sl-color-gray-3); }
 
