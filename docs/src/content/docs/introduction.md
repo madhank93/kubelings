@@ -45,5 +45,5 @@ lockstep** — no duplicated scripts. See [Architecture](/reference/architecture
 
 - [Getting Started](/getting-started/) — install and run your first lesson.
 - [The TUI](/guides/tui/) — the interactive terminal app.
-- [Catalog](/catalog/) — browse and filter all 107 lessons.
-- [Authoring lessons](/guides/lessons/) — how a lesson is built.
+- [Catalog](/catalog/) — every lesson, the curriculum, and the incident write-ups.
+- [Architecture](/reference/architecture/) — how it fits together, and how a lesson is built.

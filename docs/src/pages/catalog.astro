@@ -1,8 +1,14 @@
 ---
 // src/pages/catalog.astro
-// The hub: every lesson, lab, incident and drill in one filterable table.
-// Rendered inside Starlight (StarlightPage) so it inherits the site nav,
-// sidebar, theme, and logo. Data is server-rendered from src/data/catalog.ts.
+// The source of truth: every lesson, lab, incident and drill in one filterable
+// table. Rendered inside Starlight (StarlightPage) so it inherits the site nav,
+// sidebar, theme and logo, but widened past the prose column — the table needs
+// the room. Row click opens a modal; its problem statement and case-study
+// write-up are fetched from /catalog-details/<slug>.json on demand.
+//
+// This page absorbed three retired pages: /guides/curriculum (module narrative,
+// now on the expandable module rows), /guides/lessons, and the 25 /incidents/*
+// case studies (now rendered in the modal). All redirect here — see astro.config.mjs.
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { CATALOG, MODULES } from '../data/catalog';
 import { FURTHER_READING } from '../data/further-reading';
@@ -15,18 +21,20 @@ const realCount = CATALOG.filter((e) => e.real).length;
 const TYPE_LABEL: Record<string, string> = {
   lab: 'Lab', incident: 'Incident', drill: 'Drill', read: 'Reading',
 };
+
+const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
 ---
 <StarlightPage
   frontmatter={{
     title: 'Catalog',
-    description: 'Every Kubelings lesson, lab, incident and drill in one filterable table — 107 lessons across 10 modules.',
+    description: 'Every Kubelings lesson, lab, incident and drill in one filterable table — 107 lessons across 10 modules, with the module curriculum and every incident write-up.',
     tableOfContents: false,
     template: 'doc',
   }}
 >
   <p class="cat-intro">
     All {total} lessons in one place — filter by hands-on vs read-only, by type, or by module.
-    For the narrative arc and skill outcomes, see <a href="/guides/curriculum/">the Curriculum</a>.
+    Click any row for the full problem statement; expand a module header for what it teaches.
   </p>
 
   <ul class="cat-stats" role="list">
@@ -40,7 +48,7 @@ const TYPE_LABEL: Record<string, string> = {
     <strong>Two kinds of lesson:</strong>
     <span><b class="ho">🖐 Hands-on</b> — you fix a live cluster; an automated check gates completion (types: Lab, Incident, Drill).</span>
     <span><b class="ro">📖 Read-only</b> — a guided runbook for host-level topics; no cluster tasks (type: Reading).</span>
-    <span><b class="rl">⚡ Real incident</b> — reproduces a cited, real company outage; expand the row for the postmortem.</span>
+    <span><b class="rl">⚡ Real incident</b> — reproduces a cited, real company outage; open the row for the write-up and postmortem.</span>
   </div>
 
   <div class="cat-filters" role="search" aria-label="Filter catalog">
@@ -78,10 +86,10 @@ const TYPE_LABEL: Record<string, string> = {
       <thead>
         <tr>
           <th style="width:104px">Type</th>
-          <th style="width:52px" class="c-mod">Mod</th>
-          <th style="width:210px">Lesson</th>
+          <th style="width:56px" class="c-mod">Mod</th>
+          <th style="width:15rem">Lesson</th>
           <th>Scenario</th>
-          <th style="width:58px" class="c-plat" title="iximiuz · kind">Plat</th>
+          <th style="width:64px" class="c-plat" title="iximiuz · kind">Plat</th>
         </tr>
       </thead>
       <tbody id="catBody">
@@ -89,24 +97,37 @@ const TYPE_LABEL: Record<string, string> = {
           let last = '';
           return CATALOG.flatMap((e, i) => {
             const rows: any[] = [];
-            const color = MODULES[e.module].color;
+            const mod = MODULES[e.module];
             if (e.module !== last) {
               last = e.module;
               rows.push(
-                <tr class="mod-row" data-mod={e.module}>
-                  <td colspan="5"><span class="mdot" style={`background:${color}`}></span>{e.module} — {MODULES[e.module].label}</td>
+                <tr class="mod-row" data-mod={e.module} tabindex="0" role="button" aria-expanded="false">
+                  <td colspan="5">
+                    <span class="mdot" style={`background:${mod.color}`}></span>
+                    {e.module} — {mod.label}
+                    <span class="mcount">{countFor(e.module)} lessons</span>
+                    <span class="mexp">▸</span>
+                  </td>
+                </tr>
+              );
+              rows.push(
+                <tr class="mod-detail" data-detail-for={e.module} hidden>
+                  <td colspan="5">
+                    <p><b>You learn:</b> <span set:html={mod.learn.replace(/`([^`]+)`/g, '<code>$1</code>')} /></p>
+                  </td>
                 </tr>
               );
             }
             const search = `${e.slug} ${e.scenario} ${e.type} ${e.module} ${e.company ?? ''}`.toLowerCase();
             rows.push(
-              <tr class="lz-row" data-i={i} data-type={e.type} data-mod={e.module}
+              <tr class="lz-row" data-i={i} data-slug={e.slug} data-type={e.type} data-mod={e.module}
                   data-hands={e.handsOn ? '1' : '0'} data-real={e.real ? '1' : '0'} data-search={search}
-                  tabindex="0" role="button" aria-expanded="false">
-                <td>
-                  <span class={`badge b-${e.type}`}>{TYPE_LABEL[e.type]}</span>
-                </td>
-                <td class="c-mod"><span class="mchip" style={`background:${color}`}>{e.module}</span></td>
+                  data-scenario={e.scenario} data-desc={e.description}
+                  data-company={e.company ?? ''} data-source={e.source ?? ''}
+                  data-ix={e.iximiuz ? '1' : '0'} data-kind={e.kind ? '1' : '0'}
+                  tabindex="0" role="button">
+                <td><span class={`badge b-${e.type}`}>{TYPE_LABEL[e.type]}</span></td>
+                <td class="c-mod"><span class="mchip" style={`background:${mod.color}`}>{e.module}</span></td>
                 <td>
                   <span class="slug">{e.slug}</span>
                   {e.real && <span class="realchip">⚡ {e.company}</span>}
@@ -120,27 +141,6 @@ const TYPE_LABEL: Record<string, string> = {
                 </td>
               </tr>
             );
-            rows.push(
-              <tr class="detail-row" data-for={i} hidden>
-                <td colspan="5">
-                  <div class="detail">
-                    <p class="d-desc">{e.description || e.scenario}</p>
-                    <div class="d-tags">
-                      {e.handsOn
-                        ? <span class="dt ho">🖐 Hands-on — fix a live cluster, verify-gated</span>
-                        : <span class="dt ro">📖 Read-only runbook — no cluster tasks</span>}
-                      {e.real && <span class="dt rl">⚡ Real incident · {e.company}</span>}
-                      <span class="dt pl">{e.iximiuz ? 'iximiuz Labs' : ''}{e.iximiuz && e.kind ? ' · ' : ''}{e.kind ? 'local kind' : ''}</span>
-                    </div>
-                    <div class="d-links">
-                      {e.source && <a href={e.source} target="_blank" rel="noopener noreferrer">↗ Read the postmortem</a>}
-                      {e.caseStudy && <a href={e.caseStudy}>📄 Case study</a>}
-                      {e.handsOn && <code>scripts/run-challenge-local.sh {e.slug} init</code>}
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            );
             return rows;
           });
         })()}
@@ -149,20 +149,106 @@ const TYPE_LABEL: Record<string, string> = {
     <div class="cat-empty" id="catEmpty" hidden>No lessons match — clear the search or change filters.</div>
   </div>
 
+  <details class="cat-reading cat-outcomes">
+    <summary>What finishing this actually gives you (and what it doesn't)</summary>
+    <p>
+      A finisher can honestly claim: <b>production troubleshooting reflexes</b> (the describe → events →
+      ownership-chain ladder, drilled ~60 times), a working <b>internals model</b> (API flow, admission,
+      watch/informers, etcd, scheduler, controllers — including how you'd build one), <b>security posture</b>
+      (RBAC → tokens → admission → hardening → egress → supply chain, plus a real breach walked end-to-end),
+      <b>networking failure literacy</b> (endpoints, DNS, conntrack, the kube-proxy dataplane),
+      <b>supply-chain and policy enforcement</b> (scan → pin → sign → admit, with both major policy engines),
+      <b>platform engineering literacy</b> (GitOps reconciliation, tenancy, infrastructure as Kubernetes APIs),
+      and pattern recognition from 40+ cited real outages. Cert-wise: most of CKA/CKAD, and strong CKS
+      coverage (host-execution topics as runbooks).
+    </p>
+    <p>Deliberate non-goals — go elsewhere for these:</p>
+    <ul class="cat-nongoals">
+      <li>
+        <b>Executing host-level operations</b> — kubeadm upgrades, <code>etcdctl</code> restores, AppArmor
+        profile loading and Falco installs are covered as full runbooks (readings), but lesson scripts never
+        touch a host by design (<a href="/reference/security/">Security</a>).
+      </li>
+      <li>
+        <b>Image building</b> — no container build toolchain in the lesson shell. (Helm <i>is</i> exercised
+        hands-on: lessons that need helm/trivy/cosign install a pinned binary in their init.)
+      </li>
+      <li>
+        <b>Service mesh, multi-cluster federation, cloud-provider specifics</b> (EKS/GKE/AKS quirks) —
+        adjacent ecosystems, not Kubernetes fundamentals. The course tells you <i>when</i> you've reached
+        their doorstep.
+      </li>
+    </ul>
+    <p>
+      Every lesson runs identically on <a href="https://labs.iximiuz.com/courses/kubelings-dbd840c8">iximiuz Labs</a>
+      and locally on <code>kind</code> from one source of truth — see <a href="/getting-started/">Getting Started</a>
+      and <a href="/reference/architecture/">Architecture</a>. Single-concept incidents are reproduced inside the
+      module that teaches the concept; multi-concept cascades land in Module 9.
+    </p>
+  </details>
+
   <details class="cat-reading">
     <summary>Further reading — {FURTHER_READING.length} cited incidents not (yet) reproduced as labs</summary>
-    <p>Real Kubernetes outages worth studying. These aren't runnable lessons — talks, postmortems and write-ups mapped to the module they most relate to.</p>
+    <p>Real Kubernetes outages worth studying. These aren't runnable lessons — talks, postmortems and write-ups mapped to the module they most relate to. Rows with a write-up open here; the rest link out.</p>
     <ul>
       {FURTHER_READING.map((r) => (
         <li>
           <span class="fr-co">{r.company}</span>
           <a href={r.url} target="_blank" rel="noopener noreferrer">{r.title}</a>
           {r.module && <span class="fr-mod">{r.module}</span>}
-          {r.caseStudy && <a class="fr-cs" href={r.caseStudy}>· case study</a>}
+          {r.writeUp && (
+            <button class="fr-cs" data-writeup={r.writeUp} data-scenario={r.title} data-company={r.company} data-source={r.url}>
+              · read the write-up
+            </button>
+          )}
         </li>
       ))}
     </ul>
   </details>
+
+  <dialog id="catModal" class="cat-modal" aria-labelledby="mTitle">
+    <article>
+      <header>
+        <div class="m-meta">
+          <span class="badge" id="mBadge"></span>
+          <span class="mchip" id="mMod"></span>
+          <span class="realchip" id="mReal" hidden></span>
+        </div>
+        <h2 id="mTitle"></h2>
+        <p class="m-slug"><code id="mSlug"></code></p>
+        <button class="m-close" id="mClose" aria-label="Close">✕</button>
+      </header>
+      <div class="m-body">
+        <p class="m-desc" id="mDesc"></p>
+        <div class="m-tags" id="mTags"></div>
+        <div class="m-run" id="mRun" hidden>
+          <span class="m-run-l">Run it locally</span>
+          <code id="mRunCmd"></code>
+        </div>
+        <div class="m-links" id="mLinks"></div>
+        <div class="m-section" id="mProblemWrap" hidden>
+          <h3>The problem</h3>
+          <div class="sl-markdown-content m-md" id="mProblem"></div>
+        </div>
+        <div class="m-section" id="mWriteWrap" hidden>
+          <h3 id="mWriteH">Case study</h3>
+          <div class="sl-markdown-content m-md" id="mWrite"></div>
+        </div>
+        <p class="m-loading" id="mLoading" hidden>Loading details…</p>
+      </div>
+      <footer>
+        <button id="mPrev">← Previous</button>
+        <span class="m-pos" id="mPos"></span>
+        <button id="mNext">Next →</button>
+      </footer>
+    </article>
+  </dialog>
+
+  <!-- The table needs more than the 45rem prose column Starlight gives a doc page. -->
+  <style is:global>
+    :root:has(#catTable) { --sl-content-width: min(94rem, 100%); }
+    :root:has(#catTable) .content-panel .sl-container > :not(.sl-markdown-content) { max-width: none; }
+  </style>
 
   <style>
     .cat-intro { color: var(--sl-color-gray-2); }
@@ -175,15 +261,17 @@ const TYPE_LABEL: Record<string, string> = {
 
     .cat-legend { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem;
       color: var(--sl-color-gray-2); border-left: 3px solid var(--sl-color-accent);
-      padding: 0.6rem 0 0.6rem 0.9rem; margin: 1rem 0 1.5rem; background: var(--sl-color-gray-7, transparent); }
+      padding: 0.6rem 0 0.6rem 0.9rem; margin: 1rem 0 1.5rem; }
     .cat-legend b.ho { color: var(--sl-color-accent-high); }
     .cat-legend b.ro { color: var(--sl-color-gray-1); }
     .cat-legend b.rl { color: #ff8a80; }
 
+    /* Sticky offsets are measured at runtime into --cat-filter-h; a hardcoded
+       guess is what previously parked the header mid-table. */
     .cat-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem;
       padding: 0.7rem 0.85rem; border: 1px solid var(--sl-color-gray-5); border-radius: 0.6rem;
       background: var(--sl-color-black); margin-bottom: 1rem;
-      position: sticky; top: var(--sl-nav-height); z-index: 2; }
+      position: sticky; top: var(--sl-nav-height); z-index: 3; }
     .cat-filters .fg { display: flex; align-items: center; gap: 0.35rem; }
     .cat-filters .fl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-gray-3); }
     .pill { cursor: pointer; border: 1px solid var(--sl-color-gray-5); background: transparent;
@@ -197,22 +285,42 @@ const TYPE_LABEL: Record<string, string> = {
     .cat-filters input:focus, .cat-filters select:focus { outline: none; border-color: var(--sl-color-accent); }
     .rc { margin-left: auto; font-size: 0.75rem; color: var(--sl-color-gray-3); font-variant-numeric: tabular-nums; }
 
-    .cat-tablewrap { overflow-x: auto; }
-    .cat-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    /* No overflow here on purpose: any overflow value other than `visible` makes
+       this element the scrollport, and the sticky <thead> would then anchor to
+       the table instead of the page — parking the header mid-table. The columns
+       collapse at narrow widths instead (see the media query below). */
+    .cat-tablewrap { position: relative; }
+    /* Starlight styles markdown tables as `display: block; overflow: auto` so wide
+       ones scroll. Both hurt here: the overflow makes the table its own scrollport
+       (stranding the sticky header inside it), and the block box makes the inner
+       table shrink-to-fit, ignoring width:100%. We collapse columns at narrow
+       widths instead, so opt out of both. */
+    .cat-table { display: table; overflow: visible;
+      width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .cat-table thead th { text-align: left; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
       letter-spacing: 0.05em; color: var(--sl-color-gray-3); padding: 0.5rem 0.6rem; white-space: nowrap;
       background: var(--sl-color-bg); border-bottom: 2px solid var(--sl-color-gray-5);
-      position: sticky; top: calc(var(--sl-nav-height) + 3.1rem); z-index: 1; }
+      position: sticky; top: calc(var(--sl-nav-height) + var(--cat-filter-h, 3.5rem)); z-index: 2; }
     .cat-table td { padding: 0.45rem 0.6rem; vertical-align: middle; border-bottom: 1px solid var(--sl-color-hairline, var(--sl-color-gray-6)); }
     .cat-table .lz-row { cursor: pointer; }
     .cat-table .lz-row:hover { background: color-mix(in oklab, var(--sl-color-accent) 6%, transparent); }
-    .cat-table .lz-row:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: -2px; }
+    .cat-table .lz-row:focus-visible, .cat-table .mod-row:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: -2px; }
 
+    .mod-row { cursor: pointer; }
     .mod-row td { background: var(--sl-color-gray-6); color: var(--sl-color-white); font-weight: 600;
-      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.4rem 0.6rem; }
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.4rem 0.6rem;
+      position: sticky; z-index: 1;
+      top: calc(var(--sl-nav-height) + var(--cat-filter-h, 3.5rem) + var(--cat-head-h, 2.2rem)); }
+    .mod-row:hover td { background: var(--sl-color-gray-5); }
     .mdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.5rem; }
-    .mchip { display: inline-block; font-size: 0.66rem; font-weight: 700; padding: 0.12rem 0.4rem; border-radius: 0.3rem; color: #fff; }
+    .mcount { margin-left: 0.6rem; font-weight: 400; color: var(--sl-color-gray-3); text-transform: none; letter-spacing: 0; }
+    .mexp { float: right; color: var(--sl-color-gray-3); transition: transform 0.12s; }
+    .mod-row[aria-expanded="true"] .mexp { transform: rotate(90deg); color: var(--sl-color-accent-high); }
+    .mod-detail td { background: color-mix(in oklab, var(--sl-color-accent) 5%, transparent); }
+    .mod-detail p { margin: 0; font-size: 0.82rem; color: var(--sl-color-gray-2); max-width: 90ch; }
+    .mod-detail code { font-size: 0.78rem; }
 
+    .mchip { display: inline-block; font-size: 0.66rem; font-weight: 700; padding: 0.12rem 0.4rem; border-radius: 0.3rem; color: #fff; }
     .slug { font-family: var(--sl-font-mono, monospace); font-size: 0.78rem; color: var(--sl-color-gray-1); }
     .realchip { display: inline-block; margin-left: 0.4rem; font-size: 0.66rem; font-weight: 600;
       padding: 0.05rem 0.4rem; border-radius: 0.3rem; color: #ff8a80;
@@ -224,25 +332,14 @@ const TYPE_LABEL: Record<string, string> = {
     .b-drill { background: color-mix(in oklab, #d29922 25%, transparent); color: #e3b341; }
     .b-read { background: color-mix(in oklab, var(--sl-color-gray-3) 28%, transparent); color: var(--sl-color-gray-1); }
 
-    .scn { color: var(--sl-color-gray-2); position: relative; }
-    .scn .exp { float: right; color: var(--sl-color-gray-4); transition: transform 0.12s; }
-    .lz-row[aria-expanded="true"] .exp { transform: rotate(90deg); color: var(--sl-color-accent); }
+    .scn { color: var(--sl-color-gray-2); }
+    .scn .exp { float: right; color: var(--sl-color-gray-4); }
+    .lz-row:hover .exp { color: var(--sl-color-accent); }
 
     .pdots { display: flex; gap: 0.3rem; }
     .pdot { width: 9px; height: 9px; border-radius: 50%; }
     .pdot.ix { background: #4f98a3; } .pdot.kd { background: #9b5de5; }
     .pdot.off { background: transparent; border: 1.5px solid var(--sl-color-gray-5); }
-
-    .detail-row td { background: color-mix(in oklab, var(--sl-color-accent) 4%, transparent); padding: 0; }
-    .detail { padding: 0.75rem 1rem 1rem; }
-    .detail .d-desc { margin: 0 0 0.6rem; color: var(--sl-color-gray-2); font-size: 0.85rem; max-width: 70ch; }
-    .detail .d-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
-    .detail .dt { font-size: 0.72rem; padding: 0.14rem 0.55rem; border-radius: 999px; border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-gray-2); }
-    .detail .dt.ho { color: var(--sl-color-accent-high); border-color: color-mix(in oklab, var(--sl-color-accent) 40%, transparent); }
-    .detail .dt.ro { color: var(--sl-color-gray-1); }
-    .detail .dt.rl { color: #ff8a80; border-color: color-mix(in oklab, #f85149 40%, transparent); }
-    .detail .d-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; font-size: 0.8rem; }
-    .detail .d-links code { font-size: 0.74rem; background: var(--sl-color-gray-6); padding: 0.12rem 0.4rem; border-radius: 0.3rem; }
 
     .cat-empty { text-align: center; padding: 2.5rem 1rem; color: var(--sl-color-gray-3); }
 
@@ -252,15 +349,80 @@ const TYPE_LABEL: Record<string, string> = {
     .cat-reading li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; font-size: 0.82rem; }
     .fr-co { font-weight: 600; color: var(--sl-color-gray-1); min-width: 6.5rem; }
     .fr-mod { font-size: 0.68rem; color: var(--sl-color-gray-4); font-family: var(--sl-font-mono, monospace); }
-    .fr-cs { font-size: 0.72rem; color: var(--sl-color-gray-3); }
+    .fr-cs { font-size: 0.72rem; color: var(--sl-color-accent-high); background: none; border: 0;
+      padding: 0; font-family: inherit; cursor: pointer; text-decoration: underline; }
 
-    @media (max-width: 640px) { .c-mod, .c-plat { display: none; } .cat-filters input { min-width: 130px; } }
+    .cat-outcomes { margin-top: 2rem; }
+    .cat-outcomes p, .cat-outcomes li { font-size: 0.85rem; color: var(--sl-color-gray-2); line-height: 1.65; }
+    .cat-outcomes b { color: var(--sl-color-gray-1); }
+    .cat-nongoals { margin: 0.5rem 0 0.75rem; padding-left: 1.1rem; display: grid; gap: 0.4rem; }
+
+    /* ---- modal ---- */
+    .cat-modal { border: 0; padding: 0; background: transparent;
+      max-width: min(62rem, 94vw); width: 100%; margin: auto; }
+    .cat-modal::backdrop { background: rgb(0 0 0 / 0.7); backdrop-filter: blur(2px); }
+    .cat-modal article { display: flex; flex-direction: column; max-height: 88vh;
+      background: var(--sl-color-bg); border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.75rem; box-shadow: 0 24px 60px rgb(0 0 0 / 0.45); overflow: hidden; }
+    .cat-modal header { position: relative; padding: 1.1rem 3rem 0.9rem 1.4rem;
+      border-bottom: 1px solid var(--sl-color-gray-5); background: var(--sl-color-black); }
+    .cat-modal .m-meta { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .cat-modal h2 { margin: 0; font-size: 1.15rem; line-height: 1.35; color: var(--sl-color-white); }
+    .cat-modal .m-slug { margin: 0.35rem 0 0; }
+    .cat-modal .m-slug code { font-size: 0.76rem; color: var(--sl-color-gray-2); background: var(--sl-color-gray-6); padding: 0.1rem 0.4rem; border-radius: 0.3rem; }
+    .cat-modal .m-close { position: absolute; top: 0.8rem; right: 0.9rem; background: none; border: 0;
+      color: var(--sl-color-gray-3); font-size: 1rem; cursor: pointer; line-height: 1; padding: 0.3rem; border-radius: 0.3rem; }
+    .cat-modal .m-close:hover { color: var(--sl-color-white); background: var(--sl-color-gray-6); }
+
+    .cat-modal .m-body { overflow-y: auto; padding: 1.1rem 1.4rem 1.4rem; }
+    .cat-modal .m-desc { margin: 0 0 0.8rem; color: var(--sl-color-gray-1); font-size: 0.92rem; line-height: 1.6; }
+    .cat-modal .m-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
+    /* The tags are built in JS, so they never carry Astro's scoping attribute —
+       these rules have to be global to match them. */
+    .cat-modal :global(.dt) { font-size: 0.72rem; padding: 0.14rem 0.55rem; border-radius: 999px;
+      border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-gray-2); }
+    .cat-modal :global(.dt.ho) { color: var(--sl-color-accent-high); border-color: color-mix(in oklab, var(--sl-color-accent) 40%, transparent); }
+    .cat-modal :global(.dt.rl) { color: #ff8a80; border-color: color-mix(in oklab, #f85149 40%, transparent); }
+    .cat-modal .m-run { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+      background: var(--sl-color-gray-6); border-radius: 0.4rem; padding: 0.5rem 0.7rem; margin-bottom: 0.8rem; }
+    .cat-modal .m-run-l { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-gray-3); }
+    .cat-modal .m-run code { font-size: 0.76rem; color: var(--sl-color-white); }
+    .cat-modal .m-links { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.82rem; margin-bottom: 0.4rem; }
+    .cat-modal .m-section { margin-top: 1.4rem; border-top: 1px solid var(--sl-color-gray-6); padding-top: 1rem; }
+    .cat-modal .m-section h3 { margin: 0 0 0.6rem; font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--sl-color-gray-3); }
+    .cat-modal .m-md { font-size: 0.88rem; }
+    .cat-modal .m-md :global(h2) { font-size: 1rem; margin-top: 1.2rem; }
+    .cat-modal .m-md :global(h3) { font-size: 0.9rem; }
+    .cat-modal .m-md :global(pre) { font-size: 0.78rem; }
+    .cat-modal .m-loading { color: var(--sl-color-gray-3); font-size: 0.82rem; margin: 1rem 0 0; }
+
+    .cat-modal footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+      padding: 0.6rem 1.4rem; border-top: 1px solid var(--sl-color-gray-5); background: var(--sl-color-black); }
+    .cat-modal footer button { background: none; border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-gray-2);
+      font: inherit; font-size: 0.78rem; padding: 0.2rem 0.7rem; border-radius: 0.35rem; cursor: pointer; }
+    .cat-modal footer button:hover:not(:disabled) { border-color: var(--sl-color-accent); color: var(--sl-color-white); }
+    .cat-modal footer button:disabled { opacity: 0.35; cursor: default; }
+    .cat-modal .m-pos { font-size: 0.72rem; color: var(--sl-color-gray-3); font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 640px) {
+      .c-mod, .c-plat { display: none; }
+      .cat-filters input { min-width: 130px; }
+      .cat-modal article { max-height: 92vh; }
+      /* Drop the fixed column widths so the remaining three columns wrap to fit
+         rather than overflowing (the table can't scroll sideways — see above). */
+      .cat-table { font-size: 0.8rem; table-layout: auto; }
+      .cat-table thead th[style] { width: auto !important; }
+      .slug { word-break: break-word; }
+      .scn .exp { display: none; }
+    }
   </style>
 
   <script>
     const body = document.getElementById('catBody')!;
     const rc = document.getElementById('rc')!;
     const empty = document.getElementById('catEmpty')!;
+    const filters = document.querySelector<HTMLElement>('.cat-filters')!;
     const search = document.getElementById('searchBox') as HTMLInputElement;
     const modSel = document.getElementById('modSel') as HTMLSelectElement;
     const modePills = document.querySelectorAll<HTMLButtonElement>('.pill[data-mode]');
@@ -271,12 +433,25 @@ const TYPE_LABEL: Record<string, string> = {
     let mode = 'all';
     let type = 'all';
 
+    // The filter bar wraps at narrow widths, so its height can't be a constant —
+    // publish the real value so the sticky <thead> pins flush against its bottom
+    // edge. Any slack here shows as rows peeking through the gap.
+    const thead = document.querySelector<HTMLElement>('.cat-table thead')!;
+    const syncFilterHeight = () => {
+      const root = document.documentElement.style;
+      root.setProperty('--cat-filter-h', `${filters.getBoundingClientRect().height}px`);
+      // Module rows stack directly beneath the header, so they need its real height.
+      root.setProperty('--cat-head-h', `${thead.getBoundingClientRect().height}px`);
+    };
+    syncFilterHeight();
+    new ResizeObserver(syncFilterHeight).observe(filters);
+    new ResizeObserver(syncFilterHeight).observe(thead);
+
     function apply() {
       const q = search.value.toLowerCase().trim();
       const mod = modSel.value;
       let shown = 0;
       lessonRows.forEach((row) => {
-        const detail = row.nextElementSibling as HTMLTableRowElement;
         const modeOk =
           mode === 'all' ||
           (mode === 'hands' && row.dataset.hands === '1') ||
@@ -287,34 +462,237 @@ const TYPE_LABEL: Record<string, string> = {
         const qOk = !q || (row.dataset.search || '').includes(q);
         const ok = modeOk && typeOk && modOk && qOk;
         row.hidden = !ok;
-        if (detail && detail.classList.contains('detail-row') && !ok) {
-          detail.hidden = true;
-          row.setAttribute('aria-expanded', 'false');
-        }
         if (ok) shown++;
       });
       modRows.forEach((mr) => {
         const m = mr.dataset.mod;
-        mr.hidden = !lessonRows.some((r) => r.dataset.mod === m && !r.hidden);
+        const any = lessonRows.some((r) => r.dataset.mod === m && !r.hidden);
+        mr.hidden = !any;
+        const det = body.querySelector<HTMLTableRowElement>(`tr.mod-detail[data-detail-for="${m}"]`);
+        if (det && !any) { det.hidden = true; mr.setAttribute('aria-expanded', 'false'); }
       });
       rc.textContent = `${shown} of ${total}`;
       empty.hidden = shown !== 0;
     }
 
-    function toggleRow(row: HTMLTableRowElement) {
-      const detail = row.nextElementSibling as HTMLTableRowElement;
-      if (!detail || !detail.classList.contains('detail-row')) return;
-      const open = detail.hidden;
-      detail.hidden = !open;
-      row.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // ---- module narrative rows (absorbed from the old /guides/curriculum) ----
+    modRows.forEach((mr) => {
+      const toggle = () => {
+        const det = body.querySelector<HTMLTableRowElement>(`tr.mod-detail[data-detail-for="${mr.dataset.mod}"]`);
+        if (!det) return;
+        const open = det.hidden;
+        det.hidden = !open;
+        mr.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      mr.addEventListener('click', toggle);
+      mr.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+    });
+
+    // ---- modal ----
+    const modal = document.getElementById('catModal') as HTMLDialogElement;
+    const mBadge = document.getElementById('mBadge')!;
+    const mMod = document.getElementById('mMod')!;
+    const mReal = document.getElementById('mReal')!;
+    const mTitle = document.getElementById('mTitle')!;
+    const mSlug = document.getElementById('mSlug')!;
+    const mDesc = document.getElementById('mDesc')!;
+    const mTags = document.getElementById('mTags')!;
+    const mRun = document.getElementById('mRun')!;
+    const mRunCmd = document.getElementById('mRunCmd')!;
+    const mLinks = document.getElementById('mLinks')!;
+    const mProblemWrap = document.getElementById('mProblemWrap')!;
+    const mProblem = document.getElementById('mProblem')!;
+    const mWriteWrap = document.getElementById('mWriteWrap')!;
+    const mWriteH = document.getElementById('mWriteH')!;
+    const mWrite = document.getElementById('mWrite')!;
+    const mLoading = document.getElementById('mLoading')!;
+    const mPrev = document.getElementById('mPrev') as HTMLButtonElement;
+    const mNext = document.getElementById('mNext') as HTMLButtonElement;
+    const mPos = document.getElementById('mPos')!;
+    const mBody = modal.querySelector<HTMLElement>('.m-body')!;
+
+    const TYPE_LABEL: Record<string, string> = {
+      lab: 'Lab', incident: 'Incident', drill: 'Drill', read: 'Reading',
+    };
+    const cache = new Map<string, any>();
+    let current: HTMLTableRowElement | null = null;
+
+    const visibleRows = () => lessonRows.filter((r) => !r.hidden);
+
+    async function loadDetail(slug: string) {
+      if (cache.has(slug)) return cache.get(slug);
+      const res = await fetch(`/catalog-details/${slug}.json`);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      cache.set(slug, data);
+      return data;
+    }
+
+    async function openRow(row: HTMLTableRowElement, push = true) {
+      current = row;
+      const d = row.dataset;
+      const slug = d.slug!;
+      const modColor = (row.querySelector('.mchip') as HTMLElement)?.style.background || '';
+
+      mBadge.className = `badge b-${d.type}`;
+      mBadge.textContent = TYPE_LABEL[d.type!] ?? d.type!;
+      mMod.textContent = d.mod!;
+      mMod.setAttribute('style', `background:${modColor}`);
+      mReal.hidden = d.real !== '1';
+      mReal.textContent = `⚡ ${d.company}`;
+      mTitle.textContent = d.scenario!;
+      mSlug.textContent = slug;
+      mDesc.textContent = d.desc || '';
+
+      mTags.innerHTML = '';
+      const tag = (cls: string, text: string) => {
+        const s = document.createElement('span');
+        s.className = `dt ${cls}`;
+        s.textContent = text;
+        mTags.append(s);
+      };
+      d.hands === '1'
+        ? tag('ho', '🖐 Hands-on — fix a live cluster, verify-gated')
+        : tag('ro', '📖 Read-only runbook — no cluster tasks');
+      if (d.real === '1') tag('rl', `⚡ Real incident · ${d.company}`);
+      const plat = [d.ix === '1' ? 'iximiuz Labs' : '', d.kind === '1' ? 'local kind' : ''].filter(Boolean);
+      if (plat.length) tag('pl', plat.join(' · '));
+
+      mRun.hidden = d.hands !== '1';
+      mRunCmd.textContent = `scripts/run-challenge-local.sh ${slug} init`;
+
+      mLinks.innerHTML = '';
+      if (d.source) {
+        const a = document.createElement('a');
+        a.href = d.source; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.textContent = '↗ Read the original postmortem';
+        mLinks.append(a);
+      }
+
+      mProblemWrap.hidden = true;
+      mWriteWrap.hidden = true;
+      mProblem.innerHTML = '';
+      mWrite.innerHTML = '';
+      mLoading.hidden = false;
+      mBody.scrollTop = 0;
+
+      const idx = visibleRows().indexOf(row);
+      mPos.textContent = `${idx + 1} of ${visibleRows().length}`;
+      mPrev.disabled = idx <= 0;
+      mNext.disabled = idx < 0 || idx >= visibleRows().length - 1;
+
+      if (!modal.open) modal.showModal();
+      if (push) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lesson', slug);
+        history.pushState({ lesson: slug }, '', url);
+      }
+
+      try {
+        const data = await loadDetail(slug);
+        if (current !== row) return; // a faster click won
+        mLoading.hidden = true;
+        if (data.problem) {
+          mProblem.innerHTML = data.problem;
+          mProblemWrap.hidden = false;
+        }
+        if (data.writeUp) {
+          mWrite.innerHTML = data.writeUp;
+          mWriteH.textContent = data.writeUpTitle || 'Case study';
+          mWriteWrap.hidden = false;
+        }
+      } catch {
+        mLoading.textContent = 'Could not load the details for this lesson.';
+      }
+    }
+
+    // Further-reading write-ups have no lesson row — render them standalone.
+    async function openWriteUp(btn: HTMLButtonElement) {
+      current = null;
+      const name = btn.dataset.writeup!;
+      mBadge.className = 'badge b-read';
+      mBadge.textContent = 'Further reading';
+      mMod.textContent = '';
+      mMod.removeAttribute('style');
+      mReal.hidden = false;
+      mReal.textContent = `⚡ ${btn.dataset.company}`;
+      mTitle.textContent = btn.dataset.scenario!;
+      mSlug.textContent = name;
+      mDesc.textContent = '';
+      mTags.innerHTML = '';
+      mRun.hidden = true;
+      mLinks.innerHTML = '';
+      const a = document.createElement('a');
+      a.href = btn.dataset.source!; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.textContent = '↗ Read the original postmortem';
+      mLinks.append(a);
+      mProblemWrap.hidden = true;
+      mWriteWrap.hidden = true;
+      mProblem.innerHTML = '';
+      mWrite.innerHTML = '';
+      mLoading.hidden = false;
+      mBody.scrollTop = 0;
+      mPos.textContent = '';
+      mPrev.disabled = true;
+      mNext.disabled = true;
+      if (!modal.open) modal.showModal();
+      try {
+        const data = await loadDetail(name);
+        mLoading.hidden = true;
+        if (data.writeUp) {
+          mWrite.innerHTML = data.writeUp;
+          mWriteH.textContent = data.writeUpTitle || 'Case study';
+          mWriteWrap.hidden = false;
+        }
+      } catch {
+        mLoading.textContent = 'Could not load this write-up.';
+      }
+    }
+
+    function step(delta: number) {
+      if (!current) return;
+      const rows = visibleRows();
+      const next = rows[rows.indexOf(current) + delta];
+      if (next) openRow(next);
+    }
+
+    function closeModal() {
+      if (modal.open) modal.close();
     }
 
     lessonRows.forEach((row) => {
-      row.addEventListener('click', () => toggleRow(row));
+      row.addEventListener('click', () => openRow(row));
       row.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRow(row); }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRow(row); }
       });
     });
+    document.querySelectorAll<HTMLButtonElement>('.fr-cs').forEach((b) =>
+      b.addEventListener('click', () => openWriteUp(b))
+    );
+
+    document.getElementById('mClose')!.addEventListener('click', closeModal);
+    mPrev.addEventListener('click', () => step(-1));
+    mNext.addEventListener('click', () => step(1));
+    // Clicking the backdrop (i.e. outside the card) closes.
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    modal.addEventListener('close', () => {
+      if (current) current.focus();
+      current = null;
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('lesson')) {
+        url.searchParams.delete('lesson');
+        history.pushState({}, '', url.pathname + url.search);
+      }
+    });
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && !mPrev.disabled) { e.preventDefault(); step(-1); }
+      if (e.key === 'ArrowRight' && !mNext.disabled) { e.preventDefault(); step(1); }
+    });
+
     modePills.forEach((b) => b.addEventListener('click', () => {
       modePills.forEach((p) => p.classList.remove('active'));
       b.classList.add('active'); mode = b.dataset.mode!; apply();
@@ -328,5 +706,22 @@ const TYPE_LABEL: Record<string, string> = {
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); search.focus(); search.select(); }
     });
+
+    // Deep link: /catalog/?lesson=<slug> opens straight into the modal. The
+    // retired /incidents/* pages redirect here, so old links still land on
+    // their write-up.
+    function openFromUrl(push = false) {
+      const want = new URL(window.location.href).searchParams.get('lesson');
+      if (!want) { closeModal(); return; }
+      const row = lessonRows.find((r) => r.dataset.slug === want);
+      if (row) { openRow(row, push); return; }
+      const btn = document.querySelector<HTMLButtonElement>(`.fr-cs[data-writeup="${CSS.escape(want)}"]`);
+      if (btn) {
+        (btn.closest('details') as HTMLDetailsElement | null)?.setAttribute('open', '');
+        openWriteUp(btn);
+      }
+    }
+    window.addEventListener('popstate', () => openFromUrl());
+    openFromUrl();
   </script>
 </StarlightPage>

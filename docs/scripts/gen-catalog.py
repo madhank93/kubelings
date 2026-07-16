@@ -7,17 +7,29 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.normpath(os.path.join(_HERE, "..", ".."))
 ROOT = os.path.join(_REPO, "courses", "kubelings")
 
+# label, colour, and the skill narrative (absorbed from the retired
+# /guides/curriculum page — the catalog module rows are now its only home).
 MODULES = {
-    "M1":  ("Foundations",          "#7c6af5"),
-    "M2":  ("Workloads",            "#3b9eff"),
-    "M3":  ("Config & Storage",     "#d29922"),
-    "M4":  ("Networking",           "#4fa86d"),
-    "M5":  ("Scheduling & Placement","#9b5de5"),
-    "M6":  ("Security",             "#c53030"),
-    "M7":  ("Internals",            "#e36f0e"),
-    "M8":  ("Observability & SRE",  "#1f8a9c"),
-    "M9":  ("War Stories",          "#e85d9f"),
-    "M10": ("Platform Engineering", "#db6d28"),
+    "M1":  ("Foundations",          "#7c6af5",
+            "pods, Deployments, Services, namespaces, labels & selectors, the triage loop (`describe` → `logs` → fix → watch)"),
+    "M2":  ("Workloads",            "#3b9eff",
+            "rolling updates, blue/green & canary, DaemonSets, StatefulSets, Jobs, CronJobs, HPA, OOMKill & right-sizing, CPU throttling, probes, init containers, PDBs, QoS, ephemeral-container debugging, multi-container patterns, readiness/CronJob/rollout failure drills, VPA, KEDA"),
+    "M3":  ("Config & Storage",     "#d29922",
+            "ConfigMaps, Secrets, PV/PVC lifecycle, StorageClasses, access modes, finalizer traps, kustomize, Helm release lifecycle, ghost-endpoint & secret-rotation & stuck-namespace drills"),
+    "M4":  ("Networking",           "#4fa86d",
+            "Services & endpoints, Ingress & Gateway API, NetworkPolicy, CoreDNS & the ndots amplifier, kube-proxy dataplane, CNI anatomy & triage, conntrack, graceful shutdown, kubeconfig contexts"),
+    "M5":  ("Scheduling & Placement","#9b5de5",
+            "affinity/anti-affinity, taints & tolerations, topology spread, priority & preemption, noisy neighbors"),
+    "M6":  ("Security",             "#c53030",
+            "RBAC, ServiceAccounts & tokens, Pod Security, admission webhooks, container hardening, CIS benchmarks, egress lockdown, image digests, Gatekeeper & Kyverno policy engines, trivy scanning, cosign signatures & SBOMs, seccomp/AppArmor, encryption-at-rest, audit policy, Falco runtime detection"),
+    "M7":  ("Internals",            "#e36f0e",
+            "API server request & admission flow, watch/informers & APF, etcd (incl. backup/restore), CRDs & building operators, scheduler internals, controller reconciliation, kubelet ↔ CRI, leader election, kubeadm bootstrap, HA control planes, certificate rotation"),
+    "M8":  ("Observability & SRE",  "#1f8a9c",
+            "events forensics, node NotReady triage, quotas, disk pressure & eviction, cluster upgrades, node maintenance, SLO burn-rate alerting, OTel tracing pipelines, debugging playbooks"),
+    "M9":  ("War Stories",          "#e85d9f",
+            "multi-concept cascade incidents from cited postmortems — everything at once, then the final boss"),
+    "M10": ("Platform Engineering", "#db6d28",
+            "GitOps with Argo CD (incl. app-of-apps) and Flux, multi-tenancy with Capsule, Cluster API, Crossplane compositions"),
 }
 
 def parse_frontmatter(path):
@@ -96,6 +108,45 @@ INCIDENTS = {
     "incident-spotify-delete":     ("Spotify",      "https://www.youtube.com/watch?v=ix0Tw8uinWs", "/incidents/spotify-delete/"),
 }
 
+# ---- lesson detail (the "problem" prose shown in the catalog modal) ----
+# Source: each lesson's unit-1.md. For hands-on lessons we stop at the first
+# hint/solution so the modal can't spoil the exercise; readings have no task to
+# spoil, so they carry through in full.
+DETAILS_DIR = os.path.join(_REPO, "docs", "src", "data", "lesson-details")
+
+def strip_frontmatter(text):
+    if not text.startswith("---"):
+        return text
+    lines = text.splitlines()
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            return "\n".join(lines[i + 1:])
+    return text
+
+def extract_detail(unit_path, hands_on):
+    if not os.path.isfile(unit_path):
+        return None
+    body = strip_frontmatter(open(unit_path, encoding="utf-8").read())
+    # Drop pointers to the old /incidents/* pages — the modal renders that
+    # write-up directly beneath this prose, so the link would point at itself.
+    body = re.sub(r'(?m)^>.*write-up:.*(?:\n>.*)*\n?', '', body)
+    body = re.sub(r'\s*·?\s*\[[^\]]*\]\(https://kubelings\.madhan\.app/incidents/[^)]*\)', '', body)
+    if hands_on:
+        # Cut at the first hint block or task directive: everything before it is
+        # situation + task, everything after is hint/solution/check plumbing.
+        cuts = [m.start() for m in re.finditer(r'(?m)^(?:<details>|::[a-z-]+)', body) if m]
+        if cuts:
+            body = body[:min(cuts)]
+    else:
+        # Readings: keep the prose, drop only the iximiuz task directives.
+        body = re.sub(r'(?ms)^::simple-task.*?^::\s*$', '', body)
+    body = re.sub(r'\n{3,}', '\n\n', body).strip()
+    return body or None
+
+# Regenerated wholesale — clear stale details from renamed/removed lessons.
+for stale in glob.glob(os.path.join(DETAILS_DIR, "*.md")):
+    os.remove(stale)
+
 entries = []
 for n in range(1, 11):
     mod = f"M{n}"
@@ -122,6 +173,29 @@ for n in range(1, 11):
         else:
             typ = "lab"
         inc = INCIDENTS.get(slug)
+
+        # The long-form write-up (formerly a page under /incidents/) now renders
+        # inside the modal. Company incidents map via INCIDENTS; pattern drills
+        # share their slug with the write-up filename.
+        def write_up_path(name):
+            return os.path.join(_REPO, "docs", "src", "data", "incidents", name + ".md")
+
+        write_up = None
+        if inc and inc[2]:
+            # A cited incident that claims a write-up must have one.
+            write_up = inc[2].strip("/").split("/")[-1]
+            if not os.path.isfile(write_up_path(write_up)):
+                raise SystemExit(f"{slug}: write-up '{write_up}.md' not found in src/data/incidents/")
+        elif slug.startswith("pattern-") and os.path.isfile(write_up_path(slug)):
+            # Only some pattern drills have a long-form write-up.
+            write_up = slug
+
+        detail = extract_detail(os.path.join(d, "unit-1.md"), tasks)
+        if detail:
+            os.makedirs(DETAILS_DIR, exist_ok=True)
+            with open(os.path.join(DETAILS_DIR, slug + ".md"), "w", encoding="utf-8") as fh:
+                fh.write(detail + "\n")
+
         entries.append({
             "module": mod, "slug": slug, "scenario": title,
             "type": typ, "iximiuz": True, "kind": tasks,
@@ -129,7 +203,8 @@ for n in range(1, 11):
             "real": inc is not None,
             "company": inc[0] if inc else None,
             "source": inc[1] if inc else None,
-            "caseStudy": inc[2] if inc else None,
+            "writeUp": write_up,
+            "detail": bool(detail),
         })
 
 # ---- emit catalog.ts ----
@@ -153,12 +228,13 @@ out.append("  description: string;")
 out.append("  real: boolean;              // reproduces a cited, real company incident")
 out.append("  company?: string;")
 out.append("  source?: string;            // link to the public postmortem")
-out.append("  caseStudy?: string;         // local /incidents/* write-up, if any")
+out.append("  writeUp?: string;           // src/data/incidents/<name>.md, rendered in the modal")
+out.append("  detail: boolean;            // has src/data/lesson-details/<slug>.md")
 out.append("};")
 out.append("")
-out.append("export const MODULES: Record<string, { label: string; color: string }> = {")
-for k, (label, color) in MODULES.items():
-    out.append(f"  {k+':':4} {{ label: {esc(label)}, color: '{color}' }},")
+out.append("export const MODULES: Record<string, { label: string; color: string; learn: string }> = {")
+for k, (label, color, learn) in MODULES.items():
+    out.append(f"  {k+':':4} {{ label: {esc(label)}, color: '{color}', learn: {esc(learn)} }},")
 out.append("};")
 out.append("")
 out.append(f"export const CATALOG: CatalogEntry[] = [")
@@ -182,8 +258,9 @@ for e in entries:
         parts.append("company:%s" % esc(e["company"]))
     if e["source"]:
         parts.append("source:%s" % esc(e["source"]))
-    if e["caseStudy"]:
-        parts.append("caseStudy:%s" % esc(e["caseStudy"]))
+    if e["writeUp"]:
+        parts.append("writeUp:%s" % esc(e["writeUp"]))
+    parts.append("detail:%s" % ("true" if e["detail"] else "false"))
     out.append("  { " + ", ".join(parts) + " },")
 out.append("];")
 out.append("")
@@ -193,8 +270,31 @@ os.makedirs(os.path.dirname(dest), exist_ok=True)
 with open(dest, "w", encoding="utf-8") as fh:
     fh.write("\n".join(out))
 
+# ---- emit incident-redirects.json ----
+# The /incidents/<name>/ pages are retired; their write-ups render in the catalog
+# modal. Lesson prose published on iximiuz still links the old absolute URLs, so
+# every write-up keeps a redirect to the row that now carries it. Consumed by
+# astro.config.mjs.
+by_write_up = {}
+for e in entries:
+    if e["writeUp"]:
+        by_write_up[e["writeUp"]] = e["slug"]
+
+redirects = {}
+for f in sorted(glob.glob(os.path.join(_REPO, "docs", "src", "data", "incidents", "*.md"))):
+    name = os.path.basename(f)[:-3]
+    # Write-ups with no lesson (further-reading only) open under their own name.
+    redirects[f"/incidents/{name}/"] = f"/catalog/?lesson={by_write_up.get(name, name)}"
+
+rdest = os.path.join(_REPO, "docs", "src", "data", "incident-redirects.json")
+with open(rdest, "w", encoding="utf-8") as fh:
+    json.dump(redirects, fh, indent=2, ensure_ascii=False)
+    fh.write("\n")
+
 from collections import Counter
 c = Counter(e["type"] for e in entries)
 print(f"wrote {len(entries)} entries -> {dest}")
 print("types:", dict(c))
 print("per-module:", dict(Counter(e["module"] for e in entries)))
+print(f"details: {sum(1 for e in entries if e['detail'])}/{len(entries)} -> {DETAILS_DIR}")
+print(f"write-ups linked: {sum(1 for e in entries if e['writeUp'])}")

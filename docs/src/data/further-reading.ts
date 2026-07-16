@@ -8,13 +8,13 @@ export type Reading = {
   title: string;
   url: string;
   module?: string;   // rough curriculum area it maps to
-  caseStudy?: string; // local /incidents/* write-up, if one exists
+  writeUp?: string;   // src/data/incidents/<name>.md, rendered in the catalog modal
 };
 
 export const FURTHER_READING: Reading[] = [
-  { company: 'Tinder',        title: 'Move to Kubernetes at scale — 250k rps DNS, conntrack & ARP cache outage', url: 'https://medium.com/tinder/tinders-move-to-kubernetes-cda2a6372f44', module: 'M4', caseStudy: '/incidents/tinder-scale-migration/' },
-  { company: 'CircleCI',      title: 'kubelet/kube-proxy version skew corrupted iptables mid-upgrade', url: 'https://discuss.circleci.com/t/incident-report-2023-03-14-delays-starting-jobs/47555', module: 'M8', caseStudy: '/incidents/circleci-version-skew/' },
-  { company: 'Heroku',        title: 'Unattended system update flushed network routes fleet-wide', url: 'https://www.heroku.com/blog/summary-of-june-10-outage/', module: 'M8', caseStudy: '/incidents/heroku-host-update/' },
+  { company: 'Tinder',        title: 'Move to Kubernetes at scale — 250k rps DNS, conntrack & ARP cache outage', url: 'https://medium.com/tinder/tinders-move-to-kubernetes-cda2a6372f44', module: 'M4', writeUp: 'tinder-scale-migration' },
+  { company: 'CircleCI',      title: 'kubelet/kube-proxy version skew corrupted iptables mid-upgrade', url: 'https://discuss.circleci.com/t/incident-report-2023-03-14-delays-starting-jobs/47555', module: 'M8', writeUp: 'circleci-version-skew' },
+  { company: 'Heroku',        title: 'Unattended system update flushed network routes fleet-wide', url: 'https://www.heroku.com/blog/summary-of-june-10-outage/', module: 'M8', writeUp: 'heroku-host-update' },
   { company: 'Monzo',         title: 'Anatomy of a Production Kubernetes Outage (KubeCon talk)', url: 'https://www.youtube.com/watch?v=OUYTNywPk-s', module: 'M9' },
   { company: 'Datadog',       title: '10 ways to shoot yourself in the foot with Kubernetes', url: 'https://www.youtube.com/watch?v=QKI-JRs2RIE', module: 'M4' },
   { company: 'Zalando',       title: 'Kubelet --kube-api-qps starves CD platform builds', url: 'https://github.com/zalando-incubator/kubernetes-on-aws/blob/dev/docs/postmortems/jun-2019-kubelet-qps.md', module: 'M7' },
