@@ -173,3 +173,28 @@
     margin-inline: auto;
   }
 }
+
+/* --- Homepage hero CTAs ------------------------------------------------- */
+
+/* Highlight the Catalog action — it's the hub, so give the secondary button an
+   accent-tinted chip that reads louder than a plain outline. */
+.sl-link-button.cta-catalog {
+  border-color: var(--sl-color-accent);
+  background: color-mix(in oklab, var(--sl-color-accent) 16%, transparent);
+  color: var(--sl-color-accent-high);
+}
+.sl-link-button.cta-catalog:hover {
+  background: color-mix(in oklab, var(--sl-color-accent) 26%, transparent);
+  border-color: var(--sl-color-accent-high);
+}
+
+/* Give the GitHub action a real chip instead of bare text. */
+.sl-link-button.cta-github {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
+}
+.sl-link-button.cta-github:hover {
+  border-color: var(--sl-color-gray-4);
+  background: var(--sl-color-gray-5);
+}

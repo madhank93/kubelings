@@ -56,9 +56,9 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     <div class="fg">
       <span class="fl">Mode</span>
       <button class="pill active" data-mode="all">All</button>
-      <button class="pill" data-mode="hands">🖐 Hands-on</button>
-      <button class="pill" data-mode="read">📖 Read-only</button>
-      <button class="pill" data-mode="real">⚡ Real</button>
+      <button class="pill" data-mode="hands"><span class="pico">🖐</span> Hands-on</button>
+      <button class="pill" data-mode="read"><span class="pico">📖</span> Read-only</button>
+      <button class="pill" data-mode="real"><span class="pico">⚡</span> Real</button>
     </div>
     <div class="fg">
       <span class="fl">Type</span>
@@ -102,19 +102,13 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
             if (e.module !== last) {
               last = e.module;
               rows.push(
-                <tr class="mod-row" data-mod={e.module} tabindex="0" role="button" aria-expanded="false">
+                <tr class="mod-row" data-mod={e.module} data-label={mod.label}
+                    data-learn={mod.learn} tabindex="0" role="button" aria-expanded="false">
                   <td colspan="5">
                     <span class="mdot" style={`background:${mod.color}`}></span>
                     {e.module} — {mod.label}
                     <span class="mcount">{countFor(e.module)} lessons</span>
                     <span class="mexp">▸</span>
-                  </td>
-                </tr>
-              );
-              rows.push(
-                <tr class="mod-detail" data-detail-for={e.module} hidden>
-                  <td colspan="5">
-                    <p><b>You learn:</b> <span set:html={mod.learn.replace(/`([^`]+)`/g, '<code>$1</code>')} /></p>
                   </td>
                 </tr>
               );
@@ -148,6 +142,15 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       </tbody>
     </table>
     <div class="cat-empty" id="catEmpty" hidden>No lessons match — clear the search or change filters.</div>
+  </div>
+
+  <!-- Floating "what this module teaches" panel. Fixed-positioned so it shows
+       even when its module header row is pinned by position:sticky (an inline
+       detail row would be scrolled off with the header's natural box). -->
+  <div id="modPop" class="mod-pop" hidden role="dialog" aria-label="Module details">
+    <button class="mod-pop-x" id="modPopX" aria-label="Close">✕</button>
+    <h3 id="modPopTitle"></h3>
+    <p id="modPopLearn"></p>
   </div>
 
   <details class="cat-reading cat-outcomes">
@@ -223,8 +226,14 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
         <p class="m-desc" id="mDesc"></p>
         <div class="m-tags" id="mTags"></div>
         <div class="m-run" id="mRun" hidden>
-          <span class="m-run-l">Run it locally</span>
-          <code id="mRunCmd"></code>
+          <div class="m-run-primary">
+            <span class="m-run-l">▶ Play in the TUI</span>
+            <p class="m-run-steps">Run <code>just tui</code>, select <code id="mRunSlug"></code>, press <kbd>↵</kbd> — it brings the cluster up, injects the broken state, and drops you into a shell.</p>
+          </div>
+          <details class="m-run-adv">
+            <summary>Prefer the raw script?</summary>
+            <code id="mRunCmd"></code>
+          </details>
         </div>
         <div class="m-links" id="mLinks"></div>
         <div class="m-section" id="mProblemWrap" hidden>
@@ -271,16 +280,25 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
 
     /* Sticky offsets are measured at runtime into --cat-filter-h; a hardcoded
        guess is what previously parked the header mid-table. */
+    /* line-height:1 collapses Starlight's inherited prose line-height (~1.75),
+       which otherwise acts as a tall strut on the flex lines and misaligns the
+       emoji-less pills against the emoji ones. */
     .cat-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem;
       padding: 0.7rem 0.85rem; border: 1px solid var(--sl-color-gray-5); border-radius: 0.6rem;
-      background: var(--sl-color-black); margin-bottom: 1rem;
+      background: var(--sl-color-black); margin-bottom: 1rem; line-height: 1;
       position: sticky; top: var(--sl-nav-height); z-index: 3; }
-    .cat-filters .fg { display: flex; align-items: center; gap: 0.35rem; }
+    .cat-filters .fg { display: flex; align-items: center; gap: 0.35rem; line-height: 1; min-height: 1.85rem; }
+    .cat-filters .fl { display: inline-flex; align-items: center; }
     .cat-filters .fl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-gray-3); }
-    .pill { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;
-      height: 1.85rem; line-height: 1; cursor: pointer; border: 1px solid var(--sl-color-gray-5);
-      background: transparent; color: var(--sl-color-gray-2); font: inherit; font-size: 0.78rem;
+    /* overflow:hidden keeps the pill's cross-size at its own height — without it
+       an emoji's taller intrinsic line-box inflates the flex line and the
+       emoji-less "All" pills float above the rest. */
+    .pill { display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+      height: 1.85rem; line-height: 1; overflow: hidden; cursor: pointer;
+      border: 1px solid var(--sl-color-gray-5); background: transparent;
+      color: var(--sl-color-gray-2); font: inherit; font-size: 0.78rem;
       padding: 0 0.7rem; border-radius: 999px; transition: all 0.12s; }
+    .pill .pico { font-size: 0.82em; line-height: 1; }
     .pill:hover { border-color: var(--sl-color-accent); color: var(--sl-color-white); }
     .pill.active { background: var(--sl-color-accent); border-color: var(--sl-color-accent); color: var(--sl-color-black); font-weight: 600; }
     .cat-filters select, .cat-filters input { font: inherit; font-size: 0.78rem; border: 1px solid var(--sl-color-gray-5);
@@ -320,9 +338,18 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     .mcount { margin-left: 0.6rem; font-weight: 400; color: var(--sl-color-gray-3); text-transform: none; letter-spacing: 0; }
     .mexp { float: right; color: var(--sl-color-gray-3); transition: transform 0.12s; }
     .mod-row[aria-expanded="true"] .mexp { transform: rotate(90deg); color: var(--sl-color-accent-high); }
-    .mod-detail td { background: color-mix(in oklab, var(--sl-color-accent) 5%, transparent); }
-    .mod-detail p { margin: 0; font-size: 0.82rem; color: var(--sl-color-gray-2); max-width: 90ch; }
-    .mod-detail code { font-size: 0.78rem; }
+
+    .mod-pop { position: fixed; z-index: 5; box-sizing: border-box;
+      background: var(--sl-color-bg); border: 1px solid var(--sl-color-accent);
+      border-radius: 0.5rem; box-shadow: 0 12px 32px rgb(0 0 0 / 0.4);
+      padding: 0.75rem 2.2rem 0.85rem 0.9rem; }
+    .mod-pop h3 { margin: 0 0 0.35rem; font-size: 0.8rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--sl-color-accent-high); }
+    .mod-pop p { margin: 0; font-size: 0.84rem; color: var(--sl-color-gray-1); line-height: 1.6; }
+    .mod-pop code { font-size: 0.78rem; }
+    .mod-pop-x { position: absolute; top: 0.5rem; right: 0.6rem; background: none; border: 0;
+      color: var(--sl-color-gray-3); font-size: 0.9rem; cursor: pointer; line-height: 1; padding: 0.2rem; }
+    .mod-pop-x:hover { color: var(--sl-color-white); }
 
     .mchip { display: inline-block; font-size: 0.66rem; font-weight: 700; padding: 0.12rem 0.4rem; border-radius: 0.3rem; color: #fff; }
     .slug { font-family: var(--sl-font-mono, monospace); font-size: 0.78rem; color: var(--sl-color-gray-1); }
@@ -388,10 +415,18 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-gray-2); }
     .cat-modal :global(.dt.ho) { color: var(--sl-color-accent-high); border-color: color-mix(in oklab, var(--sl-color-accent) 40%, transparent); }
     .cat-modal :global(.dt.rl) { color: #ff8a80; border-color: color-mix(in oklab, #f85149 40%, transparent); }
-    .cat-modal .m-run { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
-      background: var(--sl-color-gray-6); border-radius: 0.4rem; padding: 0.5rem 0.7rem; margin-bottom: 0.8rem; }
-    .cat-modal .m-run-l { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-gray-3); }
-    .cat-modal .m-run code { font-size: 0.76rem; color: var(--sl-color-white); }
+    .cat-modal .m-run { background: color-mix(in oklab, var(--sl-color-accent) 10%, var(--sl-color-gray-6));
+      border: 1px solid color-mix(in oklab, var(--sl-color-accent) 30%, transparent);
+      border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; }
+    .cat-modal .m-run-l { font-size: 0.82rem; font-weight: 600; color: var(--sl-color-accent-high); }
+    .cat-modal .m-run-steps { margin: 0.35rem 0 0; font-size: 0.82rem; color: var(--sl-color-gray-1); line-height: 1.55; }
+    .cat-modal .m-run kbd { font-size: 0.74rem; background: var(--sl-color-gray-5); color: var(--sl-color-white);
+      padding: 0.02rem 0.35rem; border-radius: 0.25rem; border: 1px solid var(--sl-color-gray-4); }
+    .cat-modal .m-run code { font-size: 0.76rem; color: var(--sl-color-white);
+      background: var(--sl-color-black); padding: 0.06rem 0.35rem; border-radius: 0.25rem; }
+    .cat-modal .m-run-adv { margin-top: 0.55rem; }
+    .cat-modal .m-run-adv summary { font-size: 0.74rem; color: var(--sl-color-gray-3); cursor: pointer; }
+    .cat-modal .m-run-adv code { display: inline-block; margin-top: 0.4rem; background: var(--sl-color-black); }
     .cat-modal .m-links { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.82rem; margin-bottom: 0.4rem; }
     .cat-modal .m-section { margin-top: 1.4rem; border-top: 1px solid var(--sl-color-gray-6); padding-top: 1rem; }
     .cat-modal .m-section h3 { margin: 0 0 0.6rem; font-size: 0.78rem; text-transform: uppercase;
@@ -473,26 +508,63 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
         const m = mr.dataset.mod;
         const any = lessonRows.some((r) => r.dataset.mod === m && !r.hidden);
         mr.hidden = !any;
-        const det = body.querySelector<HTMLTableRowElement>(`tr.mod-detail[data-detail-for="${m}"]`);
-        if (det && !any) { det.hidden = true; mr.setAttribute('aria-expanded', 'false'); }
+        if (!any && mr.getAttribute('aria-expanded') === 'true') closeModPop();
       });
       rc.textContent = `${shown} of ${total}`;
       empty.hidden = shown !== 0;
     }
 
-    // ---- module narrative rows (absorbed from the old /guides/curriculum) ----
+    // ---- module narrative popover (absorbed from the old /guides/curriculum) ----
+    // A floating panel rather than an inline row, so it stays visible when the
+    // clicked module header is pinned by position:sticky.
+    const modPop = document.getElementById('modPop')!;
+    const modPopTitle = document.getElementById('modPopTitle')!;
+    const modPopLearn = document.getElementById('modPopLearn')!;
+    let modPopOwner: HTMLTableRowElement | null = null;
+
+    const withCode = (s: string) =>
+      s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    function positionModPop(mr: HTMLTableRowElement) {
+      // The sticky rule is on the <td>, so the <tr> keeps its natural (possibly
+      // off-screen) box — measure the cell that's actually pinned on screen.
+      const cell = mr.querySelector('td') ?? mr;
+      const r = cell.getBoundingClientRect();
+      modPop.style.top = `${r.bottom + 4}px`;
+      modPop.style.left = `${r.left}px`;
+      modPop.style.width = `${r.width}px`;
+    }
+    function closeModPop() {
+      modPop.hidden = true;
+      if (modPopOwner) modPopOwner.setAttribute('aria-expanded', 'false');
+      modPopOwner = null;
+    }
+    function openModPop(mr: HTMLTableRowElement) {
+      modPopTitle.textContent = `${mr.dataset.mod} — ${mr.dataset.label}`;
+      modPopLearn.innerHTML = `<b>You learn:</b> ${withCode(mr.dataset.learn || '')}`;
+      positionModPop(mr);
+      modPop.hidden = false;
+      modPopOwner = mr;
+      mr.setAttribute('aria-expanded', 'true');
+    }
     modRows.forEach((mr) => {
-      const toggle = () => {
-        const det = body.querySelector<HTMLTableRowElement>(`tr.mod-detail[data-detail-for="${mr.dataset.mod}"]`);
-        if (!det) return;
-        const open = det.hidden;
-        det.hidden = !open;
-        mr.setAttribute('aria-expanded', open ? 'true' : 'false');
-      };
+      const toggle = () => (modPopOwner === mr ? closeModPop() : openModPop(mr));
       mr.addEventListener('click', toggle);
       mr.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
       });
+    });
+    document.getElementById('modPopX')!.addEventListener('click', closeModPop);
+    // Reposition while pinned; dismiss on outside click / Escape.
+    window.addEventListener('scroll', () => { if (modPopOwner) positionModPop(modPopOwner); }, { passive: true });
+    window.addEventListener('resize', () => { if (modPopOwner) positionModPop(modPopOwner); });
+    document.addEventListener('click', (e) => {
+      if (!modPopOwner) return;
+      const t = e.target as Node;
+      if (!modPop.contains(t) && !modPopOwner.contains(t)) closeModPop();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modPopOwner) closeModPop();
     });
 
     // ---- modal ----
@@ -506,6 +578,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     const mTags = document.getElementById('mTags')!;
     const mRun = document.getElementById('mRun')!;
     const mRunCmd = document.getElementById('mRunCmd')!;
+    const mRunSlug = document.getElementById('mRunSlug')!;
     const mLinks = document.getElementById('mLinks')!;
     const mProblemWrap = document.getElementById('mProblemWrap')!;
     const mProblem = document.getElementById('mProblem')!;
@@ -566,6 +639,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       if (plat.length) tag('pl', plat.join(' · '));
 
       mRun.hidden = d.hands !== '1';
+      mRunSlug.textContent = slug;
       mRunCmd.textContent = `scripts/run-challenge-local.sh ${slug} init`;
 
       mLinks.innerHTML = '';

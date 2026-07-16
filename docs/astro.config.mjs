@@ -114,7 +114,7 @@ export default defineConfig({
           items: [
             // The catalog is the hub — curriculum, lessons and every incident
             // write-up live inside it now.
-            { label: 'Catalog — all 107 lessons', link: '/catalog' },
+            { label: 'Catalog', link: '/catalog' },
             { label: 'The TUI', slug: 'guides/tui' },
             { label: 'CLI', slug: 'guides/cli' },
           ],
