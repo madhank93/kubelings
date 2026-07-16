@@ -287,7 +287,12 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       padding: 0.7rem 0.85rem; border: 1px solid var(--sl-color-gray-5); border-radius: 0.6rem;
       background: var(--sl-color-black); margin-bottom: 1rem; line-height: 1;
       position: sticky; top: var(--sl-nav-height); z-index: 3; }
-    .cat-filters .fg { display: flex; align-items: center; gap: 0.35rem; line-height: 1; min-height: 1.85rem; }
+    /* Starlight's markdown flow-spacing adds margin-top to adjacent siblings via
+       a zero-specificity :where() owl selector; on flex items that margin shifts
+       each pill down and staggers the row. A plain descendant selector outranks
+       :where(), so this reset wins and every control lines up. */
+    .cat-filters * { margin: 0; }
+    .cat-filters .fg { display: flex; align-items: center; gap: 0.35rem; line-height: 1; }
     .cat-filters .fl { display: inline-flex; align-items: center; }
     .cat-filters .fl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-gray-3); }
     /* overflow:hidden keeps the pill's cross-size at its own height — without it
