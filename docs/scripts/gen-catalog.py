@@ -198,7 +198,10 @@ for n in range(1, 11):
 
         entries.append({
             "module": mod, "slug": slug, "scenario": title,
-            "type": typ, "iximiuz": True, "kind": tasks,
+            # iximiuz + kind are *execution* platforms: only hands-on lessons
+            # run there. Read-only lessons are runbooks — nothing to execute — so
+            # they carry neither platform tag (the table shows them as "runbook").
+            "type": typ, "iximiuz": tasks, "kind": tasks,
             "handsOn": tasks, "description": desc,
             "real": inc is not None,
             "company": inc[0] if inc else None,

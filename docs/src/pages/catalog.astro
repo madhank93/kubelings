@@ -49,7 +49,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     <span><b class="ho">🖐 Hands-on</b> — you fix a live cluster; an automated check gates completion (types: Lab, Incident, Drill).</span>
     <span><b class="ro">📖 Read-only</b> — a guided runbook for host-level topics; no cluster tasks (type: Reading).</span>
     <span><b class="rl">⚡ Real incident</b> — reproduces a cited, real company outage; open the row for the write-up and postmortem.</span>
-    <span>Platform column: <b class="pi">iximiuz</b> — runs in the browser on iximiuz Labs · <b class="pk">kind</b> — runs locally on a <code>kind</code> cluster.</span>
+    <span>Platform column — where a lesson runs: <b class="pi">iximiuz</b> in the browser on iximiuz Labs · <b class="pk">kind</b> locally on a <code>kind</code> cluster · <b class="pr">runbook</b> nothing to execute, read-only lessons you follow along.</span>
   </div>
 
   <div class="cat-filters" role="search" aria-label="Filter catalog">
@@ -120,6 +120,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
                   data-scenario={e.scenario} data-desc={e.description}
                   data-company={e.company ?? ''} data-source={e.source ?? ''}
                   data-ix={e.iximiuz ? '1' : '0'} data-kind={e.kind ? '1' : '0'}
+                  data-modlabel={mod.label} data-learn={mod.learn}
                   tabindex="0" role="button">
                 <td><span class={`badge b-${e.type}`}>{TYPE_LABEL[e.type]}</span></td>
                 <td class="c-mod"><span class="mchip" style={`background:${mod.color}`}>{e.module}</span></td>
@@ -130,8 +131,9 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
                 <td class="scn">{e.scenario}<span class="exp">▸</span></td>
                 <td class="c-plat">
                   <span class="plabels">
-                    {e.iximiuz && <span class="plabel ix" title="Runs on iximiuz Labs (browser)">iximiuz</span>}
-                    {e.kind && <span class="plabel kd" title="Runs locally on kind">kind</span>}
+                    {e.iximiuz && <span class="plabel ix" title="Runs in the browser on iximiuz Labs">iximiuz</span>}
+                    {e.kind && <span class="plabel kd" title="Runs locally on a kind cluster">kind</span>}
+                    {!e.handsOn && <span class="plabel rb" title="Nothing to execute — a guided runbook to read">runbook</span>}
                   </span>
                 </td>
               </tr>
@@ -228,16 +230,21 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
         <div class="m-run" id="mRun" hidden>
           <div class="m-run-primary">
             <span class="m-run-l">▶ Play in the TUI</span>
-            <p class="m-run-steps">Run <code>just tui</code>, select <code id="mRunSlug"></code>, press <kbd>↵</kbd> — it brings the cluster up, injects the broken state, and drops you into a shell.</p>
+            <p class="m-run-steps">Run <code>just tui</code>, pick <code id="mRunSlug"></code>, press <kbd>↵</kbd>. It boots the cluster, injects the break, and drops you into a shell. An automated check gates completion.</p>
           </div>
           <details class="m-run-adv">
             <summary>Prefer the raw script?</summary>
             <code id="mRunCmd"></code>
           </details>
         </div>
+        <div class="m-read" id="mRead" hidden>
+          <span class="m-read-l">📖 Read-only runbook</span>
+          <p class="m-read-steps">A host-level topic that can't run in the sandbox cluster. Nothing to execute — read the walkthrough below and follow along on your own cluster.</p>
+        </div>
+        <p class="m-context" id="mContext" hidden></p>
         <div class="m-links" id="mLinks"></div>
         <div class="m-section" id="mProblemWrap" hidden>
-          <h3>The problem</h3>
+          <h3 id="mProblemH">The problem</h3>
           <div class="sl-markdown-content m-md" id="mProblem"></div>
         </div>
         <div class="m-section" id="mWriteWrap" hidden>
@@ -277,6 +284,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     .cat-legend b.rl { color: #ff8a80; }
     .cat-legend b.pi { color: #8fd3dc; }
     .cat-legend b.pk { color: #c9a6f0; }
+    .cat-legend b.pr { color: var(--sl-color-gray-1); }
 
     /* Sticky offsets are measured at runtime into --cat-filter-h; a hardcoded
        guess is what previously parked the header mid-table. */
@@ -377,6 +385,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       white-space: nowrap; letter-spacing: 0.01em; }
     .plabel.ix { color: #8fd3dc; background: color-mix(in oklab, #4f98a3 26%, transparent); }
     .plabel.kd { color: #c9a6f0; background: color-mix(in oklab, #9b5de5 26%, transparent); }
+    .plabel.rb { color: var(--sl-color-gray-2); background: var(--sl-color-gray-6); }
 
     .cat-empty { text-align: center; padding: 2.5rem 1rem; color: var(--sl-color-gray-3); }
 
@@ -420,6 +429,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       border: 1px solid var(--sl-color-gray-5); color: var(--sl-color-gray-2); }
     .cat-modal :global(.dt.ho) { color: var(--sl-color-accent-high); border-color: color-mix(in oklab, var(--sl-color-accent) 40%, transparent); }
     .cat-modal :global(.dt.rl) { color: #ff8a80; border-color: color-mix(in oklab, #f85149 40%, transparent); }
+    .cat-modal :global(.dt.pl) { color: var(--sl-color-gray-1); }
     .cat-modal .m-run { background: color-mix(in oklab, var(--sl-color-accent) 10%, var(--sl-color-gray-6));
       border: 1px solid color-mix(in oklab, var(--sl-color-accent) 30%, transparent);
       border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; }
@@ -432,6 +442,15 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     .cat-modal .m-run-adv { margin-top: 0.55rem; }
     .cat-modal .m-run-adv summary { font-size: 0.74rem; color: var(--sl-color-gray-3); cursor: pointer; }
     .cat-modal .m-run-adv code { display: inline-block; margin-top: 0.4rem; background: var(--sl-color-black); }
+    .cat-modal .m-read { background: var(--sl-color-gray-6); border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; }
+    .cat-modal .m-read-l { font-size: 0.82rem; font-weight: 600; color: var(--sl-color-gray-1); }
+    .cat-modal .m-read-steps { margin: 0.35rem 0 0; font-size: 0.82rem; color: var(--sl-color-gray-2); line-height: 1.55; }
+    .cat-modal .m-context { font-size: 0.8rem; line-height: 1.6; color: var(--sl-color-gray-2);
+      border-left: 3px solid var(--sl-color-accent); padding: 0.3rem 0 0.3rem 0.75rem; margin: 0 0 0.8rem; }
+    .cat-modal .m-context :global(b) { color: var(--sl-color-gray-1); }
+    .cat-modal .m-context :global(code) { font-size: 0.9em; background: var(--sl-color-gray-6);
+      padding: 0.05rem 0.3rem; border-radius: 0.25rem; }
     .cat-modal .m-links { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.82rem; margin-bottom: 0.4rem; }
     .cat-modal .m-section { margin-top: 1.4rem; border-top: 1px solid var(--sl-color-gray-6); padding-top: 1rem; }
     .cat-modal .m-section h3 { margin: 0 0 0.6rem; font-size: 0.78rem; text-transform: uppercase;
@@ -584,8 +603,11 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     const mRun = document.getElementById('mRun')!;
     const mRunCmd = document.getElementById('mRunCmd')!;
     const mRunSlug = document.getElementById('mRunSlug')!;
+    const mRead = document.getElementById('mRead')!;
+    const mContext = document.getElementById('mContext')!;
     const mLinks = document.getElementById('mLinks')!;
     const mProblemWrap = document.getElementById('mProblemWrap')!;
+    const mProblemH = document.getElementById('mProblemH')!;
     const mProblem = document.getElementById('mProblem')!;
     const mWriteWrap = document.getElementById('mWriteWrap')!;
     const mWriteH = document.getElementById('mWriteH')!;
@@ -629,6 +651,8 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       mSlug.textContent = slug;
       mDesc.textContent = d.desc || '';
 
+      // Facts strip — same three slots for every lesson: mode, type, platform,
+      // plus a real-incident chip when it applies.
       mTags.innerHTML = '';
       const tag = (cls: string, text: string) => {
         const s = document.createElement('span');
@@ -636,16 +660,29 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
         s.textContent = text;
         mTags.append(s);
       };
-      d.hands === '1'
+      const hands = d.hands === '1';
+      hands
         ? tag('ho', '🖐 Hands-on — fix a live cluster, verify-gated')
-        : tag('ro', '📖 Read-only runbook — no cluster tasks');
-      if (d.real === '1') tag('rl', `⚡ Real incident · ${d.company}`);
+        : tag('ro', '📖 Read-only — a guided runbook, no cluster tasks');
+      tag('ty', TYPE_LABEL[d.type!] ?? d.type!);
       const plat = [d.ix === '1' ? 'iximiuz Labs' : '', d.kind === '1' ? 'local kind' : ''].filter(Boolean);
-      if (plat.length) tag('pl', plat.join(' · '));
+      tag('pl', plat.length ? `▶ ${plat.join(' · ')}` : 'Runbook — nothing to run');
+      if (d.real === '1') tag('rl', `⚡ Real incident · ${d.company}`);
 
-      mRun.hidden = d.hands !== '1';
+      // Run/Follow block — exactly one shows, keyed off hands-on.
+      mRun.hidden = !hands;
+      mRead.hidden = hands;
       mRunSlug.textContent = slug;
       mRunCmd.textContent = `scripts/run-challenge-local.sh ${slug} init`;
+
+      // Module context — where this lesson sits and what its module drills.
+      if (d.modlabel && d.learn) {
+        mContext.innerHTML = `<b>${d.mod} · ${d.modlabel}</b> — ${withCode(d.learn)}`;
+        mContext.hidden = false;
+      } else {
+        mContext.hidden = true;
+      }
+      mProblemH.textContent = hands ? 'The problem' : 'The runbook';
 
       mLinks.innerHTML = '';
       if (d.source) {
@@ -707,6 +744,8 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       mDesc.textContent = '';
       mTags.innerHTML = '';
       mRun.hidden = true;
+      mRead.hidden = true;
+      mContext.hidden = true;
       mLinks.innerHTML = '';
       const a = document.createElement('a');
       a.href = btn.dataset.source!; a.target = '_blank'; a.rel = 'noopener noreferrer';
