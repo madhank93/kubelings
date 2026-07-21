@@ -121,8 +121,15 @@ lessons carry a verified `source:` URL (see
 ## Cert coverage notes (CKA/CKAD/CKS)
 
 - Host-level exam topics (kubeadm upgrade exec, etcdctl restore exec, AppArmor
-  profiles, Falco install) are **readings** with full runbooks — lesson scripts
-  are kubectl-only by design (see the security confinement commit).
+  profiles, Falco install) were **readings** with full runbooks, because lesson
+  scripts are kubectl-only by design (see the security confinement commit).
+  **Documented exception — the cloud-only track.** That rule is a *local
+  execution* control, not a Kubernetes limit: it exists so authored `run:` blocks
+  can't reach a learner's host. On iximiuz Labs the lesson runs on a disposable
+  VM that iximiuz owns, so the control is not weakened by running host-level work
+  there. Lessons listed in `.labctl/cloud-only.tsv` are hands-on and verify-gated
+  on iximiuz, and refused by the local runner (exit 3 on `verify`). The
+  kubectl-only rule still binds everything that runs on `kind`.
 - NetworkPolicy enforcement on local kind: current kind/kindnet DOES enforce
   policies (verified 2026-07-14 — Argo CD's shipped netpols wedge its own
   controller under kindnet; the gitops-argocd init removes them as a lab

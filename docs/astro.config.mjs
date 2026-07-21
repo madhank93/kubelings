@@ -62,7 +62,7 @@ export default defineConfig({
                 '@id': 'https://kubelings.madhan.app/#course',
                 name: 'Kubelings — Learn Kubernetes the Rustlings Way',
                 description:
-                  '107 hands-on Kubernetes lessons across 10 modules: fix broken-on-purpose clusters until an automated check passes. Includes 40+ real, cited production incidents. Runs on iximiuz Labs and locally on kind.',
+                  '107 hands-on Kubernetes lessons across 10 modules: fix broken-on-purpose clusters until an automated check passes. Includes 40+ real, cited production incidents. Runs on iximiuz Labs and, for all but the node-level track, locally on kind.',
                 url: 'https://kubelings.madhan.app',
                 provider: { '@id': 'https://kubelings.madhan.app/#author' },
                 author: { '@id': 'https://kubelings.madhan.app/#author' },

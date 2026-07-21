@@ -65,6 +65,32 @@ frontmatter() { awk '/^---$/{c++; next} c==1{print}' "$1"; }
 # Does a lesson index.md declare any tasks?
 has_tasks() { [ "$(frontmatter "$1" | yq -r '.tasks // {} | length')" -gt 0 ] 2>/dev/null; }
 
+# Cloud-only lessons need real-VM/host access (systemctl, sysctl, static pod
+# manifests, etcd on disk, a node reboot). Lesson scripts here are confined to
+# the kind node container by design, so those lessons exist on iximiuz Labs only.
+# Registry: .labctl/cloud-only.tsv (see internal/course/cloudonly.go).
+CLOUD_ONLY="$ROOT/.labctl/cloud-only.tsv"
+COURSE_URL="https://labs.iximiuz.com/courses/$(
+  awk -F'\t' '$1=="kubelings-course"{print $2; exit}' "$ROOT/.labctl/slugs.tsv" 2>/dev/null \
+    || true)"
+[ "$COURSE_URL" = "https://labs.iximiuz.com/courses/" ] \
+  && COURSE_URL="https://labs.iximiuz.com/courses/kubelings-dbd840c8"
+
+# Reason string for a cloud-only lesson; non-zero if the lesson isn't in the registry.
+cloud_only_reason() {
+  [ -f "$CLOUD_ONLY" ] || return 1
+  awk -F'\t' -v l="$1" '
+    /^[[:space:]]*#/ || /^[[:space:]]*$/ { next }
+    $1==l { i=index($0,"\t"); print substr($0,i+1); found=1; exit }
+    END { exit !found }' "$CLOUD_ONLY"
+}
+
+# is_cloud_only <lesson-name> <index.md> — registry, or the cloudOnly frontmatter fallback.
+is_cloud_only() {
+  cloud_only_reason "$1" >/dev/null 2>&1 && return 0
+  [ -n "${2:-}" ] && [ "$(frontmatter "$2" | yq -r '.cloudOnly // false')" = "true" ]
+}
+
 # SECURITY: only ever resolve to an index.md that lives UNDER courses/kubelings.
 # Rejects path traversal / symlinks pointing outside, so the runner can't be
 # tricked into executing an arbitrary file's task blocks.
@@ -154,8 +180,20 @@ case "$A1" in
       has_tasks "$d/index.md" || continue
       nm="$(basename "$d")"; nm="${nm#*.}"
       title="$(frontmatter "$d/index.md" | yq -r '.title')"
-      printf '%-18s %s\n' "$nm" "$title"
+      # Cloud-only lessons are listed, not hidden: a user reads the slug on
+      # /catalog and types it into `just run`. Silent omission reads as a broken
+      # checkout, so make `list` the place the constraint is learned.
+      if is_cloud_only "$nm" "$d/index.md"; then
+        printf '%-18s %s  [iximiuz-only]\n' "$nm" "$title"
+        any_cloud=1
+      else
+        printf '%-18s %s\n' "$nm" "$title"
+      fi
     done
+    if [ -n "${any_cloud:-}" ]; then
+      echo
+      echo "[iximiuz-only] = needs real VMs; runs at $COURSE_URL, not on local kind."
+    fi
     ;;
   progress)
     [ -f "$PROGRESS" ] && cat "$PROGRESS" || true
@@ -168,6 +206,31 @@ case "$A1" in
     IDX="$(resolve_lesson "$LESSON")"
     [ -n "$IDX" ] && [ -f "$IDX" ] || die "could not resolve lesson '$LESSON' (rejected or not found)"
     LDIR="$(dirname "$IDX")"; LNAME="$(_lesson_name "$IDX")"
+
+    # Refuse cloud-only lessons before any verb runs, so ensure_node, run_tasks,
+    # _in_node, _harden_ns and _set_progress are all unreachable for them.
+    # Placed after _confine/resolve_lesson: path confinement stays first.
+    if is_cloud_only "$LNAME" "$IDX"; then
+      REASON="$(cloud_only_reason "$LNAME" 2>/dev/null)" || REASON="it needs real-VM/host access"
+      [ -n "$REASON" ] || REASON="it needs real-VM/host access"
+      {
+        echo "☁ '$LNAME' runs on iximiuz Labs only."
+        echo "  Not on local kind, because $REASON."
+        echo "  Lesson scripts are confined to the kind node container, so host-level"
+        echo "  work has nowhere to happen locally. On iximiuz it gets real VMs."
+        echo "  Run it: $COURSE_URL"
+      } >&2
+      case "$VERB" in
+        # Nothing was going to happen; not a user error.
+        init|reset) exit 0 ;;
+        # 3 = "this check does not exist here", distinct from 0=pass, 1=not solved.
+        verify) exit 3 ;;
+        # Static markdown: executes nothing, and this is what the user most wants.
+        solution) echo >&2; for u in "$LDIR"/unit-*.md; do [ -f "$u" ] && cat "$u"; done; exit 0 ;;
+        *) die "unknown verb '$VERB' (use init|verify|reset|solution)" ;;
+      esac
+    fi
+
     case "$VERB" in
       init)
         ensure_node; run_tasks "$IDX" true; _harden_ns

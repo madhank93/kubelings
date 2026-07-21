@@ -30,7 +30,36 @@ MODULES = {
             "multi-concept cascade incidents from cited postmortems — everything at once, then the final boss"),
     "M10": ("Platform Engineering", "#db6d28",
             "GitOps with Argo CD (incl. app-of-apps) and Flux, multi-tenancy with Capsule, Cluster API, Crossplane compositions"),
+    "M11": ("Node & Control Plane", "#6b8299",
+            "node and control-plane failures that need a real machine, not a container — kubelet and containerd outages, etcd quota alarms and defrag, static pods, node reboot recovery, disk pressure and PID exhaustion, MTU mismatch, clock skew, network partitions and quorum loss (iximiuz Labs only)"),
 }
+
+# ---- cloud-only registry (.labctl/cloud-only.tsv) ----
+# Lessons whose tasks need real-VM/host access. The local kind runner confines
+# lesson scripts to the node container, so these run on iximiuz Labs only.
+# Kept out of lesson frontmatter because `labctl content push` 400s on unknown
+# keys — see internal/course/cloudonly.go for the same parse in Go.
+CLOUD_ONLY_TSV = os.path.join(_REPO, ".labctl", "cloud-only.tsv")
+
+def load_cloud_only():
+    out = {}
+    if not os.path.isfile(CLOUD_ONLY_TSV):
+        return out
+    with open(CLOUD_ONLY_TSV, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.rstrip("\n")
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            name, _, reason = line.partition("\t")
+            out[name.strip()] = reason.strip()
+    return out
+
+CLOUD_ONLY = load_cloud_only()
+
+def is_cloud_only(fm, slug):
+    if slug in CLOUD_ONLY:
+        return True
+    return re.search(r'(?m)^cloudOnly:\s*true\s*$', fm) is not None
 
 def parse_frontmatter(path):
     with open(path, encoding="utf-8") as fh:
@@ -147,8 +176,23 @@ def extract_detail(unit_path, hands_on):
 for stale in glob.glob(os.path.join(DETAILS_DIR, "*.md")):
     os.remove(stale)
 
+# Modules come from disk, not a hardcoded range, so adding module-11 is a
+# directory + a MODULES entry. Fail loudly on a module with no MODULES entry —
+# otherwise the separator emitter below dies on a bare KeyError.
+_module_nums = sorted(
+    int(re.match(r'module-(\d+)$', os.path.basename(d)).group(1))
+    for d in glob.glob(os.path.join(ROOT, "module-*"))
+    if os.path.isdir(d) and re.match(r'module-\d+$', os.path.basename(d))
+)
+for _n in _module_nums:
+    if f"M{_n}" not in MODULES:
+        raise SystemExit(
+            f"courses/kubelings/module-{_n}/ exists but M{_n} has no MODULES entry "
+            f"in {os.path.relpath(__file__, _REPO)} — add its label, colour, and narrative."
+        )
+
 entries = []
-for n in range(1, 11):
+for n in _module_nums:
     mod = f"M{n}"
     dirs = glob.glob(os.path.join(ROOT, f"module-{n}", "[0-9]*"))
     def keyf(d):
@@ -164,6 +208,9 @@ for n in range(1, 11):
         title = get_title(fm) or slug
         desc = get_description(fm)
         tasks = has_tasks(fm)
+        # A task-less lesson has nothing to run anywhere, so it stays a reading
+        # rather than becoming "cloud-only".
+        cloud = tasks and is_cloud_only(fm, slug)
         if not tasks:
             typ = "read"
         elif slug.startswith("pattern-"):
@@ -201,8 +248,10 @@ for n in range(1, 11):
             # iximiuz + kind are *execution* platforms: only hands-on lessons
             # run there. Read-only lessons are runbooks — nothing to execute — so
             # they carry neither platform tag (the table shows them as "runbook").
-            "type": typ, "iximiuz": tasks, "kind": tasks,
-            "handsOn": tasks, "description": desc,
+            # The three are independent: a cloud-only lesson is hands-on and runs
+            # on iximiuz, but not on kind.
+            "type": typ, "iximiuz": tasks, "kind": tasks and not cloud,
+            "handsOn": tasks, "cloudOnly": cloud, "description": desc,
             "real": inc is not None,
             "company": inc[0] if inc else None,
             "source": inc[1] if inc else None,
@@ -210,13 +259,31 @@ for n in range(1, 11):
             "detail": bool(detail),
         })
 
+# ---- validate the cloud-only registry ----
+# The registry does not sit next to the lessons it names, so nothing else would
+# catch a typo, a rename, or a row pointing at a lesson with no tasks to run.
+_by_slug = {e["slug"]: e for e in entries}
+_errs = []
+for _name, _reason in sorted(CLOUD_ONLY.items()):
+    e = _by_slug.get(_name)
+    if e is None:
+        _errs.append(f"  {_name}: no such lesson under courses/kubelings/")
+    elif not e["handsOn"]:
+        _errs.append(f"  {_name}: has no tasks — a reading is already unrunnable everywhere; "
+                     f"drop the row instead")
+    if not _reason:
+        _errs.append(f"  {_name}: no reason — add a tab and a sentence completing "
+                     f"\"it can't run locally because …\"")
+if _errs:
+    raise SystemExit(".labctl/cloud-only.tsv is invalid:\n" + "\n".join(_errs))
+
 # ---- emit catalog.ts ----
 def esc(s):
     return json.dumps(s, ensure_ascii=False)
 
 out = []
 out.append("// src/data/catalog.ts")
-out.append("// AUTO-DERIVED from courses/kubelings/ (the source of truth). 107 lessons.")
+out.append(f"// AUTO-DERIVED from courses/kubelings/ (the source of truth). {len(entries)} lessons.")
 out.append("// Regenerate when lessons change; do not hand-edit entries.")
 out.append("")
 out.append("export type CatalogEntry = {")
@@ -227,6 +294,7 @@ out.append("  type: 'lab' | 'incident' | 'drill' | 'read';")
 out.append("  iximiuz: boolean;")
 out.append("  kind: boolean;")
 out.append("  handsOn: boolean;")
+out.append("  cloudOnly?: boolean;        // needs real VMs — iximiuz Labs only, never local kind")
 out.append("  description: string;")
 out.append("  real: boolean;              // reproduces a cited, real company incident")
 out.append("  company?: string;")
@@ -254,6 +322,11 @@ for e in entries:
         "iximiuz:%s" % ("true" if e["iximiuz"] else "false"),
         "kind:%s" % ("true" if e["kind"] else "false"),
         "handsOn:%s" % ("true" if e["handsOn"] else "false"),
+    ]
+    # Emitted only when true, so existing rows don't churn.
+    if e["cloudOnly"]:
+        parts.append("cloudOnly:true")
+    parts += [
         "description:%s" % esc(e["description"]),
         "real:%s" % ("true" if e["real"] else "false"),
     ]

@@ -17,6 +17,7 @@ const total     = CATALOG.length;
 const handsOn   = CATALOG.filter((e) => e.handsOn).length;
 const readOnly  = CATALOG.filter((e) => !e.handsOn).length;
 const realCount = CATALOG.filter((e) => e.real).length;
+const cloudOnly = CATALOG.filter((e) => e.cloudOnly).length;
 
 const TYPE_LABEL: Record<string, string> = {
   lab: 'Lab', incident: 'Incident', drill: 'Drill', read: 'Reading',
@@ -42,6 +43,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     <li><span class="n">{handsOn}</span><span class="l">🖐 Hands-on</span></li>
     <li><span class="n">{readOnly}</span><span class="l">📖 Read-only</span></li>
     <li><span class="n">{realCount}</span><span class="l">⚡ Real incidents</span></li>
+    {cloudOnly > 0 && <li><span class="n">{cloudOnly}</span><span class="l">☁ iximiuz only</span></li>}
   </ul>
 
   <div class="cat-legend">
@@ -49,7 +51,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     <span><b class="ho">🖐 Hands-on</b> — you fix a live cluster; an automated check gates completion (types: Lab, Incident, Drill).</span>
     <span><b class="ro">📖 Read-only</b> — a guided runbook for host-level topics; no cluster tasks (type: Reading).</span>
     <span><b class="rl">⚡ Real incident</b> — reproduces a cited, real company outage; open the row for the write-up and postmortem.</span>
-    <span>Platform column — where a lesson runs: <b class="pi">iximiuz</b> in the browser on iximiuz Labs · <b class="pk">kind</b> locally on a <code>kind</code> cluster · <b class="pr">runbook</b> nothing to execute, read-only lessons you follow along.</span>
+    <span>Platform column — where a lesson runs: <b class="pi">iximiuz</b> in the browser on iximiuz Labs · <b class="pk">kind</b> locally on a <code>kind</code> cluster · <b class="pr">runbook</b> nothing to execute, read-only lessons you follow along. A hands-on lesson showing <b class="pi">iximiuz</b> alone needs a real machine (node reboot, <code>systemctl</code>, etcd on disk) — it runs on iximiuz Labs only.</span>
   </div>
 
   <div class="cat-filters" role="search" aria-label="Filter catalog">
@@ -120,6 +122,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
                   data-scenario={e.scenario} data-desc={e.description}
                   data-company={e.company ?? ''} data-source={e.source ?? ''}
                   data-ix={e.iximiuz ? '1' : '0'} data-kind={e.kind ? '1' : '0'}
+                  data-cloud={e.cloudOnly ? '1' : '0'}
                   data-modlabel={mod.label} data-learn={mod.learn}
                   tabindex="0" role="button">
                 <td><span class={`badge b-${e.type}`}>{TYPE_LABEL[e.type]}</span></td>
@@ -171,9 +174,11 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     <p>Deliberate non-goals — go elsewhere for these:</p>
     <ul class="cat-nongoals">
       <li>
-        <b>Executing host-level operations</b> — kubeadm upgrades, <code>etcdctl</code> restores, AppArmor
-        profile loading and Falco installs are covered as full runbooks (readings), but lesson scripts never
-        touch a host by design (<a href="/reference/security/">Security</a>).
+        <b>Executing host-level operations on your own machine</b> — kubeadm upgrades, <code>etcdctl</code>
+        restores, AppArmor profile loading and Falco installs are hands-on, but only on iximiuz Labs, where
+        they run on disposable VMs (the <b>☁ iximiuz only</b> track). The local runner still never touches
+        your host by design: lesson scripts are confined to the <code>kind</code> node container
+        (<a href="/reference/security/">Security</a>). The rest stay full runbooks you read.
       </li>
       <li>
         <b>Image building</b> — no container build toolchain in the lesson shell. (Helm <i>is</i> exercised
@@ -186,8 +191,9 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       </li>
     </ul>
     <p>
-      Every lesson runs identically on <a href="https://labs.iximiuz.com/courses/kubelings-dbd840c8">iximiuz Labs</a>
-      and locally on <code>kind</code> from one source of truth — see <a href="/getting-started/">Getting Started</a>
+      Nearly every lesson runs identically on <a href="https://labs.iximiuz.com/courses/kubelings-dbd840c8">iximiuz Labs</a>
+      and locally on <code>kind</code> from one source of truth; the exception is the <b>☁ iximiuz only</b>
+      track, whose tasks need a real machine — see <a href="/getting-started/">Getting Started</a>
       and <a href="/reference/architecture/">Architecture</a>. Single-concept incidents are reproduced inside the
       module that teaches the concept; multi-concept cascades land in Module 9.
     </p>
@@ -236,6 +242,17 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
             <summary>Prefer the raw script?</summary>
             <code id="mRunCmd"></code>
           </details>
+        </div>
+        <div class="m-cloud" id="mCloud" hidden>
+          <span class="m-cloud-l">☁ Runs on iximiuz Labs only</span>
+          <p class="m-cloud-steps">
+            This lesson is hands-on and verify-gated, but its tasks need a real
+            machine — a node reboot, <code>systemctl</code>, a static pod manifest,
+            etcd on disk. The local runner deliberately confines lesson scripts to
+            the <code>kind</code> node container (<a href="/reference/security/">Security</a>),
+            so there is nowhere for that work to happen on your laptop. On iximiuz
+            Labs it runs on disposable VMs that are not yours.
+          </p>
         </div>
         <div class="m-read" id="mRead" hidden>
           <span class="m-read-l">📖 Read-only runbook</span>
@@ -446,6 +463,10 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; }
     .cat-modal .m-read-l { font-size: 0.82rem; font-weight: 600; color: var(--sl-color-gray-1); }
     .cat-modal .m-read-steps { margin: 0.35rem 0 0; font-size: 0.82rem; color: var(--sl-color-gray-2); line-height: 1.55; }
+    .cat-modal .m-cloud { background: var(--sl-color-gray-6); border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; }
+    .cat-modal .m-cloud-l { font-size: 0.82rem; font-weight: 600; color: var(--sl-color-gray-1); }
+    .cat-modal .m-cloud-steps { margin: 0.35rem 0 0; font-size: 0.82rem; color: var(--sl-color-gray-2); line-height: 1.55; }
     .cat-modal .m-context { font-size: 0.8rem; line-height: 1.6; color: var(--sl-color-gray-2);
       border-left: 3px solid var(--sl-color-accent); padding: 0.3rem 0 0.3rem 0.75rem; margin: 0 0 0.8rem; }
     .cat-modal .m-context :global(b) { color: var(--sl-color-gray-1); }
@@ -604,6 +625,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     const mRunCmd = document.getElementById('mRunCmd')!;
     const mRunSlug = document.getElementById('mRunSlug')!;
     const mRead = document.getElementById('mRead')!;
+    const mCloud = document.getElementById('mCloud')!;
     const mContext = document.getElementById('mContext')!;
     const mLinks = document.getElementById('mLinks')!;
     const mProblemWrap = document.getElementById('mProblemWrap')!;
@@ -669,11 +691,17 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       tag('pl', plat.length ? `▶ ${plat.join(' · ')}` : 'Runbook — nothing to run');
       if (d.real === '1') tag('rl', `⚡ Real incident · ${d.company}`);
 
-      // Run/Follow block — exactly one shows, keyed off hands-on.
-      mRun.hidden = !hands;
+      // Run/Cloud/Follow block — exactly one shows. Cloud-only lessons are
+      // hands-on but have no local command, so they must not get the run block:
+      // the script it names would refuse them.
+      const cloud = d.cloud === '1';
+      mRun.hidden = !hands || cloud;
+      mCloud.hidden = !cloud;
       mRead.hidden = hands;
-      mRunSlug.textContent = slug;
-      mRunCmd.textContent = `scripts/run-challenge-local.sh ${slug} init`;
+      if (!mRun.hidden) {
+        mRunSlug.textContent = slug;
+        mRunCmd.textContent = `scripts/run-challenge-local.sh ${slug} init`;
+      }
 
       // Module context — where this lesson sits and what its module drills.
       if (d.modlabel && d.learn) {
@@ -745,6 +773,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       mTags.innerHTML = '';
       mRun.hidden = true;
       mRead.hidden = true;
+      mCloud.hidden = true;
       mContext.hidden = true;
       mLinks.innerHTML = '';
       const a = document.createElement('a');

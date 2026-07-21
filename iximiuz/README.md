@@ -62,6 +62,12 @@ cleanly. First-time course registration was a one-off
 - **Title length ≥ 10 chars** for course/module/lesson titles, else push 400s.
 - **Lesson frontmatter** takes `kind/title/description/name/slug/createdAt/playground/tasks`
   only — no `categories`/`tagz`/`difficulty` (those belong on the course).
+  This is why the **cloud-only** signal lives in `.labctl/cloud-only.tsv` and not
+  in lesson frontmatter: a `cloudOnly:` key would 400 on push. `.labctl/` is never
+  pushed (`content push --dir courses/kubelings`), so the registry can't trip the
+  validator, and it carries a reason string a boolean couldn't. A frontmatter
+  reader exists as an inert fallback in all three languages — if the platform ever
+  accepts the key, migrating is a data move with no code change.
 - **Custom playgrounds can't run install scripts.** The manifest schema
   (`labctl playground manifest <name>`) only tweaks topology/resources/tabs/networks;
   there is no `initScript`/`image`. Install software (metrics-server, Cilium…) via a

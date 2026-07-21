@@ -4,9 +4,12 @@ Learn Kubernetes the **rustlings** way — fix small, broken-on-purpose cluster
 scenarios one at a time until an automated check turns green.
 
 Everything lives in one place: the [iximiuz Labs](https://labs.iximiuz.com)
-**Course**. Each lesson carries its own `init`/`verify` tasks, so the same files
-run on iximiuz Labs *and* locally on `kind` — single source of truth, no
-duplicated scripts.
+**Course**. Each lesson carries its own `init`/`verify` tasks, so nearly every
+lesson's files run on iximiuz Labs *and* locally on `kind` — single source of
+truth, no duplicated scripts. The exception is the **iximiuz-only** track
+(`.labctl/cloud-only.tsv`): lessons whose tasks need a real machine — a node
+reboot, `systemctl`, etcd on disk. Lesson scripts are confined to the `kind`
+node container locally, so those run on iximiuz's disposable VMs only.
 
 ▶ **Course:** https://labs.iximiuz.com/courses/kubelings-dbd840c8
 📖 **Docs:** https://kubelings.madhan.app (source in [`docs/`](docs/), Astro Starlight)

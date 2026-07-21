@@ -27,6 +27,14 @@ func Shell(root, lessonName string) error {
 	if found == nil {
 		return fmt.Errorf("no lesson named %q", lessonName)
 	}
+	if found.CloudOnly {
+		reason := found.CloudOnlyReason
+		if reason == "" {
+			reason = "it needs real-VM/host access"
+		}
+		return fmt.Errorf("%s runs on iximiuz Labs only — it can't run on the local kind\ncluster because %s.\nRun it here: %s",
+			found.Name, reason, course.CourseURL(root))
+	}
 	kubeconfig, rc, err := shellEnv(root, found)
 	if err != nil {
 		return fmt.Errorf("prepare shell (is the cluster up?): %w", err)

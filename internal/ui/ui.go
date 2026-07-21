@@ -165,7 +165,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			l := m.shellLesson
 			m.mode = modeDetail
 			m.refreshView()
-			return m, m.execShell(l)
+			cmd := m.execShell(l)
+			return m, cmd
 		}
 		m.openShellNext = false
 		m.mode = modeOutput
@@ -290,7 +291,9 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if l == nil {
 			return m, nil
 		}
-		if !l.HasTasks { // reading lesson: enter toggles read/unread
+		// Readings have nothing to run; cloud-only lessons have nothing to run
+		// *here*. Both self-attest with ↵ instead of playing.
+		if !l.HasTasks || l.CloudOnly {
 			s := progress.Solved
 			if progress.Get(m.prog, l.Name) == progress.Solved {
 				s = progress.None
@@ -307,6 +310,9 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.beginInit(l, true)
 	case "i":
 		if l := m.current(); l != nil && l.HasTasks {
+			if m.blockCloudOnly(l) {
+				return m, nil
+			}
 			return m.beginInit(l, false)
 		}
 	case "v":
@@ -319,7 +325,13 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.ExecProcess(runner.Cmd(m.root, "down"), func(error) tea.Msg { return execDoneMsg{} })
 	case "t":
 		if l := m.current(); l != nil {
-			return m, m.execShell(l)
+			// The shell's rcfile wires a `verify` helper straight to the local
+			// runner, so the shell is a local-execution door like any other.
+			if m.blockCloudOnly(l) {
+				return m, nil
+			}
+			cmd := m.execShell(l)
+			return m, cmd
 		}
 	case "pgup", "pgdown", "ctrl+u", "ctrl+d":
 		var cmd tea.Cmd
@@ -329,8 +341,34 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// blockCloudOnly refuses a local-execution action for a cloud-only lesson and
+// renders why. Every door into the local runner calls it — the key handlers for
+// the affordance, and runAction/beginInit/execShell as a structural backstop so
+// a future key path can't bypass the gate.
+func (m *model) blockCloudOnly(l *course.Lesson) bool {
+	if l == nil || !l.CloudOnly {
+		return false
+	}
+	reason := l.CloudOnlyReason
+	if reason == "" {
+		reason = "it needs real-VM/host access"
+	}
+	m.mode = modeOutput
+	m.vp.SetContent(warnStyle.Render("☁ ‘"+l.Title+"’ runs on iximiuz Labs only.") + "\n\n" +
+		textStyle.Render("It can't run on your local kind cluster because "+reason+".") + "\n" +
+		dimStyle.Render("Lesson scripts are confined to the kind node container, so host-level\n"+
+			"work has nowhere to happen locally. On iximiuz it runs on disposable VMs.") + "\n\n" +
+		dimStyle.Render("Run it here: ") + linkStyle.Render(course.CourseURL(m.root)) + "\n\n" +
+		keybar([2]string{"↵", "mark done / not done"}))
+	m.vp.GotoTop()
+	return true
+}
+
 // beginInit starts a lesson, prompting first if a different scenario is still active.
 func (m model) beginInit(l *course.Lesson, withShell bool) (tea.Model, tea.Cmd) {
+	if m.blockCloudOnly(l) {
+		return m, nil
+	}
 	if !m.status.Up {
 		m.mode = modeOutput
 		m.vp.SetContent("cluster not up — press u (or enter to play).")
@@ -376,6 +414,9 @@ func (m model) runAction(action string) (tea.Model, tea.Cmd) {
 		m.vp.SetContent("‘" + l.Title + "’ is a reading — nothing to " + action + ".\n\nPress ↵ to mark it read / unread.")
 		return m, nil
 	}
+	if m.blockCloudOnly(l) {
+		return m, nil
+	}
 	if !m.status.Up {
 		m.mode = modeOutput
 		m.vp.SetContent("cluster not up — press u to start it.")
@@ -397,7 +438,10 @@ func (m model) runAction(action string) (tea.Model, tea.Cmd) {
 // execShell drops into an interactive shell wired to the cluster, showing the
 // lesson task and exposing task/hint/verify/solution commands. Isolated via a
 // temp KUBECONFIG so the user's global context is untouched.
-func (m model) execShell(l *course.Lesson) tea.Cmd {
+func (m *model) execShell(l *course.Lesson) tea.Cmd {
+	if m.blockCloudOnly(l) {
+		return nil
+	}
 	if !m.status.Up {
 		m.mode = modeOutput
 		m.vp.SetContent("cluster not up — press u to start it before opening a shell.")

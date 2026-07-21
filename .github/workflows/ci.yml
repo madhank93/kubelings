@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  catalog:
+    name: catalog.ts is in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # Regenerating also validates .labctl/cloud-only.tsv: it fails on a row
+      # naming an unknown lesson, a task-less lesson, or a row with no reason.
+      # Without this job that validation would never run anywhere.
+      - name: Regenerate the catalog
+        run: python3 docs/scripts/gen-catalog.py
+      - name: Fail if the committed catalog is stale
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::catalog.ts / lesson-details are out of date."
+            echo "Run 'just gen-catalog' and commit the result."
+            git diff --stat
+            git diff
+            exit 1
+          fi
+
+  go:
+    name: go test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test ./...

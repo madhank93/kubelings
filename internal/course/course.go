@@ -29,6 +29,12 @@ type Lesson struct {
 	Task        string // unit prose up to the first <details>/::simple-task
 	Hint        string
 	Solution    string
+
+	// CloudOnly marks a lesson whose tasks need real-VM/host access and so can
+	// only run on iximiuz Labs, never on the local kind cluster. Orthogonal to
+	// Type: a cloud-only lesson can still be a replay, drill, or lab.
+	CloudOnly       bool
+	CloudOnlyReason string
 }
 
 // Module groups lessons.
@@ -46,6 +52,11 @@ type frontmatter struct {
 	Source      string                 `yaml:"source"`
 	Playground  struct{ Name string }  `yaml:"playground"`
 	Tasks       map[string]interface{} `yaml:"tasks"`
+	// Fallback signal, inert unless present — yaml.Unmarshal ignores absent
+	// keys. The registry (.labctl/cloud-only.tsv) is the supported source; if
+	// the platform ever accepts this key, migrating is a data move, no code
+	// change. See LoadCloudOnly.
+	CloudOnly bool `yaml:"cloudOnly"`
 }
 
 var (
@@ -63,6 +74,7 @@ func Discover(root string) ([]Module, error) {
 	if err != nil {
 		return nil, err
 	}
+	cloud := LoadCloudOnly(root)
 	var mods []Module
 	for _, e := range entries {
 		if !e.IsDir() || !moduleDirRe.MatchString(e.Name()) {
@@ -96,6 +108,12 @@ func Discover(root string) ([]Module, error) {
 				Source: strings.TrimSpace(fm.Source),
 			}
 			ls.Type = lessonType(ls)
+			if reason, ok := cloud[ls.Name]; ok || fm.CloudOnly {
+				// A task-less lesson has nothing to run anywhere, so "can't run
+				// it here" is not the useful fact about it — it stays a reading.
+				ls.CloudOnly = ls.HasTasks
+				ls.CloudOnlyReason = reason
+			}
 			unit := filepath.Join(ldir, "unit-1.md")
 			ls.Task = extractTask(unit)
 			ls.Hint = extractDetails(unit, "hint")

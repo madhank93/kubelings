@@ -31,6 +31,7 @@ var (
 	replayStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("203")) // real cited incident
 	drillStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("140")) // synthetic pattern
 	readStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("110")) // guided reading
+	cloudStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("117")) // iximiuz Labs only
 )
 
 // badgeText is the plain identifier shown after a lesson name; "" for plain labs.
@@ -60,6 +61,24 @@ func badge(t string) string {
 	default:
 		return readStyle.Render(b)
 	}
+}
+
+// lessonBadgeText is the badge for a whole lesson rather than a bare type.
+// Cloud-only outranks the type badge: the column fits one, and "you can't run
+// this here" is the more actionable fact about the row.
+func lessonBadgeText(l *course.Lesson) string {
+	if l.CloudOnly {
+		return "☁cloud"
+	}
+	return badgeText(l.Type)
+}
+
+// lessonBadge renders lessonBadgeText in its color.
+func lessonBadge(l *course.Lesson) string {
+	if l.CloudOnly {
+		return cloudStyle.Render("☁cloud")
+	}
+	return badge(l.Type)
 }
 
 // keybar renders "key label · key label" with colored keys.
@@ -143,10 +162,11 @@ func (m model) listView() string {
 		l := r.lesson
 		state := progress.Get(m.prog, l.Name)
 		mk := markerStyle(state).Render(state.Marker())
-		bt := badgeText(l.Type)
+		bt := lessonBadgeText(l)
 		nameW := inner - 2
 		if bt != "" {
-			nameW -= len([]rune(bt)) + 1
+			// Width, not rune count: ☁ measures 2 cells where ¶ measured 1.
+			nameW -= lipgloss.Width(bt) + 1
 		}
 		name := truncate(l.Name, nameW)
 		if m.isCursor(i) {
@@ -159,7 +179,7 @@ func (m model) listView() string {
 		} else {
 			row := " " + mk + " " + textStyle.Render(name)
 			if bt != "" {
-				row += " " + badge(l.Type)
+				row += " " + lessonBadge(l)
 			}
 			lines = append(lines, row)
 		}
@@ -259,6 +279,22 @@ func (m model) detail(l *course.Lesson) string {
 		b.WriteString(dimStyle.Render("source:     ") + readStyle.Render(l.Source) + "\n")
 	}
 	b.WriteString("\n")
+	// Cloud-only is checked before HasTasks: the lesson does have tasks, they
+	// just have nowhere to run on this machine.
+	if l.CloudOnly {
+		reason := l.CloudOnlyReason
+		if reason == "" {
+			reason = "it needs real-VM/host access"
+		}
+		b.WriteString(cloudStyle.Render("☁ Runs on iximiuz Labs only") + "\n")
+		b.WriteString(textStyle.Render("  Not on local kind, because "+reason+".") + "\n")
+		b.WriteString(dimStyle.Render("  Lesson scripts are confined to the kind node container, so host-level") + "\n")
+		b.WriteString(dimStyle.Render("  work has nowhere to happen locally. On iximiuz it gets real VMs.") + "\n")
+		b.WriteString(dimStyle.Render("  run it:  ") + linkStyle.Render(course.CourseURL(m.root)) + "\n")
+		b.WriteString("\n" + keybar([2]string{"↵", "mark done / not done"},
+			[2]string{"h", "hint"}, [2]string{"s", "solution"}))
+		return b.String()
+	}
 	if l.HasTasks {
 		b.WriteString(m.clusterBlock(l))
 		b.WriteString("\n" + keybar([2]string{"↵", "play (cluster + init + shell)"}) + "\n")
@@ -270,7 +306,7 @@ func (m model) detail(l *course.Lesson) string {
 	if l.Source != "" {
 		b.WriteString(dimStyle.Render("  cited source: ") + linkStyle.Render(l.Source) + "\n")
 	}
-	b.WriteString(dimStyle.Render("  full lesson:  ") + linkStyle.Render("https://labs.iximiuz.com/courses/kubelings-dbd840c8") + "\n")
+	b.WriteString(dimStyle.Render("  full lesson:  ") + linkStyle.Render(course.CourseURL(m.root)) + "\n")
 	b.WriteString("\n" + keybar([2]string{"↵", "mark read / unread"}))
 	return b.String()
 }
@@ -367,7 +403,9 @@ func helpText() string {
 		dimStyle.Render("types:   ") + textStyle.Render("lab (unmarked) hands-on") + dimStyle.Render(" · ") +
 		replayStyle.Render("⟲replay real cited incident") + dimStyle.Render(" · ") +
 		drillStyle.Render("◇drill synthetic pattern") + dimStyle.Render(" · ") +
-		readStyle.Render("¶read guided reading") + "\n\n" +
+		readStyle.Render("¶read guided reading") + "\n" +
+		dimStyle.Render("         ") + cloudStyle.Render("☁cloud") +
+		dimStyle.Render(" iximiuz Labs only — needs real VMs; shown instead of the type badge") + "\n\n" +
 		dimStyle.Render("in the shell: ") + keyStyle.Render("task") + dimStyle.Render(" · ") +
 		keyStyle.Render("hint") + dimStyle.Render(" · ") + keyStyle.Render("verify") + dimStyle.Render(" · ") +
 		keyStyle.Render("solution") + dimStyle.Render(" · ") + keyStyle.Render("k=kubectl")

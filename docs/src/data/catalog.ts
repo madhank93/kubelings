@@ -10,6 +10,7 @@ export type CatalogEntry = {
   iximiuz: boolean;
   kind: boolean;
   handsOn: boolean;
+  cloudOnly?: boolean;        // needs real VMs — iximiuz Labs only, never local kind
   description: string;
   real: boolean;              // reproduces a cited, real company incident
   company?: string;
@@ -29,6 +30,7 @@ export const MODULES: Record<string, { label: string; color: string; learn: stri
   M8:  { label: "Observability & SRE", color: '#1f8a9c', learn: "events forensics, node NotReady triage, quotas, disk pressure & eviction, cluster upgrades, node maintenance, SLO burn-rate alerting, OTel tracing pipelines, debugging playbooks" },
   M9:  { label: "War Stories", color: '#e85d9f', learn: "multi-concept cascade incidents from cited postmortems — everything at once, then the final boss" },
   M10: { label: "Platform Engineering", color: '#db6d28', learn: "GitOps with Argo CD (incl. app-of-apps) and Flux, multi-tenancy with Capsule, Cluster API, Crossplane compositions" },
+  M11: { label: "Node & Control Plane", color: '#6b8299', learn: "node and control-plane failures that need a real machine, not a container — kubelet and containerd outages, etcd quota alarms and defrag, static pods, node reboot recovery, disk pressure and PID exhaustion, MTU mismatch, clock skew, network partitions and quorum loss (iximiuz Labs only)" },
 };
 
 export const CATALOG: CatalogEntry[] = [

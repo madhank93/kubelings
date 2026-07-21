@@ -31,6 +31,11 @@ run lesson verb="verify":
 list:
     scripts/run-challenge-local.sh list
 
+# Regenerate docs/src/data/catalog.ts from the course (the source of truth).
+# Also validates .labctl/cloud-only.tsv against the lessons on disk.
+gen-catalog:
+    python3 docs/scripts/gen-catalog.py
+
 # Docs site (Astro Starlight, in docs/).
 docs-dev:
     cd docs && npm install && npm run dev

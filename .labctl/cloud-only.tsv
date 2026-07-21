@@ -1,0 +1,13 @@
+# lesson<TAB>reason — lessons requiring real-VM/host access; iximiuz Labs only.
+#
+# The local runner confines lesson scripts to the kind node container
+# (SECURITY.md, commit 292ebb2), so these are structurally unofferable locally.
+# A row here means: this lesson's tasks run on iximiuz's disposable VMs and
+# nowhere else. The reason string is shown to the user by the TUI, the local
+# runner, and /catalog — write it as a sentence completing "…because it …".
+#
+# Not lesson frontmatter: `labctl content push` 400s on unknown keys
+# (iximiuz/README.md). This file is never pushed (--dir courses/kubelings).
+#
+# Validated by docs/scripts/gen-catalog.py: every row must name a real lesson
+# that has tasks, and must carry a reason.
