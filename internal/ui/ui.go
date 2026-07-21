@@ -353,9 +353,15 @@ func (m *model) blockCloudOnly(l *course.Lesson) bool {
 	if reason == "" {
 		reason = "it needs real-VM/host access"
 	}
+	// Reasons are full sentences; wrap them rather than letting the viewport
+	// clip the end of the explanation.
+	wrap := textStyle
+	if w := m.vp.Width; w > 20 {
+		wrap = wrap.Width(w)
+	}
 	m.mode = modeOutput
 	m.vp.SetContent(warnStyle.Render("☁ ‘"+l.Title+"’ runs on iximiuz Labs only.") + "\n\n" +
-		textStyle.Render("It can't run on your local kind cluster because "+reason+".") + "\n" +
+		wrap.Render("It can't run on your local kind cluster because "+reason+".") + "\n" +
 		dimStyle.Render("Lesson scripts are confined to the kind node container, so host-level\n"+
 			"work has nowhere to happen locally. On iximiuz it runs on disposable VMs.") + "\n\n" +
 		dimStyle.Render("Run it here: ") + linkStyle.Render(course.CourseURL(m.root)) + "\n\n" +

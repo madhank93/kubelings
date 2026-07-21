@@ -286,8 +286,12 @@ func (m model) detail(l *course.Lesson) string {
 		if reason == "" {
 			reason = "it needs real-VM/host access"
 		}
+		wrap := textStyle
+		if w := m.vp.Width; w > 24 {
+			wrap = wrap.Width(w - 2)
+		}
 		b.WriteString(cloudStyle.Render("☁ Runs on iximiuz Labs only") + "\n")
-		b.WriteString(textStyle.Render("  Not on local kind, because "+reason+".") + "\n")
+		b.WriteString(wrap.Render("  Not on local kind, because "+reason+".") + "\n")
 		b.WriteString(dimStyle.Render("  Lesson scripts are confined to the kind node container, so host-level") + "\n")
 		b.WriteString(dimStyle.Render("  work has nowhere to happen locally. On iximiuz it gets real VMs.") + "\n")
 		b.WriteString(dimStyle.Render("  run it:  ") + linkStyle.Render(course.CourseURL(m.root)) + "\n")
