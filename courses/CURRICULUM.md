@@ -62,22 +62,22 @@ lessons carry a verified `source:` URL (see
 - [x] 14.sbom-cosign (init installs pinned cosign; client-side verify lab)
 - [x] 15.apparmor-seccomp (hands-on seccomp RuntimeDefault; AppArmor as
       reading section — host-level per confinement policy)
-- [x] 16.encryption-at-rest [reading: runbook — deep dive from
+- [x] 16.encryption-at-rest [☁ iximiuz-only lab — deep dive from
       8.control-plane-hardening §1]
-- [x] 17.audit-policy [reading: runbook — deep dive from §2]
+- [x] 17.audit-policy [☁ iximiuz-only lab — deep dive from §2]
 - [x] 18.falco-runtime-detection [reading: runbook — deep dive from §5]
 
 ## Module 7 — Internals
 - [x] 1.reconcile-loop · [x] 2.scheduler-nodename · [x] 3.etcd-truth
 - [x] 4.control-plane-tour [reading: api-flow, kubelet/CRI, leader election]
-- [x] 5.crd-operators · [x] 6.etcd-backup-restore [reading: snapshot/restore runbook]
+- [x] 5.crd-operators · [x] 6.etcd-backup-restore [☁ iximiuz-only lab: snapshot/restore drill]
 - [x] 7.admission-mutations · [x] 8.watch-informers [reading, incl. APF]
 - [x] 9.build-an-operator [reading: controller walkthrough capstone]
 - [x] 10.kubeadm-bootstrap [reading: init→join runbook — cannot run inside
       k8s-omni; practice on iximiuz multi-VM playground]
 - [x] 11.ha-control-plane [reading: stacked vs external etcd, kind 3-CP
       concept config]
-- [x] 12.cert-rotation [reading: kubeadm certs check-expiration/renew runbook]
+- [x] 12.cert-rotation [☁ iximiuz-only lab: kubeadm certs check-expiration/renew]
 - [ ] backlog: CSI hands-on (CNI reading now covered by M4 10.cni-basics)
 
 ## Module 8 — Observability & SRE
@@ -157,8 +157,8 @@ lessons carry a verified `source:` URL (see
 |------|--------|--------|
 | KCNA | ~65% | ~80% |
 | CKAD | ~88% | ~98% (helm + ephemeral containers fill the last gaps) |
-| CKA  | ~75% | ~90% (kubeadm/HA/cert-rotation are readings + iximiuz) |
-| CKS  | ~55% | ~80% (encryption/audit/Falco are runbook readings by policy) |
+| CKA  | ~75% | ~90% (cert-rotation + etcd restore are ☁ iximiuz-only labs; kubeadm/HA still readings) |
+| CKS  | ~55% | ~80% (encryption + audit are ☁ iximiuz-only labs; Falco still a reading) |
 | CNPE | ~20% | ~70% (Module 10 fills the platform gap) |
 
 ## Conventions to keep

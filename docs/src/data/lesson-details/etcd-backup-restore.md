@@ -1,8 +1,9 @@
-> **Reading.** The commands here run *on a control-plane host* as root against
-> etcd's data and certs — outside this course's kubectl-only sandbox by
-> design. Study the runbook now; rehearse it for real on a disposable cluster
-> (kind is perfect for this — break one on your own machine). CKA expects
-> these commands cold.
+> **☁ iximiuz Labs only.** The commands here run *on a control-plane host* as
+> root against etcd's data and certs — outside this course's kubectl-only
+> sandbox by design, so this one can't run on your local `kind` cluster. Here
+> you get a real, disposable control plane and you will actually destroy it:
+> read the runbook, then do the drill at the bottom. CKA expects these
+> commands cold.
 
 ## Why this is the runbook that matters
 
@@ -95,5 +96,25 @@ The sharp edges, in the order they cut people:
   restore story is "recreate from git" (3.6's GitOps argument). Velero and
   friends cover the object-level backup niche in between.
 
-*No check — study, then advance. And genuinely: go break a kind cluster and
-restore it once. Twenty minutes now buys you five hours someday.*
+## Your turn
+
+Twenty minutes now buys you five hours someday. Do it here, on a control
+plane you're allowed to destroy.
+
+`init` created **`kubelings/treasure`** — pretend it's the only copy of
+something that matters — and noted its UID and etcd's current cluster ID.
+
+Run the whole drill, in this order:
+
+1. **Snapshot** etcd to `/backup/` while everything is still healthy, and
+   verify the snapshot with `snapshot status`.
+2. **Cause the disaster:** `kubectl -n kubelings delete configmap treasure`
+3. **Restore** from your snapshot and bring the control plane back.
+4. Confirm `treasure` is there again.
+
+The order is load-bearing: snapshot *before* you break things, or you'll
+restore a world that never had the ConfigMap in it.
+
+The check verifies two independent things — that etcd is running a restored
+cluster, and that `treasure` came back as the *same object*, not a
+lookalike you typed in again.

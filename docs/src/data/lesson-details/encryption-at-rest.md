@@ -1,9 +1,10 @@
-> **Runbook reading.** Wiring encryption means editing the kube-apiserver
+> **☁ iximiuz Labs only.** Wiring encryption means editing the kube-apiserver
 > static-pod manifest as root on a control-plane node — outside the kubectl
-> sandbox (M6.8 explains the confinement). Every command here is exact;
-> rehearse on a kind node (`docker exec -it <cp-node> bash`) or an iximiuz
-> VM. This is the deep dive behind survey §1 of `control-plane-hardening`,
-> and etcd paths follow M7.6's backup runbook.
+> sandbox (M6.8 explains the confinement), so this one can't run on your local
+> `kind` cluster. Here it runs on a real, disposable control-plane VM: read the
+> runbook, then do it for real at the bottom. This is the deep dive behind
+> survey §1 of `control-plane-hardening`, and etcd paths follow M7.6's backup
+> runbook.
 
 ## The threat, restated in one command
 
@@ -122,4 +123,22 @@ that's cryptographic data loss, no force-flag can help.
 - Three commands to memorize: the etcdctl spot-check, the `replace -f -`
   migration, the prefix audit.
 - CKS asks exactly this flow: config file → apiserver flag → etcdctl proof
-  → migration. Rehearse it once on a kind node and it's yours.
+  → migration. Do it once for real and it's yours.
+
+## Your turn
+
+`init` created **`kubelings/db-creds`** with the password `s3cure-NEW-9917`,
+and showed you that string sitting in etcd in the clear.
+
+Encrypt it at rest, on this control plane:
+
+1. Write `/etc/kubernetes/enc/enc.yaml` with an `aescbc` provider first and
+   `identity: {}` last (§1).
+2. Wire `--encryption-provider-config` into the kube-apiserver static pod,
+   with the hostPath volume and mount (§2). Wait for the apiserver to come back.
+3. Re-encrypt what already exists (§4) — enabling encryption does **not**
+   rewrite old rows.
+
+The check requires all three: the Secret must still read back as
+`s3cure-NEW-9917` through the API, **and** its raw etcd row must carry the
+`k8s:enc:` prefix with no plaintext left in it.

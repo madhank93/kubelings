@@ -5,10 +5,11 @@ name: cert-rotation-unit
 ---
 
 
-> **Runbook reading.** `kubeadm certs` runs as root on control-plane nodes —
-> host-level, outside the kubectl sandbox. Rehearse on a kind node
-> (`docker exec -it <cp-node> bash` — kubeadm is inside) or an iximiuz VM.
-> The PKI files here are the ones `kubeadm-bootstrap` (7.10) wrote.
+> **☁ iximiuz Labs only.** `kubeadm certs` runs as root on control-plane nodes —
+> host-level, outside the kubectl sandbox, so this one can't run on your local
+> `kind` cluster. Here you get a real, disposable control-plane VM: read the
+> runbook, then run the drill for real at the bottom. The PKI files here are
+> the ones `kubeadm-bootstrap` (7.10) wrote.
 
 ## The failure mode with a due date
 
@@ -137,3 +138,103 @@ state. Breathe first: renew, restart, recopy.
   a periodic `kubectl get csr` glance.
 - CKA loves exactly this: `check-expiration` output reading, `renew`,
   which components restart, where admin.conf comes from.
+
+## Your turn
+
+Nothing is broken — this is the drill, run on a real control plane before the
+day you have to run it at 3 a.m.
+
+`init` recorded two timestamps: when the apiserver certificate **on disk**
+expires, and when the certificate the apiserver is **actually serving**
+expires. Today they're identical. Make both of them later:
+
+1. Look at what you have: `kubeadm certs check-expiration`
+2. Renew the leaves.
+3. Make the running control plane actually *use* them.
+4. Make sure `kubectl` still works afterwards.
+
+The check tests those last three separately, and will tell you which one
+you've skipped.
+
+<details>
+<summary>Hint</summary>
+
+Step 3 is the one everyone forgets, and the check is built to catch it
+specifically.
+
+`kubeadm certs renew all` rewrites files in `/etc/kubernetes/pki/`. The
+apiserver read its certificate into memory when it started and will keep
+serving that one until the process restarts — so on disk you have a fresh
+cert, on the wire you have the expiring one. Confirm the gap yourself:
+
+```sh
+openssl x509 -enddate -noout -in /etc/kubernetes/pki/apiserver.crt   # new
+echo | openssl s_client -connect 127.0.0.1:6443 2>/dev/null \
+  | openssl x509 -enddate -noout                                    # still old
+```
+
+Step 4: `renew all` also rewrites `/etc/kubernetes/admin.conf`, which embeds
+a client certificate. Your `~/.kube/config` is a *copy* made earlier, so it
+still holds the old one.
+
+</details>
+
+::simple-task
+---
+:tasks: tasks
+:name: verify_done
+---
+#active
+Solve the task above — this check turns green once verification passes.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Solution</summary>
+
+
+```sh
+# 1 · what have we got
+kubeadm certs check-expiration
+
+# 2 · re-sign the leaves with the existing CA
+kubeadm certs renew all
+
+# 3 · force the kubelet to recreate the static pods so they reload the files
+mkdir -p /tmp/manifests
+mv /etc/kubernetes/manifests/*.yaml /tmp/manifests/
+sleep 20
+mv /tmp/manifests/*.yaml /etc/kubernetes/manifests/
+until kubectl get --raw=/readyz >/dev/null 2>&1; do sleep 2; done
+crictl ps | grep -E 'apiserver|scheduler|controller|etcd'   # fresh, Running
+
+# 4 · your kubeconfig is a year-old copy of admin.conf
+cp /etc/kubernetes/admin.conf ~/.kube/config
+
+# 5 · prove it
+kubeadm certs check-expiration          # 364d across the board
+echo | openssl s_client -connect 127.0.0.1:6443 2>/dev/null \
+  | openssl x509 -enddate -noout        # the served cert, now new
+kubectl get nodes
+```
+
+## Root cause, restated
+
+There is no root cause here — that's the lesson. This outage has no trigger,
+no bad deploy, no traffic spike. It is an appointment made the day the
+cluster was created, kept exactly one year later, and the only thing that
+prevents it is someone remembering.
+
+Which is why the real fix isn't this runbook, it's `check-expiration` in
+monitoring with an alert under 30 days — plus knowing that regular
+`kubeadm upgrade` (M8.7) renews as a side effect, so the clusters most at
+risk are the "stable" ones nobody touches.
+
+And if you are reading this *after* day 366: renewal never needed the API.
+`kubeadm certs renew all` works on the files as root. Expired certs are a
+lockout, not a corruption — etcd never stopped holding your state. Renew,
+restart, re-copy.
+
+</details>

@@ -11,3 +11,7 @@
 #
 # Validated by docs/scripts/gen-catalog.py: every row must name a real lesson
 # that has tasks, and must carry a reason.
+encryption-at-rest	it writes an EncryptionConfiguration, patches the kube-apiserver static pod manifest, and reads raw rows out of etcd
+audit-policy	it installs an audit policy file and adds kube-apiserver flags on the control-plane node
+cert-rotation	it runs kubeadm certs renew as root and restarts the control-plane static pods
+etcd-backup-restore	it snapshots and restores etcd's on-disk data directory and stops the control plane to do it

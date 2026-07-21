@@ -1,7 +1,8 @@
-> **Runbook reading.** `kubeadm certs` runs as root on control-plane nodes —
-> host-level, outside the kubectl sandbox. Rehearse on a kind node
-> (`docker exec -it <cp-node> bash` — kubeadm is inside) or an iximiuz VM.
-> The PKI files here are the ones `kubeadm-bootstrap` (7.10) wrote.
+> **☁ iximiuz Labs only.** `kubeadm certs` runs as root on control-plane nodes —
+> host-level, outside the kubectl sandbox, so this one can't run on your local
+> `kind` cluster. Here you get a real, disposable control-plane VM: read the
+> runbook, then run the drill for real at the bottom. The PKI files here are
+> the ones `kubeadm-bootstrap` (7.10) wrote.
 
 ## The failure mode with a due date
 
@@ -130,3 +131,20 @@ state. Breathe first: renew, restart, recopy.
   a periodic `kubectl get csr` glance.
 - CKA loves exactly this: `check-expiration` output reading, `renew`,
   which components restart, where admin.conf comes from.
+
+## Your turn
+
+Nothing is broken — this is the drill, run on a real control plane before the
+day you have to run it at 3 a.m.
+
+`init` recorded two timestamps: when the apiserver certificate **on disk**
+expires, and when the certificate the apiserver is **actually serving**
+expires. Today they're identical. Make both of them later:
+
+1. Look at what you have: `kubeadm certs check-expiration`
+2. Renew the leaves.
+3. Make the running control plane actually *use* them.
+4. Make sure `kubectl` still works afterwards.
+
+The check tests those last three separately, and will tell you which one
+you've skipped.

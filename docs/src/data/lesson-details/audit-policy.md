@@ -1,7 +1,9 @@
-> **Runbook reading.** Audit policy is a kube-apiserver flag plus a file on
+> **☁ iximiuz Labs only.** Audit policy is a kube-apiserver flag plus a file on
 > the control-plane node — host-level wiring, outside the kubectl sandbox
-> (M6.8's confinement note). Commands are exact; rehearse on a kind node or
-> iximiuz VM. Deep dive behind survey §2 of `control-plane-hardening`.
+> (M6.8's confinement note), so this one can't run on your local `kind`
+> cluster. Here it runs on a real, disposable control-plane VM: read the
+> runbook, then wire it for real at the bottom. Deep dive behind survey §2 of
+> `control-plane-hardening`.
 
 ## The question you can't answer right now
 
@@ -129,3 +131,19 @@ exactly when needed — Datadog's lesson (M8.6), applied to forensics.
 - CKS asks for exactly this: write a policy for given requirements, wire the
   flags, find an event in the log. The grep patterns above are the exam and
   the incident, same skill.
+
+## Your turn
+
+`init` created **`kubelings/db-creds`** and two empty directories. Right now
+the cluster cannot tell you who has read that Secret. Fix that:
+
+1. Write `/etc/kubernetes/audit/policy.yaml` (§2 is a working starting point).
+2. Wire the `--audit-policy-file` and `--audit-log-path` flags into the
+   kube-apiserver static pod, with hostPath mounts for **both** directories —
+   the policy dir read-only, the log dir writable (§3).
+3. Once the apiserver is back, read the Secret so there's an event to find:
+   `kubectl -n kubelings get secret db-creds -o yaml`
+
+The check looks for a recorded `get` of `db-creds` in the audit log — **and**
+verifies the event does *not* contain the Secret's value. Getting the level
+right is the point, not just getting logging on.

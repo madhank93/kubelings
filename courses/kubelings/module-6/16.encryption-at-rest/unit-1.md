@@ -5,12 +5,13 @@ name: encryption-at-rest-unit
 ---
 
 
-> **Runbook reading.** Wiring encryption means editing the kube-apiserver
+> **☁ iximiuz Labs only.** Wiring encryption means editing the kube-apiserver
 > static-pod manifest as root on a control-plane node — outside the kubectl
-> sandbox (M6.8 explains the confinement). Every command here is exact;
-> rehearse on a kind node (`docker exec -it <cp-node> bash`) or an iximiuz
-> VM. This is the deep dive behind survey §1 of `control-plane-hardening`,
-> and etcd paths follow M7.6's backup runbook.
+> sandbox (M6.8 explains the confinement), so this one can't run on your local
+> `kind` cluster. Here it runs on a real, disposable control-plane VM: read the
+> runbook, then do it for real at the bottom. This is the deep dive behind
+> survey §1 of `control-plane-hardening`, and etcd paths follow M7.6's backup
+> runbook.
 
 ## The threat, restated in one command
 
@@ -129,4 +130,143 @@ that's cryptographic data loss, no force-flag can help.
 - Three commands to memorize: the etcdctl spot-check, the `replace -f -`
   migration, the prefix audit.
 - CKS asks exactly this flow: config file → apiserver flag → etcdctl proof
-  → migration. Rehearse it once on a kind node and it's yours.
+  → migration. Do it once for real and it's yours.
+
+## Your turn
+
+`init` created **`kubelings/db-creds`** with the password `s3cure-NEW-9917`,
+and showed you that string sitting in etcd in the clear.
+
+Encrypt it at rest, on this control plane:
+
+1. Write `/etc/kubernetes/enc/enc.yaml` with an `aescbc` provider first and
+   `identity: {}` last (§1).
+2. Wire `--encryption-provider-config` into the kube-apiserver static pod,
+   with the hostPath volume and mount (§2). Wait for the apiserver to come back.
+3. Re-encrypt what already exists (§4) — enabling encryption does **not**
+   rewrite old rows.
+
+The check requires all three: the Secret must still read back as
+`s3cure-NEW-9917` through the API, **and** its raw etcd row must carry the
+`k8s:enc:` prefix with no plaintext left in it.
+
+<details>
+<summary>Hint</summary>
+
+The trap is step 3. After steps 1 and 2, a *newly created* Secret is
+ciphertext — but `db-creds` was written before encryption existed, so its etcd
+row is untouched plaintext. That's why the check reads the raw row instead of
+trusting the config file.
+
+```sh
+kubectl -n kubelings get secrets -o json | kubectl replace -f -
+```
+
+If the apiserver doesn't come back after editing the manifest, you have a YAML
+error in a file nothing validates for you:
+
+```sh
+crictl ps -a | grep apiserver          # is it even starting?
+crictl logs $(crictl ps -a --name kube-apiserver -q | head -1)
+journalctl -u kubelet -n 50            # kubelet refusing the manifest
+```
+
+</details>
+
+::simple-task
+---
+:tasks: tasks
+:name: verify_done
+---
+#active
+Solve the task above — this check turns green once verification passes.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Solution</summary>
+
+
+## 1 · The key and the config
+
+```sh
+mkdir -p /etc/kubernetes/enc
+cat >/etc/kubernetes/enc/enc.yaml <<YAML
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources: [secrets]
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: $(head -c 32 /dev/urandom | base64)
+      - identity: {}
+YAML
+chmod 600 /etc/kubernetes/enc/enc.yaml
+```
+
+`aescbc` first, `identity` last: writes take the first provider, reads try
+them in order. Reverse them and you've deployed encryption that encrypts
+nothing.
+
+## 2 · Wire the apiserver
+
+Edit `/etc/kubernetes/manifests/kube-apiserver.yaml` and add the flag, the
+mount, and the volume:
+
+```yaml
+spec:
+  containers:
+    - command:
+        - kube-apiserver
+        - --encryption-provider-config=/etc/kubernetes/enc/enc.yaml   # add
+      volumeMounts:
+        - {name: enc, mountPath: /etc/kubernetes/enc, readOnly: true} # add
+  volumes:
+    - name: enc                                                       # add
+      hostPath: {path: /etc/kubernetes/enc, type: DirectoryOrCreate}
+```
+
+Saving the file is the deploy — the kubelet restarts the static pod. Expect
+~30s of API unavailability:
+
+```sh
+until kubectl get --raw=/readyz >/dev/null 2>&1; do sleep 2; done
+```
+
+## 3 · Migrate the existing rows
+
+```sh
+kubectl -n kubelings get secrets -o json | kubectl replace -f -
+```
+
+## 4 · Prove it
+
+```sh
+POD=$(kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].metadata.name}')
+kubectl -n kube-system exec "$POD" -- etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  get /registry/secrets/kubelings/db-creds | head -c 200 | hexdump -C | head
+# … k8s:enc:aescbc:v1:key1:…   ← provider + key name, then ciphertext
+```
+
+`kubectl get secret db-creds -o yaml` still shows the value: the apiserver
+decrypts on read. That's the whole point — encryption at rest is invisible
+above the storage layer.
+
+## Root cause, restated
+
+RBAC is an *API* control. Anyone with a copy of an etcd snapshot — a backup
+file, a stolen disk, a misconfigured object store — bypasses it entirely.
+Encryption at rest is the only thing standing between a leaked backup and
+every credential in the cluster. And because it only applies to writes, the
+migration step is not an optimization; without it the Secrets you already
+had are still exposed.
+
+</details>

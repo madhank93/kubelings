@@ -5,11 +5,12 @@ name: etcd-backup-restore-unit
 ---
 
 
-> **Reading.** The commands here run *on a control-plane host* as root against
-> etcd's data and certs — outside this course's kubectl-only sandbox by
-> design. Study the runbook now; rehearse it for real on a disposable cluster
-> (kind is perfect for this — break one on your own machine). CKA expects
-> these commands cold.
+> **☁ iximiuz Labs only.** The commands here run *on a control-plane host* as
+> root against etcd's data and certs — outside this course's kubectl-only
+> sandbox by design, so this one can't run on your local `kind` cluster. Here
+> you get a real, disposable control plane and you will actually destroy it:
+> read the runbook, then do the drill at the bottom. CKA expects these
+> commands cold.
 
 ## Why this is the runbook that matters
 
@@ -102,5 +103,131 @@ The sharp edges, in the order they cut people:
   restore story is "recreate from git" (3.6's GitOps argument). Velero and
   friends cover the object-level backup niche in between.
 
-*No check — study, then advance. And genuinely: go break a kind cluster and
-restore it once. Twenty minutes now buys you five hours someday.*
+## Your turn
+
+Twenty minutes now buys you five hours someday. Do it here, on a control
+plane you're allowed to destroy.
+
+`init` created **`kubelings/treasure`** — pretend it's the only copy of
+something that matters — and noted its UID and etcd's current cluster ID.
+
+Run the whole drill, in this order:
+
+1. **Snapshot** etcd to `/backup/` while everything is still healthy, and
+   verify the snapshot with `snapshot status`.
+2. **Cause the disaster:** `kubectl -n kubelings delete configmap treasure`
+3. **Restore** from your snapshot and bring the control plane back.
+4. Confirm `treasure` is there again.
+
+The order is load-bearing: snapshot *before* you break things, or you'll
+restore a world that never had the ConfigMap in it.
+
+The check verifies two independent things — that etcd is running a restored
+cluster, and that `treasure` came back as the *same object*, not a
+lookalike you typed in again.
+
+<details>
+<summary>Hint</summary>
+
+The mental model that prevents most mistakes: **restore does not load data
+into your running etcd. It writes a brand-new data directory, and you point
+etcd at it.** So the sequence is: restore to a new dir → stop the control
+plane → repoint `etcd.yaml`'s hostPath at that dir → let it come back.
+
+Stopping and starting the control plane on kubeadm is done by moving static
+pod manifests out of `/etc/kubernetes/manifests/` and back (7.4's mechanism)
+— the kubelet is watching that directory.
+
+Don't shortcut step 4 by running `kubectl create configmap treasure` again.
+The check compares UIDs precisely because that shortcut is the thing people
+reach for under pressure, and it isn't a restore.
+
+If `kubectl` hangs while the manifests are moved out, that's correct — you
+have deliberately taken the API server down. It comes back when they do.
+
+</details>
+
+::simple-task
+---
+:tasks: tasks
+:name: verify_done
+---
+#active
+Solve the task above — this check turns green once verification passes.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Solution</summary>
+
+
+```sh
+# 1 · snapshot while healthy, and VERIFY it (an unverified backup is a hope)
+ETCDCTL_API=3 etcdctl snapshot save /backup/etcd-$(date +%F).db \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key
+
+etcdctl snapshot status /backup/etcd-$(date +%F).db --write-out=table
+# nonzero total keys, or it's garbage
+
+# 2 · the disaster
+kubectl -n kubelings delete configmap treasure
+
+# 3 · restore into a NEW data dir — never the live one
+ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd-$(date +%F).db \
+  --data-dir=/var/lib/etcd-restored
+
+# stop the control plane
+mkdir -p /root/manifests
+mv /etc/kubernetes/manifests/kube-apiserver.yaml /root/manifests/
+mv /etc/kubernetes/manifests/etcd.yaml /root/manifests/
+sleep 10
+
+# point etcd at the restored dir
+sed -i 's#path: /var/lib/etcd#path: /var/lib/etcd-restored#' /root/manifests/etcd.yaml
+
+# bring it back
+mv /root/manifests/etcd.yaml /root/manifests/kube-apiserver.yaml /etc/kubernetes/manifests/
+until kubectl get --raw=/readyz >/dev/null 2>&1; do sleep 2; done
+
+# 4 · it's back, and it's the same object
+kubectl -n kubelings get configmap treasure -o jsonpath='{.metadata.uid}{"\n"}'
+```
+
+If `etcdctl` isn't on the host, run it inside the etcd pod:
+
+```sh
+POD=$(kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].metadata.name}')
+kubectl -n kube-system exec "$POD" -- etcdctl …
+```
+
+## Root cause, restated
+
+There's no failure to diagnose here — the failure is organizational, and it
+happens before the incident. Every cluster has a backup story; most have an
+untested one, which is a recovery *hypothesis*, not a recovery plan.
+
+Three things this drill teaches that reading it doesn't:
+
+- **Restore is a new cluster.** The cluster ID changes, which is why
+  multi-node restores need matching `--initial-cluster` flags on every
+  member, and why mixing restored and non-restored members fails outright.
+- **Time travel is total.** Everything after the snapshot is gone, but the
+  data plane is still running the newer reality. Controllers then reconcile
+  the restored spec against live state: pods created since the snapshot get
+  orphaned, pods deleted since come back. A restore is not "undo one
+  mistake" — it moves the whole cluster's brain back in time.
+- **The certs weren't in the snapshot.** PKI lives in `/etc/kubernetes/pki/`,
+  on disk. The cluster's *identity* is outside etcd, and a DR plan that
+  covers only etcd makes restore day into discovery day. That was a real
+  part of Reddit's long tail.
+
+And the thing to actually take away: an etcd snapshot contains every Secret
+in the cluster in plaintext unless you did M6.16. Store it like the
+credential dump it is.
+
+</details>
