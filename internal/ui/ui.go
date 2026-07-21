@@ -368,6 +368,14 @@ func (m model) runAction(action string) (tea.Model, tea.Cmd) {
 	if l == nil {
 		return m, nil
 	}
+	// A reading has no tasks: the runner would print "(content-only lesson)",
+	// exit 0, and the caller would record it as solved. Refuse here so no key
+	// path can mark a reading solved by "verifying" nothing.
+	if !l.HasTasks {
+		m.mode = modeOutput
+		m.vp.SetContent("‘" + l.Title + "’ is a reading — nothing to " + action + ".\n\nPress ↵ to mark it read / unread.")
+		return m, nil
+	}
 	if !m.status.Up {
 		m.mode = modeOutput
 		m.vp.SetContent("cluster not up — press u to start it.")

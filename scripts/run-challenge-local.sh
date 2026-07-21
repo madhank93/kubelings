@@ -175,6 +175,10 @@ case "$A1" in
         echo; echo "scenario ready. Solve it, then: $0 $LESSON verify"
         ;;
       verify)
+        # A reading has no checks. Without this, run_tasks prints
+        # "(content-only lesson)", returns 0, and the reading is marked solved.
+        has_tasks "$IDX" || {
+          echo "'$LNAME' is a reading — it has no check to run."; exit 0; }
         ensure_node
         if run_tasks "$IDX" false; then
           _set_progress "$LNAME" solved; echo; echo "✅ PASS"
