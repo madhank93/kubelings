@@ -5,11 +5,13 @@ name: kubeadm-bootstrap-unit
 ---
 
 
-> **Runbook reading.** kubeadm bootstraps a *new* cluster — by definition it
-> can't run inside this one. Rehearse on the iximiuz multi-VM playground
-> (bare Linux VMs) or two local VMs. Every command below is the real
-> sequence. Upgrades are deliberately *not* here — that's M8.7
-> (`upgrade-runbook`), same tool, different day.
+> **☁ iximiuz Labs only.** kubeadm runs as root on real machines — host-level,
+> outside the kubectl sandbox — so this can't run on your local `kind` cluster.
+> Read the full `init → join` runbook below; then, since this playground is
+> *already* a live cluster (you can't re-`init` one), the drill at the bottom
+> exercises the **join half for real**: `init` tears worker `node-02` out, and
+> you bring it back with a fresh `kubeadm join`. Upgrades are deliberately *not*
+> here — that's M8.7 (`upgrade-runbook`), same tool, different day.
 
 ## What kubeadm is (and isn't)
 
@@ -137,3 +139,93 @@ iptables yourself — reset tells you what it left behind).
   file placement.
 - CKA's Installation & Configuration domain (~25%) is this page plus the
   upgrade runbook (M8.7) and HA (next lesson).
+
+## Your turn
+
+You can't `kubeadm init` a cluster that's already running — so this drill is
+the other half of the ceremony, the one you actually repeat in production:
+**join**. `init` ran `kubeadm reset` on worker `node-02` and stopped its
+kubelet. From `cplane-01` it now reads NotReady and then disappears
+altogether — no `kubelet.conf`, no PKI, no membership.
+
+Bring it back Ready, using the real bootstrap-token flow:
+
+1. On **cplane-01**, mint a join ticket — the printed command carries a fresh
+   token *and* the CA cert hash: `kubeadm token create --print-join-command`.
+2. Run that `kubeadm join …` line on **node-02**, as root.
+3. Watch node-02 go from gone → NotReady → Ready as the CNI DaemonSet lands.
+
+The check runs on node-02 and passes once it holds a *freshly issued*
+`kubelet.conf` (newer than the reset) and the cluster reports it Ready.
+
+<details>
+<summary>Hint</summary>
+
+Two machines, two roles — the same split the runbook describes.
+
+The **token expires in 24h**, so don't hunt for the one `init` printed when
+this cluster was built; mint a new one. `--print-join-command` hands you the
+whole line, both credentials already filled in:
+
+```sh
+# on cplane-01
+kubeadm token create --print-join-command
+# -> kubeadm join <api>:6443 --token <fresh> --discovery-token-ca-cert-hash sha256:<hash>
+```
+
+```sh
+# on node-02, as root — paste that exact line
+kubeadm join <api>:6443 --token <fresh> --discovery-token-ca-cert-hash sha256:<hash>
+```
+
+You do **not** re-install a CNI: it's a DaemonSet that already exists
+cluster-wide and schedules onto node-02 the moment it registers — which is
+why NotReady flips to Ready on its own after a few seconds. Watch from
+cplane-01: `kubectl get nodes -w`.
+
+</details>
+
+::simple-task
+---
+:tasks: tasks
+:name: verify_done
+---
+#active
+Solve the task above — this check turns green once verification passes.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Solution</summary>
+
+
+```sh
+# --- on cplane-01: mint a fresh join command (the init-time token is long expired)
+kubeadm token create --print-join-command
+# copy the printed 'kubeadm join …' line
+
+# --- on node-02, as root: run exactly that line
+kubeadm join 10.0.0.10:6443 --token abcdef.0123456789abcdef \
+  --discovery-token-ca-cert-hash sha256:1234…
+# [preflight] … [kubelet-start] … 'This node has joined the cluster'
+
+# --- back on cplane-01: watch it come Ready (CNI DaemonSet lands on its own)
+kubectl get nodes -w
+# node-02   NotReady   <none>   5s    ->   Ready   <none>   25s
+```
+
+## Root cause, restated
+
+There was no failure to diagnose here — the point is muscle memory for the
+one kubeadm operation you genuinely repeat: adding a node. Everything that
+made it work is something the module already taught you to see. The **token**
+answered "may this machine join?" and the **ca-cert-hash** answered "is this
+the right cluster?" — two credentials, two questions. The node's kubelet then
+requested its own client cert via CSR (the TLS bootstrap, `Node,RBAC` scoped),
+wrote `/etc/kubernetes/kubelet.conf`, and started. And you touched the CNI
+exactly zero times: it's a DaemonSet, so it found the new node by itself —
+the same reason "NotReady until a CNI exists" from M4.10 runs in reverse here.
+
+</details>

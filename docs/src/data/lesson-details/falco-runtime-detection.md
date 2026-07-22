@@ -1,9 +1,9 @@
-> **Runbook reading.** Falco loads an eBPF probe into each node's kernel —
-> host-level by nature, outside the kubectl sandbox (M6.8's confinement).
-> The install runbook below works on a Linux Docker host's kind node
-> (kernel ≥ 5.8 for the modern eBPF probe) or an iximiuz playground VM;
-> macOS/Windows kind users: the playground is your lab. Deep dive behind
-> survey §5 of `control-plane-hardening`.
+> **☁ iximiuz Labs only.** Falco loads an eBPF probe into each node's kernel —
+> host-level by nature, outside the kubectl sandbox (M6.8's confinement), so
+> this one can't run on your local `kind` cluster. Here you get a real node
+> (kernel ≥ 5.8 for the modern eBPF probe): read the runbook, then run the
+> drill at the bottom — `init` installs Falco with your rule loaded, and you
+> make it fire for real. Deep dive behind survey §5 of `control-plane-hardening`.
 
 ## Everything so far was a lock; this is the alarm
 
@@ -122,3 +122,19 @@ within minutes is a postmortem footnote:
 - Rules are code: version them, lint them, test them with real triggers.
 - Detection completes the M6 stack: locks (1–15), evidence (17), alarm
   (here). CKS's runtime-security section is this page.
+
+## Your turn
+
+`init` did the install for you: Falco is running as a DaemonSet with the
+`modern_ebpf` driver, and your **`Kubelings shell in container`** rule (the
+one from "the rules language in one rule", with a `KUBELINGS-ALERT` marker in
+its output) is loaded. A throwaway container, `default/alarm-test`, is
+waiting.
+
+Your job: make the rule fire, for real.
+
+1. Confirm the sensor is up: `kubectl -n falco rollout status ds/falco`.
+2. Get an **interactive** shell inside `alarm-test`.
+3. Run something, exit, then read Falco's log and find your alert.
+
+The check passes once a `KUBELINGS-ALERT` line has appeared since `init`.

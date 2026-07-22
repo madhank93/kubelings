@@ -1,8 +1,10 @@
-> **Runbook reading.** kubeadm bootstraps a *new* cluster — by definition it
-> can't run inside this one. Rehearse on the iximiuz multi-VM playground
-> (bare Linux VMs) or two local VMs. Every command below is the real
-> sequence. Upgrades are deliberately *not* here — that's M8.7
-> (`upgrade-runbook`), same tool, different day.
+> **☁ iximiuz Labs only.** kubeadm runs as root on real machines — host-level,
+> outside the kubectl sandbox — so this can't run on your local `kind` cluster.
+> Read the full `init → join` runbook below; then, since this playground is
+> *already* a live cluster (you can't re-`init` one), the drill at the bottom
+> exercises the **join half for real**: `init` tears worker `node-02` out, and
+> you bring it back with a fresh `kubeadm join`. Upgrades are deliberately *not*
+> here — that's M8.7 (`upgrade-runbook`), same tool, different day.
 
 ## What kubeadm is (and isn't)
 
@@ -130,3 +132,21 @@ iptables yourself — reset tells you what it left behind).
   file placement.
 - CKA's Installation & Configuration domain (~25%) is this page plus the
   upgrade runbook (M8.7) and HA (next lesson).
+
+## Your turn
+
+You can't `kubeadm init` a cluster that's already running — so this drill is
+the other half of the ceremony, the one you actually repeat in production:
+**join**. `init` ran `kubeadm reset` on worker `node-02` and stopped its
+kubelet. From `cplane-01` it now reads NotReady and then disappears
+altogether — no `kubelet.conf`, no PKI, no membership.
+
+Bring it back Ready, using the real bootstrap-token flow:
+
+1. On **cplane-01**, mint a join ticket — the printed command carries a fresh
+   token *and* the CA cert hash: `kubeadm token create --print-join-command`.
+2. Run that `kubeadm join …` line on **node-02**, as root.
+3. Watch node-02 go from gone → NotReady → Ready as the CNI DaemonSet lands.
+
+The check runs on node-02 and passes once it holds a *freshly issued*
+`kubelet.conf` (newer than the reset) and the cluster reports it Ready.

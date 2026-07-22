@@ -1,7 +1,11 @@
-> **Reading.** Real HA needs multiple machines and a load balancer —
-> iximiuz multi-VM territory. The kind snippet at the end validates the
-> *concepts* on a laptop. Builds on `kubeadm-bootstrap` (7.10); read that
-> first.
+> **☁ iximiuz Labs only.** Real 3-node HA — etcd quorum, a load balancer, a
+> floating endpoint — needs multiple machines, so it can't run on your local
+> `kind` cluster. Read the full topology below; then the drill at the bottom
+> runs the one slice a *single* control plane can still prove for real:
+> **leader election**. You'll kill the scheduler's Lease holder on a live node
+> and watch a new identity take over — the exact machinery that, on a real HA
+> cluster, moves the leader to a surviving node. Builds on `kubeadm-bootstrap`
+> (7.10); read that first.
 
 ## Why one control-plane node is a countdown
 
@@ -148,3 +152,22 @@ still a majority.
   test by actually killing a control-plane node in staging.
 - CKA asks the topology diagram + the join flags; M9's cascades show what
   the topology is *for*.
+
+## Your turn
+
+This playground has one control-plane node, so you can't build real
+etcd-quorum HA here — but the **leader-election** machinery is fully alive on
+a single node, and it's the half people understand least. `init` recorded who
+currently holds the `kube-scheduler` Lease. That `holderIdentity` is
+`<node>_<uuid>` — a specific *process*.
+
+Kill that process and prove a **new identity** has to acquire the Lease before
+scheduling can resume:
+
+1. Look at the Leases: `kubectl -n kube-system get leases`.
+2. Kill the current scheduler leader.
+3. Watch the Lease's `holderIdentity` change to a new one that's actively
+   renewing.
+
+The check passes once the holder differs from the baseline **and** the new
+holder is renewing (i.e. it's a live leader, not just a dead one).

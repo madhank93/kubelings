@@ -5,12 +5,12 @@ name: falco-runtime-detection-unit
 ---
 
 
-> **Runbook reading.** Falco loads an eBPF probe into each node's kernel —
-> host-level by nature, outside the kubectl sandbox (M6.8's confinement).
-> The install runbook below works on a Linux Docker host's kind node
-> (kernel ≥ 5.8 for the modern eBPF probe) or an iximiuz playground VM;
-> macOS/Windows kind users: the playground is your lab. Deep dive behind
-> survey §5 of `control-plane-hardening`.
+> **☁ iximiuz Labs only.** Falco loads an eBPF probe into each node's kernel —
+> host-level by nature, outside the kubectl sandbox (M6.8's confinement), so
+> this one can't run on your local `kind` cluster. Here you get a real node
+> (kernel ≥ 5.8 for the modern eBPF probe): read the runbook, then run the
+> drill at the bottom — `init` installs Falco with your rule loaded, and you
+> make it fire for real. Deep dive behind survey §5 of `control-plane-hardening`.
 
 ## Everything so far was a lock; this is the alarm
 
@@ -129,3 +129,94 @@ within minutes is a postmortem footnote:
 - Rules are code: version them, lint them, test them with real triggers.
 - Detection completes the M6 stack: locks (1–15), evidence (17), alarm
   (here). CKS's runtime-security section is this page.
+
+## Your turn
+
+`init` did the install for you: Falco is running as a DaemonSet with the
+`modern_ebpf` driver, and your **`Kubelings shell in container`** rule (the
+one from "the rules language in one rule", with a `KUBELINGS-ALERT` marker in
+its output) is loaded. A throwaway container, `default/alarm-test`, is
+waiting.
+
+Your job: make the rule fire, for real.
+
+1. Confirm the sensor is up: `kubectl -n falco rollout status ds/falco`.
+2. Get an **interactive** shell inside `alarm-test`.
+3. Run something, exit, then read Falco's log and find your alert.
+
+The check passes once a `KUBELINGS-ALERT` line has appeared since `init`.
+
+<details>
+<summary>Hint</summary>
+
+The whole trap is `proc.tty != 0` in the condition. It's there on purpose —
+it exempts non-interactive `sh -c` entrypoints, the noisiest false positives.
+So the exec everyone reaches for first stays *silent*:
+
+```sh
+kubectl exec -it alarm-test -- sh -c 'id'   # no controlling tty -> no alert
+```
+
+You need a real shell session with a tty attached:
+
+```sh
+kubectl exec -it alarm-test -- sh           # now proc.tty != 0 -> fires
+```
+
+Read the alert out of the daemon's stdout — one line per sensor pod, so
+aggregate across the DaemonSet:
+
+```sh
+kubectl -n falco logs -l app.kubernetes.io/name=falco --tail=-1 \
+  | grep KUBELINGS-ALERT
+```
+
+</details>
+
+::simple-task
+---
+:tasks: tasks
+:name: verify_done
+---
+#active
+Solve the task above — this check turns green once verification passes.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Solution</summary>
+
+
+```sh
+# 1 · the sensor must be up first — it can't see what happened before it did
+kubectl -n falco rollout status ds/falco
+
+# 2 · a real interactive shell inside the container (tty attached)
+kubectl exec -it alarm-test -- sh
+#   ~ $ id
+#   ~ $ exit
+
+# 3 · read your rule's alert back out of Falco's log
+kubectl -n falco logs -l app.kubernetes.io/name=falco --tail=-1 \
+  | grep KUBELINGS-ALERT
+# KUBELINGS-ALERT shell in container (pod=alarm-test ns=default
+#   container=alarm-test proc=sh parent=runc)
+```
+
+## Root cause, restated
+
+Nothing here was *prevented* — that's the entire point of the layer. The
+shell was a completely legitimate syscall on a completely legitimate pod;
+no admission rule, seccomp profile, or image signature had any opinion about
+it. Only something watching the running syscall stream could say "a human
+just opened a shell in a production container" — which is precisely the M6.2
+cryptominer class, the attack that arrives through legitimate channels.
+
+And the tty clause is the lesson inside the lesson: a runtime rule is only as
+good as its tuning. Too loose and every `sh -c` entrypoint pages you at 3
+a.m.; too tight and `kubectl exec -it` slips through. `proc.tty != 0` is
+someone's deliberate call about where that line sits.
+
+</details>

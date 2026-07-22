@@ -5,10 +5,14 @@ name: ha-control-plane-unit
 ---
 
 
-> **Reading.** Real HA needs multiple machines and a load balancer —
-> iximiuz multi-VM territory. The kind snippet at the end validates the
-> *concepts* on a laptop. Builds on `kubeadm-bootstrap` (7.10); read that
-> first.
+> **☁ iximiuz Labs only.** Real 3-node HA — etcd quorum, a load balancer, a
+> floating endpoint — needs multiple machines, so it can't run on your local
+> `kind` cluster. Read the full topology below; then the drill at the bottom
+> runs the one slice a *single* control plane can still prove for real:
+> **leader election**. You'll kill the scheduler's Lease holder on a live node
+> and watch a new identity take over — the exact machinery that, on a real HA
+> cluster, moves the leader to a surviving node. Builds on `kubeadm-bootstrap`
+> (7.10); read that first.
 
 ## Why one control-plane node is a countdown
 
@@ -155,3 +159,90 @@ still a majority.
   test by actually killing a control-plane node in staging.
 - CKA asks the topology diagram + the join flags; M9's cascades show what
   the topology is *for*.
+
+## Your turn
+
+This playground has one control-plane node, so you can't build real
+etcd-quorum HA here — but the **leader-election** machinery is fully alive on
+a single node, and it's the half people understand least. `init` recorded who
+currently holds the `kube-scheduler` Lease. That `holderIdentity` is
+`<node>_<uuid>` — a specific *process*.
+
+Kill that process and prove a **new identity** has to acquire the Lease before
+scheduling can resume:
+
+1. Look at the Leases: `kubectl -n kube-system get leases`.
+2. Kill the current scheduler leader.
+3. Watch the Lease's `holderIdentity` change to a new one that's actively
+   renewing.
+
+The check passes once the holder differs from the baseline **and** the new
+holder is renewing (i.e. it's a live leader, not just a dead one).
+
+<details>
+<summary>Hint</summary>
+
+The scheduler here is a static pod. Deleting its mirror object makes the
+kubelet recreate the pod — a brand-new process with a brand-new uuid, so the
+`holderIdentity` string changes even though it's the same node:
+
+```sh
+kubectl -n kube-system get lease kube-scheduler \
+  -o jsonpath='{.spec.holderIdentity}{"\n"}'          # before
+
+kubectl -n kube-system delete pod kube-scheduler-cplane-01
+
+# the old holder's Lease expires (~15s), the new process acquires it
+kubectl -n kube-system get lease kube-scheduler -w
+```
+
+Watch the whole thing as a story: `kubectl get lease kube-scheduler -n
+kube-system -w` shows the holder go stale, then flip. (Killing
+`kube-controller-manager` instead won't satisfy the check — it pins the
+scheduler Lease specifically.)
+
+</details>
+
+::simple-task
+---
+:tasks: tasks
+:name: verify_done
+---
+#active
+Solve the task above — this check turns green once verification passes.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Solution</summary>
+
+
+```sh
+# 1 · who holds the scheduler Lease right now
+kubectl -n kube-system get lease kube-scheduler \
+  -o jsonpath='{.spec.holderIdentity}{"\n"}'
+# cplane-01_1a2b3c…   <- a specific process
+
+# 2 · kill that leader (delete the static pod's mirror; kubelet recreates it)
+kubectl -n kube-system delete pod kube-scheduler-cplane-01
+
+# 3 · the old lease goes stale (~15s), a new process acquires it
+kubectl -n kube-system get lease kube-scheduler -w
+# holderIdentity: cplane-01_9f8e7d…   <- new uuid, renewing every few seconds
+```
+
+## Root cause, restated
+
+Nothing broke — you rehearsed a failover. On this single node the "new leader"
+happens to be a fresh process on the *same* machine, but the mechanism is
+identical to real HA: the holder renews a Lease every few seconds; when it
+stops (crash, node loss), the Lease goes stale after its duration (~15s) and
+any other candidate races to acquire it. On a 3-CP cluster the acquirer is a
+scheduler on a *surviving* node, and reconciliation resumes there — which is
+the entire point of running three of the singletons active-passive. The etcd
+half of HA you couldn't do here (one member can't lose a member and keep
+quorum); leader election you just did for real.
+
+</details>

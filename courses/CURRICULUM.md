@@ -65,7 +65,8 @@ lessons carry a verified `source:` URL (see
 - [x] 16.encryption-at-rest [☁ iximiuz-only lab — deep dive from
       8.control-plane-hardening §1]
 - [x] 17.audit-policy [☁ iximiuz-only lab — deep dive from §2]
-- [x] 18.falco-runtime-detection [reading: runbook — deep dive from §5]
+- [x] 18.falco-runtime-detection [☁ iximiuz-only lab: install Falco, trip your
+      shell-in-container rule for real — deep dive from §5]
 
 ## Module 7 — Internals
 - [x] 1.reconcile-loop · [x] 2.scheduler-nodename · [x] 3.etcd-truth
@@ -73,10 +74,10 @@ lessons carry a verified `source:` URL (see
 - [x] 5.crd-operators · [x] 6.etcd-backup-restore [☁ iximiuz-only lab: snapshot/restore drill]
 - [x] 7.admission-mutations · [x] 8.watch-informers [reading, incl. APF]
 - [x] 9.build-an-operator [reading: controller walkthrough capstone]
-- [x] 10.kubeadm-bootstrap [reading: init→join runbook — cannot run inside
-      k8s-omni; practice on iximiuz multi-VM playground]
-- [x] 11.ha-control-plane [reading: stacked vs external etcd, kind 3-CP
-      concept config]
+- [x] 10.kubeadm-bootstrap [☁ iximiuz-only lab: init→join runbook + rejoin
+      drill — init resets node-02, learner brings it back with kubeadm join]
+- [x] 11.ha-control-plane [☁ iximiuz-only lab: stacked vs external etcd + a
+      real leader-election failover of the scheduler Lease]
 - [x] 12.cert-rotation [☁ iximiuz-only lab: kubeadm certs check-expiration/renew]
 - [ ] backlog: CSI hands-on (CNI reading now covered by M4 10.cni-basics)
 
@@ -157,8 +158,8 @@ lessons carry a verified `source:` URL (see
 |------|--------|--------|
 | KCNA | ~65% | ~80% |
 | CKAD | ~88% | ~98% (helm + ephemeral containers fill the last gaps) |
-| CKA  | ~75% | ~90% (cert-rotation + etcd restore are ☁ iximiuz-only labs; kubeadm/HA still readings) |
-| CKS  | ~55% | ~80% (encryption + audit are ☁ iximiuz-only labs; Falco still a reading) |
+| CKA  | ~75% | ~90% (cert-rotation, etcd restore, kubeadm rejoin + HA leader-election are ☁ iximiuz-only labs; full init/3-node HA topology stay runbook prose) |
+| CKS  | ~55% | ~80% (encryption, audit + Falco runtime detection are ☁ iximiuz-only labs) |
 | CNPE | ~20% | ~70% (Module 10 fills the platform gap) |
 
 ## Conventions to keep
