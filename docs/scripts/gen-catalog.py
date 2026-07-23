@@ -31,7 +31,7 @@ MODULES = {
     "M10": ("Platform Engineering", "#db6d28",
             "GitOps with Argo CD (incl. app-of-apps) and Flux, multi-tenancy with Capsule, Cluster API, Crossplane compositions"),
     "M11": ("Node & Control Plane", "#6b8299",
-            "node and control-plane failures that need a real machine, not a container — kubelet and containerd outages, etcd quota alarms and defrag, static pods, node reboot recovery, disk pressure and PID exhaustion, MTU mismatch, clock skew, network partitions and quorum loss (iximiuz Labs only)"),
+            "node and control-plane failures that need a real machine, not a container — kubelet and containerd outages, a crash-looped kube-apiserver, etcd NOSPACE compact/defrag, authoring static pods, approving node CSRs, cgroup-driver mismatch, clock skew, and the kernel sysctls/modules pod networking depends on (iximiuz Labs only)"),
 }
 
 # ---- cloud-only registry (.labctl/cloud-only.tsv) ----

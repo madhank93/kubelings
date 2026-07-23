@@ -18,3 +18,12 @@ etcd-backup-restore	it snapshots and restores etcd's on-disk data directory and 
 falco-runtime-detection	it loads an eBPF probe into the node kernel and installs a privileged Falco DaemonSet, host-level and outside the kubectl sandbox
 kubeadm-bootstrap	it runs kubeadm reset and kubeadm join as root on a worker node to tear it out of the cluster and re-bootstrap it
 ha-control-plane	it kills a control-plane static pod on the node to force a scheduler leader-election failover
+kubelet-down	it plants a broken systemd drop-in and restarts the kubelet on a worker, diagnosed with journalctl and systemctl on the host
+containerd-down	it overrides the containerd systemd unit to break the CRI on a worker and recovers it with crictl and systemctl
+apiserver-broken-flag	it injects a bad flag into the kube-apiserver static-pod manifest to crash-loop the control plane, read back through crictl logs
+etcd-defrag	it drives etcdctl against the live backend to compact, defragment, and disarm a NOSPACE alarm on the control-plane node
+static-pod-create	it writes a pod manifest into /etc/kubernetes/manifests on a node for the kubelet to run directly
+kubelet-csr-approval	it forges and approves a node CertificateSigningRequest against the cluster signer as root on the control plane
+cgroup-driver-mismatch	it edits the kubelet and containerd cgroup-driver config on a node and restarts both host services
+node-clock-skew	it moves the node system clock and repairs time synchronisation with timedatectl and chronyd on the host
+node-sysctl-networking	it loads a kernel module and writes sysctls on a node to restore pod-networking prerequisites the kubectl sandbox can't touch
