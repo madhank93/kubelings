@@ -53,8 +53,15 @@ into" your etcd. It creates a brand-new data directory, and you point etcd at
 it.**
 
 ```sh
-# 1. Restore the snapshot into a NEW dir (never the live one)
-ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd-2026-07-07.db \
+# 1. Restore the snapshot into a NEW dir (never the live one). Recent etcd
+#    (3.6+) moved restore into etcdutl; carry the node's identity and a fresh
+#    cluster token so the restored data founds a new cluster it can't confuse
+#    with the old one.
+etcdutl snapshot restore /backup/etcd-2026-07-07.db \
+  --name cplane-01 \
+  --initial-cluster cplane-01=https://<node-ip>:2380 \
+  --initial-advertise-peer-urls https://<node-ip>:2380 \
+  --initial-cluster-token restored-$(date +%s) \
   --data-dir=/var/lib/etcd-restored
 
 # 2. Stop the API server & etcd (kubeadm: move the static-pod manifests out)
@@ -163,47 +170,59 @@ Solve the task above — this check turns green once verification passes.
 <summary>Solution</summary>
 
 
+The etcd image here is distroless and there's no `etcdctl`/`etcdutl` on the
+host, so **save** runs inside the live etcd pod (the binary is in the image),
+and **restore** — which happens while etcd is down — runs in a throwaway
+container built from the same image, bind-mounting the data dir.
+
 ```sh
-# 1 · snapshot while healthy, and VERIFY it (an unverified backup is a hope)
-ETCDCTL_API=3 etcdctl snapshot save /backup/etcd-$(date +%F).db \
-  --endpoints=https://127.0.0.1:2379 \
+CERTS="--endpoints=https://127.0.0.1:2379 \
   --cacert=/etc/kubernetes/pki/etcd/ca.crt \
   --cert=/etc/kubernetes/pki/etcd/server.crt \
-  --key=/etc/kubernetes/pki/etcd/server.key
+  --key=/etc/kubernetes/pki/etcd/server.key"
 
-etcdctl snapshot status /backup/etcd-$(date +%F).db --write-out=table
-# nonzero total keys, or it's garbage
+# 1 · snapshot while healthy — save lands on the host via etcd's hostPath (/var/lib/etcd)
+kubectl -n kube-system exec etcd-cplane-01 -c etcd -- \
+  etcdctl $CERTS snapshot save /var/lib/etcd/snap.db
+cp /var/lib/etcd/snap.db /backup/snap.db      # keep it off the data dir too
 
 # 2 · the disaster
 kubectl -n kubelings delete configmap treasure
 
-# 3 · restore into a NEW data dir — never the live one
-ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd-$(date +%F).db \
-  --data-dir=/var/lib/etcd-restored
+# 3 · stop the control plane (kubeadm: move the static-pod manifests out)
+mkdir -p /root/m
+mv /etc/kubernetes/manifests/*.yaml /root/m/
+sleep 12
 
-# stop the control plane
-mkdir -p /root/manifests
-mv /etc/kubernetes/manifests/kube-apiserver.yaml /root/manifests/
-mv /etc/kubernetes/manifests/etcd.yaml /root/manifests/
-sleep 10
+# 4 · restore into a NEW data dir. etcd 3.6 moved restore into etcdutl, and
+#     it must carry this node's identity — plus a FRESH cluster token, so the
+#     restored data founds a genuinely new cluster (new cluster ID) that can't
+#     accidentally rejoin the old one. PEER is this node's peer URL.
+PEER=https://172.16.0.2:2380
+ctr -n k8s.io run --rm \
+  --mount type=bind,src=/var/lib,dst=/var/lib,options=rbind:rw \
+  registry.k8s.io/etcd:3.6.8-0 etcd-restore \
+  etcdutl snapshot restore /var/lib/etcd/snap.db \
+    --name cplane-01 \
+    --initial-cluster cplane-01=$PEER \
+    --initial-advertise-peer-urls $PEER \
+    --initial-cluster-token restored-$(date +%s) \
+    --data-dir /var/lib/etcd-restored
 
-# point etcd at the restored dir
-sed -i 's#path: /var/lib/etcd#path: /var/lib/etcd-restored#' /root/manifests/etcd.yaml
-
-# bring it back
-mv /root/manifests/etcd.yaml /root/manifests/kube-apiserver.yaml /etc/kubernetes/manifests/
+# 5 · point etcd at the restored dir (edit the hostPath volume) and bring it back
+sed -i 's#path: /var/lib/etcd$#path: /var/lib/etcd-restored#' /root/m/etcd.yaml
+mv /root/m/*.yaml /etc/kubernetes/manifests/
 until kubectl get --raw=/readyz >/dev/null 2>&1; do sleep 2; done
 
-# 4 · it's back, and it's the same object
+# 6 · it's back, a NEW cluster, and treasure is the SAME object it always was
+kubectl -n kube-system exec etcd-cplane-01 -c etcd -- etcdctl $CERTS \
+  endpoint status -w table            # cluster ID has changed
 kubectl -n kubelings get configmap treasure -o jsonpath='{.metadata.uid}{"\n"}'
 ```
 
-If `etcdctl` isn't on the host, run it inside the etcd pod:
-
-```sh
-POD=$(kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].metadata.name}')
-kubectl -n kube-system exec "$POD" -- etcdctl …
-```
+(On a stock kubeadm cluster `etcdctl` is often on the host — then save/status
+run directly. Here it isn't, which is why save goes through the pod and
+restore through a container. The moves are the same either way.)
 
 ## Root cause, restated
 

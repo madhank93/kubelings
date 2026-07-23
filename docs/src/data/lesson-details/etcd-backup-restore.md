@@ -46,8 +46,15 @@ into" your etcd. It creates a brand-new data directory, and you point etcd at
 it.**
 
 ```sh
-# 1. Restore the snapshot into a NEW dir (never the live one)
-ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd-2026-07-07.db \
+# 1. Restore the snapshot into a NEW dir (never the live one). Recent etcd
+#    (3.6+) moved restore into etcdutl; carry the node's identity and a fresh
+#    cluster token so the restored data founds a new cluster it can't confuse
+#    with the old one.
+etcdutl snapshot restore /backup/etcd-2026-07-07.db \
+  --name cplane-01 \
+  --initial-cluster cplane-01=https://<node-ip>:2380 \
+  --initial-advertise-peer-urls https://<node-ip>:2380 \
+  --initial-cluster-token restored-$(date +%s) \
   --data-dir=/var/lib/etcd-restored
 
 # 2. Stop the API server & etcd (kubeadm: move the static-pod manifests out)
