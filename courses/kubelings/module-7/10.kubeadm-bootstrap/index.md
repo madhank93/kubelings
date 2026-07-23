@@ -67,8 +67,11 @@ tasks:
 
       if [ ! -s "$CONF" ]; then
         echo "not yet: node-02 has no $CONF — it hasn't re-joined."
-        echo "         On cplane-01:  kubeadm token create --print-join-command"
-        echo "         Then run that 'kubeadm join …' line here on node-02."
+        echo "         On cplane-01, in order:"
+        echo "           kubectl delete node node-02       # drop the stale Node object"
+        echo "           kubeadm token create --print-join-command"
+        echo "         Then run that 'kubeadm join …' line here on node-02 as root."
+        echo "         (skip the delete and join fails: 'a Node named node-02 already exists')"
         exit 1
       fi
 
@@ -76,7 +79,8 @@ tasks:
       if [ "${conf_epoch:-0}" -le "${RESET_EPOCH:-0}" ]; then
         echo "not yet: the kubelet.conf on node-02 is older than the reset —"
         echo "         this looks like a leftover, not a fresh join. Re-join:"
-        echo "         mint a token on cplane-01 and run 'kubeadm join …' here."
+        echo "         on cplane-01 'kubectl delete node node-02' then"
+        echo "         'kubeadm token create --print-join-command', run join here."
         exit 1
       fi
 

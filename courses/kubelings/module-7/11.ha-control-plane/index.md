@@ -74,9 +74,13 @@ tasks:
       if [ "$now_holder" = "${SCHED_HOLDER:-}" ]; then
         echo "not yet: the kube-scheduler Lease is still held by the same identity:"
         echo "           $now_holder"
-        echo "         That process is still alive. Kill the scheduler leader so a"
-        echo "         new one has to take over — e.g. delete its static-pod mirror:"
-        echo "           kubectl -n kube-system delete pod kube-scheduler-cplane-01"
+        echo "         That process is still alive. Note: 'kubectl delete pod"
+        echo "         kube-scheduler-cplane-01' does NOT restart it — that only"
+        echo "         deletes the API mirror; the kubelet re-creates it pointing"
+        echo "         at the same running container. You have to restart the"
+        echo "         container, e.g. bounce its static-pod manifest:"
+        echo "           mv /etc/kubernetes/manifests/kube-scheduler.yaml /tmp/ && sleep 8 \\"
+        echo "             && mv /tmp/kube-scheduler.yaml /etc/kubernetes/manifests/"
         exit 1
       fi
 

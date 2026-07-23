@@ -21,34 +21,33 @@ tasks:
     run: |
       set -euo pipefail
       BASE=/etc/kubernetes/kubelings-falco-baseline
-
+      export HOME=/root
       export KUBECONFIG=/etc/kubernetes/admin.conf
+      export PATH="/root/.arkade/bin:$PATH"
 
-      # A custom rule with a unique marker in its output, so the verify can
-      # grep for exactly THIS rule firing — not some unrelated default alert.
-      cat >/tmp/kubelings-falco-rule.yaml <<'RULE'
-      - rule: Kubelings shell in container
-        desc: A shell was spawned inside a container with a controlling TTY
-        condition: >
-          spawned_process and container
-          and proc.name in (shell_binaries) and proc.tty != 0
-        output: >
-          KUBELINGS-ALERT shell in container
-          (pod=%k8s.pod.name ns=%k8s.ns.name container=%container.name
-          proc=%proc.name parent=%proc.pname)
-        priority: WARNING
-      RULE
+      # Falco installs with Helm; this node doesn't ship Helm, so fetch a
+      # pinned-enough binary via arkade (already on the box).
+      if ! command -v helm >/dev/null 2>&1; then
+        echo "Fetching Helm (via arkade)..."
+        arkade get helm --quiet >/dev/null 2>&1 || true
+      fi
+      HELM="$(command -v helm || echo /root/.arkade/bin/helm)"
 
-      echo "Installing Falco (modern eBPF) as a DaemonSet — this pulls the"
-      echo "probe and rolls out one privileged sensor per node, ~1-2 min..."
-      helm repo add falcosecurity https://falcosecurity.github.io/charts >/dev/null 2>&1 || true
-      helm repo update >/dev/null 2>&1 || true
-      helm install falco falcosecurity/falco \
+      # A values file, not --set-file: Helm v4's escaped-dot map keys are
+      # brittle, and this is how you'd pin real config anyway.
+      cat >/tmp/falco-values.yaml <<'VALUES'
+      driver:
+        kind: modern_ebpf
+      tty: true
+      VALUES
+
+      echo "Installing Falco (modern eBPF) as a DaemonSet — one privileged"
+      echo "sensor per node; this pulls the probe, ~1-2 min..."
+      "$HELM" repo add falcosecurity https://falcosecurity.github.io/charts >/dev/null 2>&1 || true
+      "$HELM" repo update >/dev/null 2>&1 || true
+      "$HELM" install falco falcosecurity/falco \
         --namespace falco --create-namespace \
-        --set driver.kind=modern_ebpf \
-        --set tty=true \
-        --set-file "customRules.kubelings-shell\.yaml"=/tmp/kubelings-falco-rule.yaml \
-        >/dev/null
+        -f /tmp/falco-values.yaml >/dev/null
 
       kubectl -n falco rollout status ds/falco --timeout=300s
 
@@ -57,19 +56,21 @@ tasks:
         -- sleep 3600 >/dev/null 2>&1 || true
       kubectl wait --for=condition=Ready pod/alarm-test --timeout=60s >/dev/null 2>&1 || true
 
-      # Baseline: how many of our alerts exist right now (zero — nobody has
-      # exec'd yet). The check passes only once this count goes up.
+      # Baseline: shell-in-container alerts naming alarm-test right now (zero —
+      # nobody has exec'd yet). The check passes only once this count goes up.
       base_count="$(kubectl -n falco logs -l app.kubernetes.io/name=falco \
-        --tail=-1 --prefix 2>/dev/null | grep -c 'KUBELINGS-ALERT' || true)"
+        --tail=-1 2>/dev/null | grep 'k8s_pod_name=alarm-test' \
+        | grep -ciE 'shell (was spawned|in a container)' || true)"
       printf 'ALERT_BASELINE=%s\n' "${base_count:-0}" >"$BASE"
       chmod 600 "$BASE"
 
       echo
-      echo "Falco is up, your custom rule is loaded, and pod default/alarm-test"
-      echo "is waiting. KUBELINGS-ALERT count so far: ${base_count:-0}."
+      echo "Falco is up (its default ruleset already carries the shell-in-a-"
+      echo "container rule you dissected), and pod default/alarm-test is waiting."
+      echo "Matching alerts so far: ${base_count:-0}."
       echo
-      echo "Make Falco fire your rule by getting a real interactive shell inside"
-      echo "the container. (baseline in $BASE — don't edit it, the check reads it)"
+      echo "Make the rule fire by getting a real interactive shell inside the"
+      echo "container. (baseline in $BASE — don't edit it, the check reads it)"
   verify_done:
     needs:
       - init_scenario
@@ -93,21 +94,22 @@ tasks:
       fi
 
       now_count="$(kubectl -n falco logs -l app.kubernetes.io/name=falco \
-        --tail=-1 --prefix 2>/dev/null | grep -c 'KUBELINGS-ALERT' || true)"
+        --tail=-1 2>/dev/null | grep 'k8s_pod_name=alarm-test' \
+        | grep -ciE 'shell (was spawned|in a container)' || true)"
 
       if [ "${now_count:-0}" -le "${ALERT_BASELINE:-0}" ]; then
-        echo "not yet: no shell-in-container alert has fired since init."
+        echo "not yet: no shell-in-container alert for alarm-test has fired since init."
         echo
-        echo "         The most common miss: a tty-less exec. Your rule has"
-        echo "         'proc.tty != 0', so:"
-        echo "           kubectl exec -it alarm-test -- sh -c 'id'   # NO tty -> quiet"
-        echo "           kubectl exec -it alarm-test -- sh           # real shell -> fires"
+        echo "         The most common miss: a tty-less exec. The rule needs a"
+        echo "         controlling terminal (proc.tty != 0), so:"
+        echo "           kubectl exec alarm-test -- sh -c 'id'      # NO tty -> quiet"
+        echo "           kubectl exec -it alarm-test -- sh          # real shell -> fires"
         echo "         Run the second one, type a command, exit, then check again."
         exit 1
       fi
 
-      echo "PASS — your rule fired. Falco saw the interactive shell and logged it:"
+      echo "PASS — the rule fired. Falco saw the interactive shell and logged it:"
       echo
       kubectl -n falco logs -l app.kubernetes.io/name=falco --tail=-1 2>/dev/null \
-        | grep 'KUBELINGS-ALERT' | tail -3
+        | grep 'k8s_pod_name=alarm-test' | grep -iE 'shell (was spawned|in a container)' | tail -2
 ---

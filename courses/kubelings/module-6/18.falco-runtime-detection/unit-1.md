@@ -133,18 +133,19 @@ within minutes is a postmortem footnote:
 ## Your turn
 
 `init` did the install for you: Falco is running as a DaemonSet with the
-`modern_ebpf` driver, and your **`Kubelings shell in container`** rule (the
-one from "the rules language in one rule", with a `KUBELINGS-ALERT` marker in
-its output) is loaded. A throwaway container, `default/alarm-test`, is
-waiting.
+`modern_ebpf` driver. Its **default ruleset already ships the exact rule you
+dissected above** — "shell spawned in a container with an attached terminal",
+same `container` + `shell_binaries` + `proc.tty != 0` logic. A throwaway
+container, `default/alarm-test`, is waiting.
 
-Your job: make the rule fire, for real.
+Your job: make that rule fire, for real.
 
 1. Confirm the sensor is up: `kubectl -n falco rollout status ds/falco`.
 2. Get an **interactive** shell inside `alarm-test`.
-3. Run something, exit, then read Falco's log and find your alert.
+3. Run something, exit, then read Falco's log and find the alert.
 
-The check passes once a `KUBELINGS-ALERT` line has appeared since `init`.
+The check passes once a shell-in-container alert naming `alarm-test` has
+appeared since `init`.
 
 <details>
 <summary>Hint</summary>
@@ -154,7 +155,7 @@ it exempts non-interactive `sh -c` entrypoints, the noisiest false positives.
 So the exec everyone reaches for first stays *silent*:
 
 ```sh
-kubectl exec -it alarm-test -- sh -c 'id'   # no controlling tty -> no alert
+kubectl exec alarm-test -- sh -c 'id'       # no controlling tty -> no alert
 ```
 
 You need a real shell session with a tty attached:
@@ -168,7 +169,7 @@ aggregate across the DaemonSet:
 
 ```sh
 kubectl -n falco logs -l app.kubernetes.io/name=falco --tail=-1 \
-  | grep KUBELINGS-ALERT
+  | grep alarm-test
 ```
 
 </details>
@@ -198,11 +199,12 @@ kubectl exec -it alarm-test -- sh
 #   ~ $ id
 #   ~ $ exit
 
-# 3 · read your rule's alert back out of Falco's log
+# 3 · read the alert back out of Falco's log
 kubectl -n falco logs -l app.kubernetes.io/name=falco --tail=-1 \
-  | grep KUBELINGS-ALERT
-# KUBELINGS-ALERT shell in container (pod=alarm-test ns=default
-#   container=alarm-test proc=sh parent=runc)
+  | grep alarm-test
+# Notice A shell was spawned in a container with an attached terminal
+#   (evt_type=execve process=sh terminal=34816 container_name=alarm-test
+#   k8s_pod_name=alarm-test k8s_ns_name=default)
 ```
 
 ## Root cause, restated

@@ -150,10 +150,14 @@ altogether — no `kubelet.conf`, no PKI, no membership.
 
 Bring it back Ready, using the real bootstrap-token flow:
 
-1. On **cplane-01**, mint a join ticket — the printed command carries a fresh
-   token *and* the CA cert hash: `kubeadm token create --print-join-command`.
-2. Run that `kubeadm join …` line on **node-02**, as root.
-3. Watch node-02 go from gone → NotReady → Ready as the CNI DaemonSet lands.
+1. On **cplane-01**, drop the stale Node object first —
+   `kubectl delete node node-02`. (A reset node's API object lingers as
+   `Ready`; skip this and the join aborts with *"a Node named node-02 already
+   exists"*. Removing a dead node before re-provisioning is the real runbook.)
+2. Still on **cplane-01**, mint a join ticket — the printed command carries a
+   fresh token *and* the CA cert hash: `kubeadm token create --print-join-command`.
+3. Run that `kubeadm join …` line on **node-02**, as root.
+4. Watch node-02 go from gone → NotReady → Ready as the CNI DaemonSet lands.
 
 The check runs on node-02 and passes once it holds a *freshly issued*
 `kubelet.conf` (newer than the reset) and the cluster reports it Ready.
@@ -163,12 +167,21 @@ The check runs on node-02 and passes once it holds a *freshly issued*
 
 Two machines, two roles — the same split the runbook describes.
 
+First clear the corpse: the reset node still has a `Ready` Node object in the
+API (kubeadm reset can't always remove it, and node-02 has no admin
+credentials to do so itself). `kubeadm join` refuses to reuse the name:
+
+```sh
+# on cplane-01
+kubectl delete node node-02
+```
+
 The **token expires in 24h**, so don't hunt for the one `init` printed when
 this cluster was built; mint a new one. `--print-join-command` hands you the
 whole line, both credentials already filled in:
 
 ```sh
-# on cplane-01
+# still on cplane-01
 kubeadm token create --print-join-command
 # -> kubeadm join <api>:6443 --token <fresh> --discovery-token-ca-cert-hash sha256:<hash>
 ```
@@ -202,7 +215,8 @@ Solve the task above — this check turns green once verification passes.
 
 
 ```sh
-# --- on cplane-01: mint a fresh join command (the init-time token is long expired)
+# --- on cplane-01: remove the stale Node object, then mint a fresh join command
+kubectl delete node node-02
 kubeadm token create --print-join-command
 # copy the printed 'kubeadm join …' line
 
@@ -210,6 +224,9 @@ kubeadm token create --print-join-command
 kubeadm join 10.0.0.10:6443 --token abcdef.0123456789abcdef \
   --discovery-token-ca-cert-hash sha256:1234…
 # [preflight] … [kubelet-start] … 'This node has joined the cluster'
+
+# (a failed/partial join leaves state behind — 'kubeadm reset -f' on node-02
+#  and try again if preflight complains about existing files)
 
 # --- back on cplane-01: watch it come Ready (CNI DaemonSet lands on its own)
 kubectl get nodes -w

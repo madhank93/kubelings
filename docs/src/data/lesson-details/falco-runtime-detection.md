@@ -126,15 +126,16 @@ within minutes is a postmortem footnote:
 ## Your turn
 
 `init` did the install for you: Falco is running as a DaemonSet with the
-`modern_ebpf` driver, and your **`Kubelings shell in container`** rule (the
-one from "the rules language in one rule", with a `KUBELINGS-ALERT` marker in
-its output) is loaded. A throwaway container, `default/alarm-test`, is
-waiting.
+`modern_ebpf` driver. Its **default ruleset already ships the exact rule you
+dissected above** — "shell spawned in a container with an attached terminal",
+same `container` + `shell_binaries` + `proc.tty != 0` logic. A throwaway
+container, `default/alarm-test`, is waiting.
 
-Your job: make the rule fire, for real.
+Your job: make that rule fire, for real.
 
 1. Confirm the sensor is up: `kubectl -n falco rollout status ds/falco`.
 2. Get an **interactive** shell inside `alarm-test`.
-3. Run something, exit, then read Falco's log and find your alert.
+3. Run something, exit, then read Falco's log and find the alert.
 
-The check passes once a `KUBELINGS-ALERT` line has appeared since `init`.
+The check passes once a shell-in-container alert naming `alarm-test` has
+appeared since `init`.

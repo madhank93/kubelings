@@ -143,10 +143,14 @@ altogether — no `kubelet.conf`, no PKI, no membership.
 
 Bring it back Ready, using the real bootstrap-token flow:
 
-1. On **cplane-01**, mint a join ticket — the printed command carries a fresh
-   token *and* the CA cert hash: `kubeadm token create --print-join-command`.
-2. Run that `kubeadm join …` line on **node-02**, as root.
-3. Watch node-02 go from gone → NotReady → Ready as the CNI DaemonSet lands.
+1. On **cplane-01**, drop the stale Node object first —
+   `kubectl delete node node-02`. (A reset node's API object lingers as
+   `Ready`; skip this and the join aborts with *"a Node named node-02 already
+   exists"*. Removing a dead node before re-provisioning is the real runbook.)
+2. Still on **cplane-01**, mint a join ticket — the printed command carries a
+   fresh token *and* the CA cert hash: `kubeadm token create --print-join-command`.
+3. Run that `kubeadm join …` line on **node-02**, as root.
+4. Watch node-02 go from gone → NotReady → Ready as the CNI DaemonSet lands.
 
 The check runs on node-02 and passes once it holds a *freshly issued*
 `kubelet.conf` (newer than the reset) and the cluster reports it Ready.

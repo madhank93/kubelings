@@ -182,22 +182,30 @@ holder is renewing (i.e. it's a live leader, not just a dead one).
 <details>
 <summary>Hint</summary>
 
-The scheduler here is a static pod. Deleting its mirror object makes the
-kubelet recreate the pod — a brand-new process with a brand-new uuid, so the
-`holderIdentity` string changes even though it's the same node:
+The scheduler is a **static pod**, and that changes how you kill it. The
+reflex — `kubectl delete pod kube-scheduler-cplane-01` — does *not* work here:
+that deletes only the API **mirror** object, and the kubelet immediately
+re-creates the mirror pointing at the **same still-running container**. The
+process never died, so the `holderIdentity` never changes. Try it and watch
+the Lease sit unchanged.
+
+To actually kill the leader you have to restart the *container*. The blunt,
+reliable way (the same move as the cert-rotation lab): bounce its manifest so
+the kubelet tears the pod down and builds a fresh one — new process, new uuid.
 
 ```sh
 kubectl -n kube-system get lease kube-scheduler \
   -o jsonpath='{.spec.holderIdentity}{"\n"}'          # before
 
-kubectl -n kube-system delete pod kube-scheduler-cplane-01
+mv /etc/kubernetes/manifests/kube-scheduler.yaml /tmp/ && sleep 8 \
+  && mv /tmp/kube-scheduler.yaml /etc/kubernetes/manifests/
 
 # the old holder's Lease expires (~15s), the new process acquires it
 kubectl -n kube-system get lease kube-scheduler -w
 ```
 
-Watch the whole thing as a story: `kubectl get lease kube-scheduler -n
-kube-system -w` shows the holder go stale, then flip. (Killing
+Watch it as a story: `kubectl get lease kube-scheduler -n kube-system -w`
+shows the holder go stale, then flip to a new uuid. (Bouncing
 `kube-controller-manager` instead won't satisfy the check — it pins the
 scheduler Lease specifically.)
 
@@ -225,8 +233,10 @@ kubectl -n kube-system get lease kube-scheduler \
   -o jsonpath='{.spec.holderIdentity}{"\n"}'
 # cplane-01_1a2b3c…   <- a specific process
 
-# 2 · kill that leader (delete the static pod's mirror; kubelet recreates it)
-kubectl -n kube-system delete pod kube-scheduler-cplane-01
+# 2 · kill that leader for real — a static pod needs its CONTAINER restarted,
+#     not its mirror deleted. Bounce the manifest:
+mv /etc/kubernetes/manifests/kube-scheduler.yaml /tmp/ && sleep 8 \
+  && mv /tmp/kube-scheduler.yaml /etc/kubernetes/manifests/
 
 # 3 · the old lease goes stale (~15s), a new process acquires it
 kubectl -n kube-system get lease kube-scheduler -w
