@@ -179,22 +179,25 @@ for stale in glob.glob(os.path.join(DETAILS_DIR, "*.md")):
 # Modules come from disk, not a hardcoded range, so adding module-11 is a
 # directory + a MODULES entry. Fail loudly on a module with no MODULES entry —
 # otherwise the separator emitter below dies on a bare KeyError.
-_module_nums = sorted(
-    int(re.match(r'module-(\d+)$', os.path.basename(d)).group(1))
-    for d in glob.glob(os.path.join(ROOT, "module-*"))
-    if os.path.isdir(d) and re.match(r'module-\d+$', os.path.basename(d))
-)
+# Map module number -> real dir name so zero-padded prefixes (module-07) resolve
+# the same as bare ones (module-7) — the number orders, the dir name reads.
+_module_dirs = {}
+for d in glob.glob(os.path.join(ROOT, "module-*")):
+    m = re.match(r'module-(\d+)$', os.path.basename(d))
+    if os.path.isdir(d) and m:
+        _module_dirs[int(m.group(1))] = os.path.basename(d)
+_module_nums = sorted(_module_dirs)
 for _n in _module_nums:
     if f"M{_n}" not in MODULES:
         raise SystemExit(
-            f"courses/kubelings/module-{_n}/ exists but M{_n} has no MODULES entry "
-            f"in {os.path.relpath(__file__, _REPO)} — add its label, colour, and narrative."
+            f"courses/kubelings/{_module_dirs[_n]}/ exists but M{_n} has no MODULES "
+            f"entry in {os.path.relpath(__file__, _REPO)} — add its label, colour, and narrative."
         )
 
 entries = []
 for n in _module_nums:
     mod = f"M{n}"
-    dirs = glob.glob(os.path.join(ROOT, f"module-{n}", "[0-9]*"))
+    dirs = glob.glob(os.path.join(ROOT, _module_dirs[n], "[0-9]*"))
     def keyf(d):
         b = os.path.basename(d)
         return int(b.split(".")[0])
