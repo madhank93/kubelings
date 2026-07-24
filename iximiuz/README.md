@@ -64,6 +64,8 @@ cleanly. First-time course registration was a one-off
 - **`tagz` ≠ categories:** tagz must not contain category words
   (kubernetes/networking/security/...) — validation 400s. Put those in `categories`.
 - **Title length ≥ 10 chars** for course/module/lesson titles, else push 400s.
+- **Description ≤ 500 chars** for course/module/lesson descriptions (counting the
+  line breaks in a `|` block scalar), else push 400s.
 - **Lesson frontmatter** takes `kind/title/description/name/slug/createdAt/playground/tasks`
   only — no `categories`/`tagz`/`difficulty` (those belong on the course).
   This is why the **cloud-only** signal lives in `.labctl/cloud-only.tsv` and not
