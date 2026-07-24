@@ -66,6 +66,9 @@ cleanly. First-time course registration was a one-off
 - **Title length ≥ 10 chars** for course/module/lesson titles, else push 400s.
 - **Description ≤ 500 chars** for course/module/lesson descriptions (counting the
   line breaks in a `|` block scalar), else push 400s.
+- **`::simple-task` needs `:name: <task>`**, not just `:tasks: tasks`. Without the
+  task name the widget renders ": task definition not found" instead of the check.
+  `scaffold-lesson.sh` emits `:name: verify_done`; keep it when hand-writing units.
 - **Lesson frontmatter** takes `kind/title/description/name/slug/createdAt/playground/tasks`
   only — no `categories`/`tagz`/`difficulty` (those belong on the course).
   This is why the **cloud-only** signal lives in `.labctl/cloud-only.tsv` and not
