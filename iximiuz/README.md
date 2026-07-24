@@ -27,10 +27,14 @@ playground (init builds the scenario, verify fails pre-fix, passes post-fix).
 ```
 courses/kubelings/
   index.md                        # kind: course
-  module-N/0.index.md             # kind: module  (numeric prefix orders modules)
-  module-N/<n>.<lesson>/index.md  # kind: lesson  (playground + tasks; numeric prefix orders lessons)
-  module-N/<n>.<lesson>/unit-K.md # kind: unit    (prose + ::simple-task bound to a task + solution)
+  module-NN/0.index.md             # kind: module  (zero-padded prefix orders modules)
+  module-NN/<nn>.<lesson>/index.md # kind: lesson  (playground + tasks; zero-padded prefix orders lessons)
+  module-NN/<nn>.<lesson>/unit-K.md # kind: unit   (prose + ::simple-task bound to a task + solution)
 ```
+
+> **Zero-pad the numeric prefixes to two digits** (`module-07`, `07.<lesson>`).
+> iximiuz sorts these prefixes lexically, so a bare `module-10` would render
+> before `module-2`. `scaffold-lesson.sh` pads automatically.
 
 A lesson carries the `playground` + `tasks`; its units render `::simple-task`
 blocks that turn green when a task passes.
@@ -42,7 +46,7 @@ brew install labctl          # in dotfiles Brewfile
 labctl auth login            # one-time
 
 # scaffold a lesson, edit it, test locally
-tools/scaffold-lesson.sh module-2 8 ingress "Fix the broken Ingress" k8s-omni
+tools/scaffold-lesson.sh module-02 8 ingress "Fix the broken Ingress" k8s-omni
 scripts/run-challenge-local.sh ingress init && scripts/run-challenge-local.sh ingress verify
 
 # publish the whole course

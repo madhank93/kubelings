@@ -4,7 +4,7 @@
 # Usage:
 #   tools/scaffold-lesson.sh <module-dir> <order> <name> <title> <playground>
 # Example:
-#   tools/scaffold-lesson.sh module-2 8 ingress "Fix the broken Ingress" k8s-omni
+#   tools/scaffold-lesson.sh module-02 8 ingress "Fix the broken Ingress" k8s-omni
 #
 # Creates courses/kubelings/<module-dir>/<order>.<name>/{index.md,unit-1.md}.
 # Edit the init/verify task `run:` blocks and the prose, then test locally with
@@ -20,6 +20,10 @@ TITLE="${4:?title (>=10 chars)}"
 PG="${5:?playground, e.g. k8s-omni}"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Zero-pad the order to two digits so iximiuz (which sorts prefixes lexically)
+# keeps lessons in numeric order — 01.<name>, not 1.<name>. 10#$ORDER forces
+# base-10 so a leading-zero arg isn't mis-read as octal.
+printf -v ORDER '%02d' "$((10#$ORDER))"
 DIR="$ROOT/courses/kubelings/$MOD/$ORDER.$NAME"
 [ -e "$DIR" ] && { echo "refusing to overwrite $DIR"; exit 2; }
 [ -d "$ROOT/courses/kubelings/$MOD" ] || { echo "no module dir $MOD (create courses/kubelings/$MOD/0.index.md first)"; exit 2; }
