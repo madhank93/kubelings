@@ -73,13 +73,28 @@ verify()   { ( cd "$REPO" && scripts/run-challenge-local.sh "$LESSON" verify ); 
 klreset()  { ( cd "$REPO" && scripts/run-challenge-local.sh "$LESSON" reset ); }
 
 # --- tab completion --------------------------------------------------------
-# kubectl's own bash completion (subcommands, resources, live object names), and
-# wire it onto the k alias too. Guarded: old bash / no bash-completion is fine.
-source /usr/share/bash-completion/bash_completion 2>/dev/null \
-  || source /etc/bash_completion 2>/dev/null || true
-if command -v kubectl >/dev/null; then
-  source <(kubectl completion bash) 2>/dev/null || true
-  complete -o default -F __start_kubectl k 2>/dev/null || true
+# kubectl's bash completion relies on bash-completion's runtime helpers
+# (_get_comp_words_by_ref, __ltrim_colon_completions). Set PS1 BEFORE loading it:
+# Homebrew's profile.d loader bails when PS1 is unset, so it must already be set.
+# Then source the library from the usual Linux + Homebrew locations, and only
+# wire kubectl completion if the helpers actually loaded — otherwise a box
+# without bash-completion errors "_get_comp_words_by_ref: command not found" on
+# every <tab>.
+PS1='\[\e[36m\]kubelings\[\e[0m\]:%[2]s \w$ '
+for _bc in \
+  /etc/profile.d/bash_completion.sh \
+  /opt/homebrew/etc/profile.d/bash_completion.sh \
+  /usr/local/etc/profile.d/bash_completion.sh \
+  /usr/share/bash-completion/bash_completion \
+  /opt/homebrew/etc/bash_completion \
+  /usr/local/etc/bash_completion \
+  /etc/bash_completion; do
+  [ -r "$_bc" ] && { . "$_bc"; break; }
+done 2>/dev/null
+if command -v kubectl >/dev/null && type _get_comp_words_by_ref >/dev/null 2>&1; then
+  source <(kubectl completion bash) 2>/dev/null && complete -o default -F __start_kubectl k 2>/dev/null
+else
+  KL_NOCOMP=1
 fi
 
 # --- readline niceties -----------------------------------------------------
@@ -94,11 +109,11 @@ bind '"\e[B": history-search-forward'  2>/dev/null || true
 export do='--dry-run=client -o yaml'    # k run web --image=nginx $do > web.yaml
 export now='--force --grace-period=0'   # k delete pod web $now
 
-PS1='\[\e[36m\]kubelings\[\e[0m\]:%[2]s \w$ '
 clear
 printf '\e[1;36m%%s\e[0m\n\n' %[4]q
 task
 printf '\n\e[2mcommands:\e[0m \e[36mtask\e[0m · \e[36mhint\e[0m · \e[36mverify\e[0m · \e[36msolution\e[0m · \e[36mklreset\e[0m · exit\n'
 printf '\e[2mshortcuts:\e[0m \e[36mk\e[0m=kubectl · \e[36m<tab>\e[0m completes · \e[36m$do\e[0m=--dry-run=client -o yaml · \e[36m$now\e[0m=--force --grace-period=0\n'
+[ -n "$KL_NOCOMP" ] && printf '\e[2mtip:\e[0m kubectl <tab> needs bash-completion — \e[36mbrew install bash-completion@2\e[0m (or apt install bash-completion), then reopen the shell\n'
 `, repoRoot, lesson, klDir, title)
 }
