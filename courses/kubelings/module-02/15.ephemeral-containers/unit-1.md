@@ -71,6 +71,7 @@ kubectl -n kubelings edit configmap orders-config
 ::simple-task
 ---
 :tasks: tasks
+:name: verify_done
 ---
 #active
 Solve the task above — this check turns green once verification passes.

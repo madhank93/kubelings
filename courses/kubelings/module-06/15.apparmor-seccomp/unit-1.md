@@ -73,6 +73,7 @@ it overrides pod-level for that container.
 ::simple-task
 ---
 :tasks: tasks
+:name: verify_done
 ---
 #active
 Solve the task above — this check turns green once verification passes.

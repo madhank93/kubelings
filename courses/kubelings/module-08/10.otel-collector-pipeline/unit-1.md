@@ -89,6 +89,7 @@ Service (M4's service-DNS lessons, cashed in).
 ::simple-task
 ---
 :tasks: tasks
+:name: verify_done
 ---
 #active
 Solve the task above — this check turns green once verification passes.

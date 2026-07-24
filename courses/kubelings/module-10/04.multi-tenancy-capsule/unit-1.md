@@ -80,6 +80,7 @@ created *by the owner*: an admin-created namespace belongs to no tenant.
 ::simple-task
 ---
 :tasks: tasks
+:name: verify_done
 ---
 #active
 Solve the task above — this check turns green once verification passes.
