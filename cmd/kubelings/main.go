@@ -44,7 +44,7 @@ func main() {
 			return
 		}
 	}
-	p := tea.NewProgram(ui.New(root), tea.WithAltScreen())
+	p := tea.NewProgram(ui.New(root), tea.WithAltScreen(), tea.WithMouseCellMotion())
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "kubelings:", err)
 		os.Exit(1)

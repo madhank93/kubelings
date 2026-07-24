@@ -235,14 +235,14 @@ func (m *model) refreshView() {
 		m.vp.SetContent(helpText())
 	case modeHint:
 		if l != nil && l.Hint != "" {
-			m.vp.SetContent(headerStyle.Render("Hint — "+l.Title) + "\n\n" + l.Hint)
+			m.vp.SetContent(headerStyle.Render("Hint — "+l.Title) + "\n\n" + renderMarkdown(l.Hint, m.vp.Width))
 		} else {
 			m.vp.SetContent("(no hint for this lesson)")
 		}
 		m.vp.GotoTop()
 	case modeSolution:
 		if l != nil && l.Solution != "" {
-			m.vp.SetContent(headerStyle.Render("Solution — "+l.Title) + "\n\n" + l.Solution)
+			m.vp.SetContent(headerStyle.Render("Solution — "+l.Title) + "\n\n" + renderMarkdown(l.Solution, m.vp.Width))
 		} else {
 			m.vp.SetContent("(no solution for this lesson)")
 		}
@@ -372,10 +372,10 @@ func (m model) splashView() string {
 	b.WriteString(bullet("Fix the cluster with kubectl — the task is shown in the shell"))
 	b.WriteString(dimStyle.Render("  • ") + textStyle.Render("Run ") + keyStyle.Render("verify") +
 		textStyle.Render(" — the check turns green   ") +
-		noneStyle.Render("◌")+dimStyle.Render(" not started · ")+startedStyle.Render("◐")+dimStyle.Render(" started · ")+solvedStyle.Render("✓")+dimStyle.Render(" solved") + "\n\n")
+		noneStyle.Render("◌") + dimStyle.Render(" not started · ") + startedStyle.Render("◐") + dimStyle.Render(" started · ") + solvedStyle.Render("✓") + dimStyle.Render(" solved") + "\n\n")
 
 	b.WriteString(headerStyle.Render("Cluster") + "  " + cluster + "\n")
-	b.WriteString(dimStyle.Render("        ") + textStyle.Render("created on ") + keyStyle.Render("u")+textStyle.Render("/")+keyStyle.Render("↵") +
+	b.WriteString(dimStyle.Render("        ") + textStyle.Render("created on ") + keyStyle.Render("u") + textStyle.Render("/") + keyStyle.Render("↵") +
 		textStyle.Render(" · persists across lessons & quit · destroyed only on ") + keyStyle.Render("d") + "\n\n")
 
 	b.WriteString(dimStyle.Render("Keys  ") + keybar(
@@ -412,7 +412,9 @@ func helpText() string {
 		dimStyle.Render(" iximiuz Labs only — needs real VMs; shown instead of the type badge") + "\n\n" +
 		dimStyle.Render("in the shell: ") + keyStyle.Render("task") + dimStyle.Render(" · ") +
 		keyStyle.Render("hint") + dimStyle.Render(" · ") + keyStyle.Render("verify") + dimStyle.Render(" · ") +
-		keyStyle.Render("solution") + dimStyle.Render(" · ") + keyStyle.Render("k=kubectl")
+		keyStyle.Render("solution") + dimStyle.Render(" · ") + keyStyle.Render("k=kubectl") + dimStyle.Render(" · ") +
+		keyStyle.Render("<tab>") + dimStyle.Render(" completes · ") + keyStyle.Render("$do") + dimStyle.Render("/") +
+		keyStyle.Render("$now") + dimStyle.Render(" CKA shortcuts")
 }
 
 // course import alias for detail() signature.

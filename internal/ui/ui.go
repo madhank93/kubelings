@@ -188,8 +188,48 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		return m.onKey(msg)
+
+	case tea.MouseMsg:
+		return m.onMouse(msg)
 	}
 
+	var cmd tea.Cmd
+	m.vp, cmd = m.vp.Update(msg)
+	return m, cmd
+}
+
+// onMouse handles the scroll wheel: over the left list it moves the selection
+// (like j/k, which the list couples to its scroll offset); over the right pane
+// it scrolls the viewport. Mouse mode is enabled in main.go.
+func (m model) onMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	// Modal states stay keyboard-only.
+	if m.splash || m.confirm || m.confirmSwitch || m.running {
+		return m, nil
+	}
+	overList := msg.X < leftWidth(m.w)
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		if overList {
+			if m.cursor > 0 {
+				m.cursor--
+			}
+			m.clampListOff()
+			m.mode = modeDetail
+			m.refreshView()
+			return m, nil
+		}
+	case tea.MouseButtonWheelDown:
+		if overList {
+			if m.cursor < len(m.sel)-1 {
+				m.cursor++
+			}
+			m.clampListOff()
+			m.mode = modeDetail
+			m.refreshView()
+			return m, nil
+		}
+	}
+	// Right pane (or a horizontal wheel): let the viewport scroll.
 	var cmd tea.Cmd
 	m.vp, cmd = m.vp.Update(msg)
 	return m, cmd
