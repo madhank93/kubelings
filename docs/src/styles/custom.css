@@ -40,7 +40,7 @@
   transform: translateY(-2px);
 }
 
-/* Stat row: the scope numbers (107 lessons / 10 modules / 40+ incidents)
+/* Stat row: the scope numbers (116 lessons / 11 modules / 40+ incidents)
    surfaced directly under the hero so a first-time visitor sees the scale. */
 .stat-row {
   display: flex;

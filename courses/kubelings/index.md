@@ -34,8 +34,12 @@ Read the situation, fix the cluster with `kubectl`, and watch the check go green
 
 Work the modules top to bottom: Foundations → Workloads → Config & Storage →
 Networking → Scheduling → Security → **Internals** → Observability & SRE →
-**War Stories** — capstone replays of real, cited production postmortems (the
-Zalando ndots DNS outage is already a runnable lesson in Networking).
+**War Stories** (capstone replays of real, cited production postmortems — the
+Zalando ndots DNS outage is already a runnable lesson in Networking) → Platform
+Engineering → **Node & Control Plane** — host-level break/fix on real machines
+(kubelet, containerd, etcd, the API server), the failures that live below
+`kubectl`.
 
-You can also run every scenario locally on `kind` — see the project repo for the
-local runner and the full incident library.
+Most scenarios also run locally on `kind`; the host-level labs are marked
+iximiuz Labs only, since they need a real node with systemd and a kernel. See
+the project repo for the local runner and the full incident library.

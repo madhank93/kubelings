@@ -11,7 +11,7 @@ broken-on-purpose scenarios you fix one at a time.
   production troubleshooting reflexes instead of slide-deck theory.
 - **Assumes** — you can run `kubectl` and read a Pod spec. Concepts are taught;
   basic terminal comfort is not.
-- **Time** — ~30–50 hours for all 107 lessons; each lesson is bite-sized and
+- **Time** — ~35–55 hours for all 116 lessons; each lesson is bite-sized and
   self-contained, so you can stop anywhere.
 - **Cost** — free. Runs in-browser on iximiuz Labs or locally on `kind`.
 :::

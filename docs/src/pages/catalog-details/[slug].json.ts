@@ -1,5 +1,5 @@
 // Per-lesson detail, prerendered as static JSON and fetched by the /catalog
-// modal on open. Keeping it out of catalog.astro stops 107 problem statements
+// modal on open. Keeping it out of catalog.astro stops 116 problem statements
 // and 25 write-ups (~300KB of HTML) from loading with the table.
 import type { APIRoute } from 'astro';
 import { CATALOG } from '../../data/catalog';
