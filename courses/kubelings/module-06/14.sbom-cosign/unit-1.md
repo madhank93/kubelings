@@ -122,6 +122,33 @@ Solve the task above — this check turns green once verification passes.
 ::
 
 <details>
+<summary>Hint</summary>
+
+The check reads one file: `/tmp/kubelings-cosign/verified-digest.txt`. It must
+hold a **bare** digest — `sha256:…` and nothing else. A whole JSON blob, a
+quoted string, or a trailing `"` all fail the format check.
+
+Two failure modes to tell apart:
+
+- *"no digest recorded"* — the file is missing or empty. The `> ` redirect
+  never ran, or the `grep` chain matched nothing.
+- *"does not match what the signature vouches for"* — you recorded a digest,
+  but not the one this signature covers. Don't copy it from `docker pull` or
+  the registry UI; take it from `critical.image."docker-manifest-digest"` in
+  the `cosign verify -o json` output.
+
+Check what you actually wrote before re-running the verify:
+
+```sh
+cat /tmp/kubelings-cosign/verified-digest.txt
+```
+
+Verification needs network access to the Sigstore transparency log — an
+offline box fails here for reasons that have nothing to do with your commands.
+
+</details>
+
+<details>
 <summary>Solution</summary>
 
 

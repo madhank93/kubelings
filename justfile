@@ -23,6 +23,10 @@ up:
 down:
     scripts/run-challenge-local.sh down
 
+# Drop lesson-installed namespaces (argocd, crossplane-system, keda…), keep the cluster.
+clean:
+    scripts/run-challenge-local.sh clean
+
 # Run a single lesson non-interactively: `just run cronjobs init`
 run lesson verb="verify":
     scripts/run-challenge-local.sh {{lesson}} {{verb}}

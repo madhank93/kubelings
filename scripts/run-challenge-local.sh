@@ -14,6 +14,7 @@
 #   scripts/run-challenge-local.sh <lesson> verify    # run the check(s)
 #   scripts/run-challenge-local.sh <lesson> reset     # wipe ns + re-init
 #   scripts/run-challenge-local.sh <lesson> solution  # print the lesson content
+#   scripts/run-challenge-local.sh clean              # drop lesson-installed namespaces
 #   scripts/run-challenge-local.sh down               # delete the cluster
 #
 # <lesson> may be a lesson name (e.g. rolling-update), its slug, or a dir path.
@@ -42,7 +43,18 @@ _in_node() {
 # Defense-in-depth: enforce Pod Security 'baseline' on the lesson namespace so an
 # untrusted lesson manifest can't create privileged / hostPath / hostNetwork /
 # hostPID pods — the pod→node→host escape vectors. Non-fatal.
+#
+# SCOPE, honestly: the namespace is created *by* the init script, so there is no
+# earlier point to label it. This gates everything the learner (and any later
+# task) creates, not the init block itself, and PSA never evicts pods that already
+# exist. The real containment boundary is _in_node — this narrows the blast radius
+# inside it, it does not replace it.
+#
+# Lessons that teach Pod Security itself must opt out (`skipHardening: true` in
+# frontmatter): they deliberately leave the namespace unlabelled so the learner
+# applies the label, and hardening here would silently pre-solve that check.
 _harden_ns() {
+  [ "${SKIP_HARDENING:-false}" = "true" ] && return 0
   _in_node "kubectl label namespace \"$NS\" \
     pod-security.kubernetes.io/enforce=baseline \
     pod-security.kubernetes.io/warn=baseline --overwrite >/dev/null 2>&1 || true"
@@ -55,6 +67,11 @@ _set_progress() {
   awk -F'\t' -v l="$l" '$1!=l' "$PROGRESS" > "$tmp"
   printf '%s\t%s\t%s\n' "$l" "$s" "$(date +%s)" >> "$tmp"
   mv "$tmp" "$PROGRESS"
+}
+# Current recorded state for a lesson ("" when never touched).
+_get_progress() {
+  [ -f "$PROGRESS" ] || return 0
+  awk -F'\t' -v l="$1" '$1==l{print $2; exit}' "$PROGRESS"
 }
 # Canonical lesson name from a resolved index.md path (dir basename minus "N.").
 _lesson_name() { local b; b="$(basename "$(dirname "$1")")"; echo "${b#*.}"; }
@@ -145,10 +162,20 @@ run_tasks() {
 # Confine all cluster work to the kind node. Never touches the host's kubeconfig
 # or any other cluster — so a stray KUBECONFIG pointing at prod can't be affected.
 ensure_node() {
+  # Probe the daemon first: with Docker down, `kind get clusters` fails the same
+  # way it does for a genuinely missing cluster, and "run: $0 up" is then the
+  # wrong advice — up fails too. Name the real cause.
+  ensure_docker
   kind get clusters 2>/dev/null | grep -qx "$CLUSTER" \
     || die "kind cluster '$CLUSTER' not found — run: $0 up"
   [ "$(docker inspect -f '{{.State.Running}}' "$NODE" 2>/dev/null)" = "true" ] \
     || die "node '$NODE' not running — run: $0 up"
+}
+
+# Fail with the actual cause when the container runtime isn't reachable.
+ensure_docker() {
+  docker info >/dev/null 2>&1 && return 0
+  die "Docker runtime not running — start OrbStack (or Docker Desktop), then retry"
 }
 
 print_help() { grep '^#' "$0" | sed 's/^# \{0,1\}//' | sed -n '1,30p'; }
@@ -157,6 +184,7 @@ A1="${1:-}"; A2="${2:-}"
 
 case "$A1" in
   up)
+    ensure_docker
     if kind get clusters 2>/dev/null | grep -qx "$CLUSTER"; then
       echo "cluster '$CLUSTER' already exists."
     else
@@ -173,6 +201,29 @@ case "$A1" in
     ;;
   down)
     kind delete cluster --name "$CLUSTER"
+    ;;
+  clean)
+    # `reset` only wipes ns kubelings, but several lessons install controllers
+    # into namespaces of their own (argocd, crossplane-system, flux-system,
+    # keda, gatekeeper-system, kyverno, capsule-system…). Nothing removed those,
+    # so by the late modules a laptop is running every controller the course ever
+    # touched. Reclaim them without paying the cost of recreating the cluster.
+    #
+    # Derived, not hardcoded: anything that isn't a stock kind namespace or the
+    # lesson namespace is course residue. New lessons need no edit here.
+    ensure_node
+    keep='default|kube-system|kube-public|kube-node-lease|local-path-storage'
+    extra="$(_in_node "kubectl get ns -o name" | sed 's|^namespace/||' \
+      | grep -Ev "^($keep|$NS)$" || true)"
+    if [ -z "$extra" ]; then
+      echo "nothing to clean — only stock namespaces and '$NS' are present."
+    else
+      echo "removing lesson-installed namespaces:"; echo "$extra" | sed 's/^/  - /'
+      # shellcheck disable=SC2086 # deliberate word-splitting into one delete call
+      _in_node "kubectl delete namespace $(echo "$extra" | tr '\n' ' ') --ignore-not-found --wait=true"
+      echo "done. CRDs installed by those controllers are left in place —"
+      echo "use '$0 down' then '$0 up' for a truly pristine cluster."
+    fi
     ;;
   list)
     for d in "$COURSE"/module-*/*/; do
@@ -206,6 +257,8 @@ case "$A1" in
     IDX="$(resolve_lesson "$LESSON")"
     [ -n "$IDX" ] && [ -f "$IDX" ] || die "could not resolve lesson '$LESSON' (rejected or not found)"
     LDIR="$(dirname "$IDX")"; LNAME="$(_lesson_name "$IDX")"
+    # Pod Security lessons opt out of _harden_ns — see its comment.
+    SKIP_HARDENING="$(frontmatter "$IDX" | yq -r '.skipHardening // false')"
 
     # Refuse cloud-only lessons before any verb runs, so ensure_node, run_tasks,
     # _in_node, _harden_ns and _set_progress are all unreachable for them.
@@ -246,7 +299,13 @@ case "$A1" in
         if run_tasks "$IDX" false; then
           _set_progress "$LNAME" solved; echo; echo "✅ PASS"
         else
-          echo; echo "❌ not solved yet"; exit 1
+          echo; echo "❌ not solved yet"
+          # A never-initialised lesson fails its checks for the boring reason that
+          # nothing was ever built. Without this the learner reads "not solved" as
+          # "your fix is wrong" and debugs a scenario that doesn't exist.
+          _get_progress "$LNAME" | grep -qE '^(started|solved)$' \
+            || echo "   ↳ this scenario has never been initialised — run: $0 $LESSON init"
+          exit 1
         fi
         ;;
       reset)

@@ -50,10 +50,16 @@ just doctor       # headless: env, cluster status, lessons (no TUI)
 
 Keys: **`↵`/`space` play** (cluster up if needed → init → drop into shell) ·
 `i` init · `v` verify · `r` reset · `h` hint · `s` solution (confirms first) ·
-`t` shell · `u`/`d` cluster up/down · `g` refresh · `?` help · `q` quit. Markers:
+`t` shell · **`/` find** · **`n` next unsolved** · `u`/`d` cluster up/down
+(`d` confirms first) · `esc` cancel a running task / clear the filter · `g`
+refresh · `?` help · `q` quit. Mouse: wheel scrolls, click selects. Markers:
 `◌` not started · `◐` started · `✓` solved (in `.labctl/progress.tsv`, shared with
 the CLI). Starting a different scenario while one is still active prompts
 **destroy / keep / cancel**.
+
+With 116 lessons, `/` is the fast path: type any part of a lesson name, title, or
+module ("networking", "crashloop") to narrow the list, `↵` to keep the filter,
+`esc` to clear it. `n` jumps to the next lesson you haven't solved.
 
 The cluster shell (`t`, or the play key) opens pre-wired to `kind-kubelings` / ns
 `kubelings` and **prints the task**, with helper commands: `task`, `hint`,
@@ -70,7 +76,16 @@ prereqs below.
 > **Security:** lesson task scripts are treated as untrusted code — they run
 > inside the kind node container (not on your host), confined to the course tree
 > and the kind cluster, with Pod Security `baseline` enforced on the lesson
-> namespace. See [`SECURITY.md`](SECURITY.md).
+> namespace after init. See [`SECURITY.md`](SECURITY.md).
+
+Several lessons install controllers into namespaces of their own (`argocd`,
+`crossplane-system`, `keda`, …). `reset` only wipes ns `kubelings`, so those
+accumulate across a long session:
+
+```sh
+just clean        # drop lesson-installed namespaces, keep the cluster
+just down         # delete the cluster entirely
+```
 
 ## Run a lesson locally — CLI
 

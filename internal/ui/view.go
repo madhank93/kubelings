@@ -104,6 +104,13 @@ func leftWidth(w int) int {
 	return lw
 }
 
+// listTop is the terminal row the first list entry is drawn on: the header bar,
+// any preflight banner lines, then the pane's top border. Mouse hit-testing
+// reads this, so it must track View()'s layout.
+func (m model) listTop() int {
+	return 1 /*header*/ + len(m.issues) + 1 /*pane top border*/
+}
+
 func (m model) chromeHeight() int {
 	banner := 0
 	if len(m.issues) > 0 {
@@ -205,6 +212,15 @@ func (m model) isCursor(rowIdx int) bool {
 }
 
 func (m model) footer() string {
+	if m.filtering {
+		return keyStyle.Render("/") + textStyle.Render(m.filter) + cursorStyle.Render(" ") +
+			dimStyle.Render(fmt.Sprintf("   %d match(es) · ", len(m.sel))) +
+			keybar([2]string{"↑↓", "move"}, [2]string{"↵", "keep"}, [2]string{"esc", "clear"}) + "\n"
+	}
+	if m.confirmDown {
+		return warnStyle.Render("delete the kind cluster? every scenario in progress is lost — ") +
+			keybar([2]string{"y", "yes"}, [2]string{"N", "no"})
+	}
 	if m.confirmSwitch {
 		t := ""
 		if m.switchTarget != nil {
@@ -219,12 +235,26 @@ func (m model) footer() string {
 	keys := keybar(
 		[2]string{"↵", "play"}, [2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"r", "reset"},
 		[2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"},
-		[2]string{"u", "up"}, [2]string{"d", "down"}, [2]string{"g", "refresh"}, [2]string{"?", "help"}, [2]string{"q", "quit"})
+		[2]string{"/", "find"}, [2]string{"n", "next todo"},
+		[2]string{"u", "up"}, [2]string{"d", "down"}, [2]string{"?", "help"}, [2]string{"q", "quit"})
 	status := ""
 	if m.running {
-		status = startedStyle.Render(m.spin.View()+" running "+m.runLbl) + dimStyle.Render(" …")
+		status = startedStyle.Render(m.spin.View()+" running "+m.runLbl) +
+			dimStyle.Render(" … ") + keybar([2]string{"esc", "cancel"})
+	} else if m.filter != "" {
+		status = dimStyle.Render("filter ") + keyStyle.Render("/"+m.filter) +
+			dimStyle.Render(fmt.Sprintf("  %d of %d lessons · esc clears", len(m.sel), m.lessonCount()))
 	}
 	return keys + "\n" + status
+}
+
+// lessonCount is the unfiltered total, for the "N of M" filter readout.
+func (m model) lessonCount() int {
+	n := 0
+	for _, mo := range m.mods {
+		n += len(mo.Lessons)
+	}
+	return n
 }
 
 // refreshView sets the right-pane content for the current mode + lesson.
@@ -380,7 +410,10 @@ func (m model) splashView() string {
 
 	b.WriteString(dimStyle.Render("Keys  ") + keybar(
 		[2]string{"↑↓/jk", "move"}, [2]string{"↵", "play"}, [2]string{"i", "init"}, [2]string{"v", "verify"},
-		[2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}, [2]string{"d", "down"}, [2]string{"q", "quit"}) + "\n\n")
+		[2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}) + "\n")
+	b.WriteString(dimStyle.Render("      ") + keybar(
+		[2]string{"/", "find a lesson"}, [2]string{"n", "next unsolved"},
+		[2]string{"?", "all keys"}, [2]string{"q", "quit"}) + "\n\n")
 	b.WriteString(warnStyle.Render("press any key to start →"))
 
 	box := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("87")).Padding(1, 3).Render(b.String())
@@ -397,11 +430,14 @@ func helpText() string {
 		row("h", "show hint") +
 		row("s", "show solution (asks to confirm)") +
 		row("t", "drop into a shell wired to the cluster") +
-		row("u / d", "cluster up / down") +
+		row("/", "find a lesson — type to filter, ↵ keeps it, esc clears") +
+		row("n", "jump to the next lesson you haven't solved") +
+		row("u / d", "cluster up / down (down asks to confirm)") +
+		row("esc", "cancel a running task · clear the filter · back to detail") +
 		row("g", "refresh status & progress") +
 		row("a", "about / welcome screen") +
-		row("esc", "back to lesson detail") +
 		row("? / q", "toggle help / quit") + "\n" +
+		dimStyle.Render("mouse:   wheel scrolls · click selects a lesson") + "\n" +
 		dimStyle.Render("markers: ") + noneStyle.Render("◌ not started") + dimStyle.Render(" · ") +
 		startedStyle.Render("◐ started") + dimStyle.Render(" · ") + solvedStyle.Render("✓ solved") + "\n" +
 		dimStyle.Render("types:   ") + textStyle.Render("lab (unmarked) hands-on") + dimStyle.Render(" · ") +

@@ -33,16 +33,31 @@ treated as **untrusted code**.
 
 4. **Pod Security `baseline` on the lesson namespace.** After init/reset the
    runner labels the `kubelings` namespace
-   `pod-security.kubernetes.io/enforce=baseline`, so an untrusted lesson manifest
-   cannot create `privileged`, `hostPath`, `hostNetwork`, or `hostPID` pods — the
-   pod→node→host escape vectors (verified: such pods are `Forbidden`).
+   `pod-security.kubernetes.io/enforce=baseline`, so `privileged`, `hostPath`,
+   `hostNetwork`, and `hostPID` pods — the pod→node→host escape vectors — are
+   rejected at admission (verified: such pods are `Forbidden`).
+
+   **Scope, precisely:** the namespace is created *by* the init script, so there
+   is no earlier moment at which to label it. This control therefore gates
+   everything created *after* init — the learner's own work, later tasks, the `t`
+   shell — but **not the init block itself**, and PSA never evicts pods that
+   already exist. Treat it as narrowing the blast radius inside the node
+   container, not as the boundary. Control 1 (`_in_node`) is the boundary.
+
+   Lessons that teach Pod Security itself set `skipHardening: true` in their
+   frontmatter, since the label is the exercise; without the opt-out the runner
+   would silently pre-solve the check. That is a deliberate, per-lesson,
+   reviewable exemption — grep for it.
 
 5. **Pinned supply chain.** Remote manifests are pinned to a version (e.g.
    metrics-server `v0.7.2`), not `latest`.
 
 6. **The interactive shell is isolated from your global kube context.** `t`
    (and `kubelings shell`) use a dedicated temp `KUBECONFIG` exported from kind,
-   so they never mutate your `~/.kube/config` current-context.
+   so they never mutate your `~/.kube/config` current-context. That file holds
+   cluster-admin credentials, so it is written `0600` **and** the temp directory
+   is removed when the shell exits — one copy per shell used to persist in
+   `/tmp` for the life of the machine.
 
 ## Residual risks (by design / out of scope)
 

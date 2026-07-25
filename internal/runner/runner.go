@@ -3,11 +3,13 @@
 package runner
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 const script = "scripts/run-challenge-local.sh"
@@ -23,6 +25,37 @@ func Cmd(root string, args ...string) *exec.Cmd {
 func Capture(root string, args ...string) (string, bool) {
 	out, err := Cmd(root, args...).CombinedOutput()
 	return string(out), err == nil
+}
+
+// CaptureContext is Capture with cancellation. Lesson inits run up to 360s, so
+// the TUI needs a way out that isn't "quit the whole program".
+//
+// The runner shells out to kubectl/kind/docker, so killing the bash process
+// alone would orphan those children. Run it in its own process group and signal
+// the group, which is what actually stops the work.
+func CaptureContext(ctx context.Context, root string, args ...string) (string, bool) {
+	c := Cmd(root, args...)
+	c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	var buf strings.Builder
+	c.Stdout, c.Stderr = &buf, &buf
+	if err := c.Start(); err != nil {
+		return err.Error(), false
+	}
+
+	done := make(chan error, 1)
+	go func() { done <- c.Wait() }()
+
+	select {
+	case err := <-done:
+		return buf.String(), err == nil
+	case <-ctx.Done():
+		// Negative pid = the whole group. SIGKILL, not SIGTERM: the point of a
+		// cancel is that it takes effect now.
+		_ = syscall.Kill(-c.Process.Pid, syscall.SIGKILL)
+		<-done
+		return buf.String() + "\n\n^ cancelled — the cluster may be mid-change; press r to reset the scenario.", false
+	}
 }
 
 // ClusterStatus reports whether the kind cluster is up, its node count, the

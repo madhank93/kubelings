@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/madhank93/kubelings/internal/course"
 )
@@ -39,6 +40,9 @@ func Shell(root, lessonName string) error {
 	if err != nil {
 		return fmt.Errorf("prepare shell (is the cluster up?): %w", err)
 	}
+	// Same as the TUI path: the temp dir holds a cluster-admin kubeconfig, so it
+	// goes away with the shell rather than accumulating in /tmp.
+	defer func() { _ = os.RemoveAll(filepath.Dir(rc)) }()
 	c := exec.Command("bash", "--rcfile", rc, "-i")
 	c.Env = append(os.Environ(), "KUBECONFIG="+kubeconfig)
 	c.Stdin, c.Stdout, c.Stderr = os.Stdin, os.Stdout, os.Stderr
