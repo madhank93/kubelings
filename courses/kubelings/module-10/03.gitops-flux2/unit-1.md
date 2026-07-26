@@ -42,6 +42,31 @@ Two objects, one root cause, and the conditions tell you which is which —
 the same "fix the cause, not the stuck consumer" shape as M3's
 pattern-namespace-terminating.
 
+<!-- d2:toolkit -->
+```text
+  ┌──────────────┐ 
+  │GitRepository │ 
+  │              │ 
+  └──────────────┘ 
+         │         
+     artifact      
+         │         
+         ▼         
+ ┌──────────────┐  
+ │Kustomization │  
+ │              │  
+ └──────────────┘  
+         │         
+    reconciled     
+         │         
+         ▼         
+ ┌────────────────┐
+ │applied objects │
+ │                │
+ └────────────────┘
+```
+<!-- /d2:toolkit -->
+
 ## Your task
 
 1. Fix the ref:

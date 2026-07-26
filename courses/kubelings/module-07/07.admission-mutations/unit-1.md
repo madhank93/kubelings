@@ -60,7 +60,7 @@ differs from what you wrote
       ┌──────────────┐     
       │stored object │     
       │              │     
-      └──────────────┘
+      └──────────────┘     
 ```
 <!-- /d2:rewrite -->
 

@@ -1,0 +1,8 @@
+# Flux is small controllers chained by CRDs: each one consumes what the previous
+# produced, rather than one integrated application.
+src:  "GitRepository"
+kust: "Kustomization"
+live: "applied objects"
+
+src  -> kust: "artifact"
+kust -> live: "reconciled"

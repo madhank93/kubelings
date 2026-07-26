@@ -1,0 +1,8 @@
+# Three layers: the XRD defines the developer-facing API, the Composition says
+# what it becomes, and managed resources are the real infrastructure.
+xrd:  "XRD: the API"
+comp: "Composition"
+mr:   "managed resources"
+
+xrd  -> comp: "claim maps to"
+comp -> mr:   "real infra"

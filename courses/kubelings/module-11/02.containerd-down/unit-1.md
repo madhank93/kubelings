@@ -67,6 +67,31 @@ Recover it:
 The check verifies the runtime is genuinely healthy: the bad override removed,
 containerd active, `crictl` connecting, and the node back to `Ready`.
 
+<!-- d2:runtime -->
+```text
+ ┌───────────────────┐ 
+ │containerd stopped │ 
+ │                   │ 
+ └───────────────────┘ 
+           │           
+      no endpoint      
+           │           
+           ▼           
+   ┌────────────────┐  
+   │CRI socket gone │  
+   │                │  
+   └────────────────┘  
+           │           
+      PLEG errors      
+           │           
+           ▼           
+  ┌───────────────────┐
+  │kubelet cannot act │
+  │                   │
+  └───────────────────┘
+```
+<!-- /d2:runtime -->
+
 <details>
 <summary>Hint</summary>
 

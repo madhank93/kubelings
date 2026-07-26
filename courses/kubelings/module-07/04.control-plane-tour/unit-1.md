@@ -117,6 +117,6 @@ each of which is one of these components doing exactly what it was told.
   ┌───────────┐  
   │etcd write │  
   │           │  
-  └───────────┘
+  └───────────┘  
 ```
 <!-- /d2:path -->

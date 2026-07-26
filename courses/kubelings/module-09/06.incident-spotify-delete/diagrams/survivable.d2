@@ -1,0 +1,8 @@
+# The clusters were deleted; the service was not. Traffic could be served from
+# elsewhere and the clusters could be rebuilt from declarations.
+gone:    "clusters deleted"
+traffic: "traffic moves"
+rebuild: "rebuilt"
+
+gone -> traffic: "multi-cluster"
+gone -> rebuild: "from git"

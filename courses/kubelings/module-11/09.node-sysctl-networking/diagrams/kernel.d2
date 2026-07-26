@@ -1,0 +1,8 @@
+# The CNI writes rules the kernel must be willing to apply: without forwarding
+# and the bridge module, pod traffic has nowhere to go.
+sysctl: "ip_forward off"
+mod:    "br_netfilter"
+pods:   "traffic dropped"
+
+sysctl -> pods: "routing"
+mod    -> pods: "filtering"

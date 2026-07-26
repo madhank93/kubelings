@@ -84,3 +84,16 @@ acceptance is an outage with a delay on it.
   μ for your queues before the day that decides your year.
 
 *No check — study, then take the final boss.*
+
+<!-- d2:arrival -->
+```text
+     ┌─────────────┐                                 
+     │arrival rate │────faster───┐                   
+     │             │             └───▶┌─────────────┐
+     └─────────────┘                  │Jobs pile up │
+ ┌────────────────┐              ┌───▶│             │
+ │completion rate │────slower────┘    └─────────────┘
+ │                │                                  
+ └────────────────┘                                  
+```
+<!-- /d2:arrival -->

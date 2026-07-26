@@ -81,7 +81,7 @@ dead, or true network partition.
    ┌───────────────┐ 
    │pods stay away │ 
    │               │ 
-   └───────────────┘
+   └───────────────┘ 
 ```
 <!-- /d2:leftover -->
 

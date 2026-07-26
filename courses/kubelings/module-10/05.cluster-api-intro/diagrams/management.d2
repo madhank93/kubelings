@@ -1,0 +1,8 @@
+# Clusters become objects: a management cluster holds the declarations, and
+# controllers there create the real workload clusters.
+mgmt: "management cluster"
+decl: "Cluster objects"
+work: "workload clusters"
+
+mgmt -> decl: "CRDs"
+decl -> work: "provisioned"

@@ -76,3 +76,8 @@ Bring it back:
 The check confirms the bad flag is gone from the manifest **and** that
 `/readyz` passes — a manifest edit that doesn't bring the API back doesn't
 count.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/apiserver-broken-flag-staticpod.svg" alt="apiserver-broken-flag staticpod diagram" loading="lazy">
+</figure>
+

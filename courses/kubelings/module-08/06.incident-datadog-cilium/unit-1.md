@@ -132,6 +132,6 @@ from inside the incident channel.*
     ┌────────────┐    
     │routes lost │    
     │            │    
-    └────────────┘
+    └────────────┘    
 ```
 <!-- /d2:statelost -->

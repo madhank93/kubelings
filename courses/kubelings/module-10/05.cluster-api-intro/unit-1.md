@@ -125,3 +125,28 @@ heterogeneous fleets is the actual selling point.
   behavior.
 - Try it for real: kind cluster + `clusterctl init --infrastructure
   docker` — a cluster that creates clusters, on your laptop.
+
+<!-- d2:management -->
+```text
+ ┌───────────────────┐
+ │management cluster │
+ │                   │
+ └───────────────────┘
+           │          
+         CRDs         
+           │          
+           ▼          
+   ┌────────────────┐ 
+   │Cluster objects │ 
+   │                │ 
+   └────────────────┘ 
+           │          
+      provisioned     
+           │          
+           ▼          
+  ┌──────────────────┐
+  │workload clusters │
+  │                  │
+  └──────────────────┘
+```
+<!-- /d2:management -->

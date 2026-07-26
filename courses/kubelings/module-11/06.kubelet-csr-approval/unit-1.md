@@ -86,6 +86,31 @@ Get the node in:
 The check passes only when the CSR is **Approved and a certificate has been
 issued** — approval that the signer then refuses doesn't count.
 
+<!-- d2:csr -->
+```text
+ ┌────────────────┐
+ │bootstrap token │
+ │                │
+ └────────────────┘
+         │         
+     node asks     
+         │         
+         ▼         
+  ┌────────────┐   
+  │CSR pending │   
+  │            │   
+  └────────────┘   
+         │         
+ approved, signed  
+         │         
+         ▼         
+   ┌─────────────┐ 
+   │kubelet cert │ 
+   │             │ 
+   └─────────────┘ 
+```
+<!-- /d2:csr -->
+
 <details>
 <summary>Hint</summary>
 

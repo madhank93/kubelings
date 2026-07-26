@@ -1,0 +1,20 @@
+  ┌────────────────────┐ 
+  │agent on every node │ 
+  │                    │ 
+  └────────────────────┘ 
+           │             
+   cost x node count     
+           │             
+           ▼             
+ ┌──────────────────────┐
+ │API servers saturated │
+ │                      │
+ └──────────────────────┘
+           │             
+  control plane down     
+           │             
+           ▼             
+    ┌────────────────┐   
+    │discovery fails │   
+    │                │   
+    └────────────────┘   

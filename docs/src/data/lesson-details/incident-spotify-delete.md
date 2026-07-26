@@ -71,3 +71,8 @@ Spotify's post-incident changes, from the keynote:
   practical.
 
 *No check — study, then advance. The final boss awaits.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-spotify-delete-survivable.svg" alt="incident-spotify-delete survivable diagram" loading="lazy">
+</figure>
+

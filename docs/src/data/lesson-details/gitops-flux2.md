@@ -35,6 +35,10 @@ Two objects, one root cause, and the conditions tell you which is which —
 the same "fix the cause, not the stuck consumer" shape as M3's
 pattern-namespace-terminating.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/gitops-flux2-toolkit.svg" alt="gitops-flux2 toolkit diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Fix the ref:

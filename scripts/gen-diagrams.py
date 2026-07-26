@@ -54,6 +54,30 @@ def measure(txt):
     return max((len(l) for l in lines), default=0), len(lines)
 
 
+_QUOTED = re.compile(r'"([^"]+)"')
+
+
+def defects(src_text, art):
+    """Catch the two ways D2's ASCII renderer degrades a legible diagram.
+
+    Neither is a crash — the file renders, it is just wrong to read — so they
+    have to be looked for. Both come from labels that are long relative to the
+    space the layout gave them.
+    """
+    out = []
+    # Boxes drawn flush against each other, sharing or overrunning a border.
+    for glyphs in ("┐┌", "┘└", "─┌", "─└", "┤├"):
+        if glyphs in art:
+            out.append(f"boxes collide ({glyphs})")
+            break
+    # A label that the renderer clipped or ran into its neighbour. Spaces
+    # inside a horizontal edge label come back as dashes, hence the class.
+    for lbl in _QUOTED.findall(src_text):
+        if not re.search(re.escape(lbl).replace(r'\ ', '[ ─]'), art):
+            out.append(f"label lost: {lbl!r}")
+    return out
+
+
 def best_layout(src, name, tmp):
     """Render the diagram both ways and keep the orientation that reads best.
 
@@ -76,8 +100,9 @@ def best_layout(src, name, tmp):
             fh.write(f"direction: {d}\n" + text)
         txt = render(cand, os.path.join(tmp, f"{name}-{d}.txt")).decode("utf-8")
         w, h = measure(txt)
-        # Fit first, then fewest lines, then narrowest.
-        key = (w > MAX_WIDTH, h, w)
+        # Fit first, then legibility, then fewest lines, then narrowest. A
+        # clean render that scrolls beats a compact one whose boxes collide.
+        key = (w > MAX_WIDTH, bool(defects(text, txt)), h, w)
         if best is None or key < best[0]:
             best = (key, cand, txt, (w, h), d)
     return best[1], best[2], best[3], best[4]
@@ -137,6 +162,8 @@ for src in sorted(glob.glob(os.path.join(ROOT, "module-*", "*", "diagrams", "*.d
     if height > MAX_HEIGHT:
         sys.exit(f"{rel}: layout is {height} rows, limit is {MAX_HEIGHT} — "
                  f"drop a node or fold a step into an edge label")
+    if bad := defects(open(src, encoding="utf-8").read(), txt):
+        sys.exit(f"{rel}: {'; '.join(bad)} — shorten the labels involved")
 
     for path, data in ((os.path.join(ddir, name + ".txt"), txt.encode()),
                        (os.path.join(ddir, name + ".svg"), svg)):

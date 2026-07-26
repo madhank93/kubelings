@@ -45,6 +45,31 @@ guestbook actually lives at `guestbook`. Argo CD can't render the desired
 state, so it can't even *compare* — sync status `Unknown`, forever, while
 the UI shows a comforting green Healthy for the zero resources it manages.
 
+<!-- d2:pull -->
+```text
+   ┌─────────┐    
+   │git repo │    
+   │         │    
+   └─────────┘    
+         │        
+   desired state  
+         │        
+         ▼        
+ ┌──────────────┐ 
+ │Argo CD agent │ 
+ │              │ 
+ └──────────────┘ 
+         │        
+  continuous sync 
+         │        
+         ▼        
+  ┌──────────────┐
+  │cluster state │
+  │              │
+  └──────────────┘
+```
+<!-- /d2:pull -->
+
 ## Your task
 
 1. Confirm the real path yourself — the repo is public:

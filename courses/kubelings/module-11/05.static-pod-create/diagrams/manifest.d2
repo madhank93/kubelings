@@ -1,0 +1,8 @@
+# A static pod skips the front door entirely: the kubelet runs the file, then
+# publishes a read-only mirror so the API can see it.
+file: "file on node"
+kl:   "kubelet runs it"
+mir:  "mirror pod"
+
+file -> kl:  "no scheduler"
+kl   -> mir: "visible, not managed"

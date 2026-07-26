@@ -72,3 +72,8 @@ Repair it:
 
 The check requires time sync to be **on** and node-01 back to `Ready` — and
 because the check reaches the API over TLS, a still-skewed clock can't pass it.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/node-clock-skew-skew.svg" alt="node-clock-skew skew diagram" loading="lazy">
+</figure>
+

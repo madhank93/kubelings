@@ -72,7 +72,7 @@ declared in service
     ┌──────────┐   
     │exporters │   
     │          │   
-    └──────────┘
+    └──────────┘   
 ```
 <!-- /d2:pipeline -->
 

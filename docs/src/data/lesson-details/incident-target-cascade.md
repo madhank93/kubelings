@@ -73,3 +73,8 @@ with large-cluster gossip fixes.
 
 *No check — study, then advance. Next: the war story where deleting every
 cluster was survivable.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-target-cascade-stampede.svg" alt="incident-target-cascade stampede diagram" loading="lazy">
+</figure>
+

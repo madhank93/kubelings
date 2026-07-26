@@ -92,6 +92,31 @@ Clear it, on **cplane-01**:
 The check writes a probe object and confirms it sticks *without* re-arming
 NOSPACE — so a bare `disarm` that leaves the quota too small won't pass.
 
+<!-- d2:nospace -->
+```text
+       ┌─────────┐         
+       │db grows │         
+       │         │         
+       └─────────┘         
+            │              
+      quota reached        
+            │              
+            ▼              
+    ┌──────────────┐       
+    │NOSPACE alarm │       
+    │              │       
+    └──────────────┘       
+            │              
+     writes refused        
+            │              
+            ▼              
+ ┌────────────────────────┐
+ │compact, defrag, disarm │
+ │                        │
+ └────────────────────────┘
+```
+<!-- /d2:nospace -->
+
 <details>
 <summary>Hint</summary>
 

@@ -1,0 +1,8 @@
+# A removed label is data, not code — but the network policy engine keyed on it,
+# so the upgrade quietly deleted the routing assumptions.
+up:   "upgrade to 1.24"
+lbl:  "master label removed"
+net:  "pods cannot reach pods"
+
+up  -> lbl: "long-announced rename"
+lbl -> net: "route selection breaks"

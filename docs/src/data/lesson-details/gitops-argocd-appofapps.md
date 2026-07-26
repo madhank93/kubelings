@@ -58,6 +58,10 @@ prune policy) retires it. The failure mode you're debugging — one child
 red, fleet stuck — reads identically whether children came from a parent
 or a pipeline; the triage below is the same.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/gitops-argocd-appofapps-waves.svg" alt="gitops-argocd-appofapps waves diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Confirm the diagnosis on `shop-frontend` (`.status.conditions`).

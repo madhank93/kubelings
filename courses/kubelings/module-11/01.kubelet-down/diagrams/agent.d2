@@ -1,0 +1,8 @@
+# The kubelet is the node's only voice: stop it and the containers keep running
+# while the control plane declares the node gone.
+kl:   "kubelet stopped"
+node: "node NotReady"
+cont: "containers still run"
+
+kl -> node: "no status posts"
+kl -> cont: "runtime untouched"

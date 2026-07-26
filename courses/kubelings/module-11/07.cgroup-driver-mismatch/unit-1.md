@@ -80,6 +80,19 @@ Fix it:
 The check requires the kubelet's `cgroupDriver: systemd`, containerd's
 `SystemdCgroup = true`, and node-02 back to `Ready`.
 
+<!-- d2:driver -->
+```text
+    ┌──────────┐                                       
+    │ kubelet  │─────systemd───┐                       
+    │          │               └──▶┌──────────────────┐
+    └──────────┘                   │limits unenforced │
+ ┌─────────────┐               ┌──▶│                  │
+ │ containerd  │────cgroupfs───┘   └──────────────────┘
+ │             │                                       
+ └─────────────┘                                       
+```
+<!-- /d2:driver -->
+
 <details>
 <summary>Hint</summary>
 

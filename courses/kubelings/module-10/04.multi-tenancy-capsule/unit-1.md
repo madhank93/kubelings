@@ -37,6 +37,25 @@ denial isn't RBAC (alice is *allowed* to create namespaces — that's the
 tenant promise); it's the tenant's own capacity wall. You are the system
 administrator the error mentions.
 
+<!-- d2:tenant -->
+```text
+            ┌─────────┐                
+            │ Tenant  │                
+            │         │                
+            └─────────┘                
+                │  │                   
+        ┌───────┘  └──────┐            
+        │                 │            
+  self-service     applied for you     
+        │                 │            
+        ▼                 ▼            
+ ┌─────────────┐ ┌────────────────────┐
+ │ namespaces  │ │RBAC, quota, policy │
+ │             │ │                    │
+ └─────────────┘ └────────────────────┘
+```
+<!-- /d2:tenant -->
+
 ## Your task
 
 1. Resize the tenant:

@@ -1,0 +1,8 @@
+# A Tenant is one object that stands in for the pile of RBAC, quota and policy
+# you would otherwise maintain per namespace.
+ten:  "Tenant"
+ns:   "namespaces"
+pol:  "RBAC, quota, policy"
+
+ten -> ns:  "self-service"
+ten -> pol: "applied for you"

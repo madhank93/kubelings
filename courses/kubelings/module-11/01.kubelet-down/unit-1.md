@@ -74,6 +74,26 @@ The check verifies the *cause* is gone, not just the symptom: the bad drop-in
 must be removed (not merely overridden), the kubelet running, and node-01
 Ready.
 
+<!-- d2:agent -->
+```text
+          ┌────────────────┐              
+          │kubelet stopped │              
+          │                │              
+          └────────────────┘              
+                │    │                    
+         ┌──────┘    │                    
+         │           │                    
+         │   runtime untouched            
+  no status posts    │                    
+         │           │                    
+         ▼           ▼                    
+ ┌──────────────┐  ┌─────────────────────┐
+ │node NotReady │  │containers still run │
+ │              │  │                     │
+ └──────────────┘  └─────────────────────┘
+```
+<!-- /d2:agent -->
+
 <details>
 <summary>Hint</summary>
 

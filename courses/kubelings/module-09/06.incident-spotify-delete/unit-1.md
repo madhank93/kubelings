@@ -78,3 +78,20 @@ Spotify's post-incident changes, from the keynote:
   practical.
 
 *No check — study, then advance. The final boss awaits.*
+
+<!-- d2:survivable -->
+```text
+       ┌─────────────────┐  
+       │clusters deleted │  
+       │                 │  
+       └─────────────────┘  
+        │             │     
+  multi-cluster   from git  
+        │             │     
+        ▼             ▼     
+ ┌──────────────┐ ┌────────┐
+ │traffic moves │ │rebuilt │
+ │              │ │        │
+ └──────────────┘ └────────┘
+```
+<!-- /d2:survivable -->

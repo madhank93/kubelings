@@ -75,7 +75,7 @@ Two things memory taught you that do **not** carry over:
  ┌───────────────┐ 
  │kubelet evicts │ 
  │               │ 
- └───────────────┘
+ └───────────────┘ 
 ```
 <!-- /d2:eviction -->
 

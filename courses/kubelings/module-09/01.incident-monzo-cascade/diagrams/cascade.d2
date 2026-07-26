@@ -1,0 +1,8 @@
+# The trigger was small; the damage came from the layers between. Each arrow is
+# a mechanism you fixed in isolation earlier in the course.
+etcd: "etcd change"
+mesh: "service discovery"
+pay:  "payments fail"
+
+etcd -> mesh: "stale state"
+mesh -> pay:  "routing wrong"

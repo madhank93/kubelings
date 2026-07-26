@@ -86,3 +86,28 @@ recovery plans; they're recovery *hypotheses*. Total: ~314 minutes. On Pi Day.
   clone its quirks somewhere disposable if you must keep it.
 
 *No check — study, then advance.*
+
+<!-- d2:label -->
+```text
+    ┌────────────────┐    
+    │upgrade to 1.24 │    
+    │                │    
+    └────────────────┘    
+            │             
+  long-announced rename   
+            │             
+            ▼             
+  ┌─────────────────────┐ 
+  │master label removed │ 
+  │                     │ 
+  └─────────────────────┘ 
+            │             
+ route selection breaks   
+            │             
+            ▼             
+ ┌───────────────────────┐
+ │pods cannot reach pods │
+ │                       │
+ └───────────────────────┘
+```
+<!-- /d2:label -->

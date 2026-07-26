@@ -1,0 +1,8 @@
+# Space is not reclaimed by deleting keys: history must be compacted, the file
+# defragmented, and only then does the alarm clear.
+db:   "db grows"
+alarm: "NOSPACE alarm"
+fix:  "compact, defrag, disarm"
+
+db    -> alarm: "quota reached"
+alarm -> fix:   "writes refused"

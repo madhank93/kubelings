@@ -1,0 +1,8 @@
+# A node earns its identity: it asks with a signing request, someone approves,
+# and only then does it hold a certificate the API server trusts.
+boot: "bootstrap token"
+csr:  "CSR pending"
+cert: "kubelet cert"
+
+boot -> csr:  "node asks"
+csr  -> cert: "approved, signed"

@@ -80,3 +80,28 @@ with large-cluster gossip fixes.
 
 *No check — study, then advance. Next: the war story where deleting every
 cluster was survivable.*
+
+<!-- d2:stampede -->
+```text
+     ┌─────────────┐     
+     │network blip │     
+     │             │     
+     └─────────────┘     
+            │            
+       no backoff        
+            │            
+            ▼            
+ ┌──────────────────────┐
+ │everything reconnects │
+ │                      │
+ └──────────────────────┘
+            │            
+     days to recover     
+            │            
+            ▼            
+  ┌─────────────────────┐
+  │each layer amplifies │
+  │                     │
+  └─────────────────────┘
+```
+<!-- /d2:stampede -->

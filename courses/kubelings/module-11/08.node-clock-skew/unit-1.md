@@ -80,6 +80,31 @@ Repair it:
 The check requires time sync to be **on** and node-01 back to `Ready` — and
 because the check reaches the API over TLS, a still-skewed clock can't pass it.
 
+<!-- d2:skew -->
+```text
+   ┌─────────────┐    
+   │clock drifts │    
+   │             │    
+   └─────────────┘    
+          │           
+   outside window     
+          │           
+          ▼           
+ ┌───────────────────┐
+ │cert not yet valid │
+ │                   │
+ └───────────────────┘
+          │           
+   handshake fails    
+          │           
+          ▼           
+  ┌──────────────┐    
+  │node NotReady │    
+  │              │    
+  └──────────────┘    
+```
+<!-- /d2:skew -->
+
 <details>
 <summary>Hint</summary>
 

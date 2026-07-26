@@ -1,0 +1,20 @@
+    ┌──────────────┐     
+    │manifest flag │     
+    │              │     
+    └──────────────┘     
+           │             
+  kubelet restarts it    
+           │             
+           ▼             
+ ┌──────────────────────┐
+ │API server crashloops │
+ │                      │
+ └──────────────────────┘
+           │             
+    kubectl is dead      
+           │             
+           ▼             
+      ┌────────────┐     
+      │crictl logs │     
+      │            │     
+      └────────────┘     

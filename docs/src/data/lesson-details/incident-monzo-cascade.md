@@ -99,3 +99,8 @@ which link to cut, which loop is diverging, where the next blast will land. That
 is knowing Kubernetes as a platform, in and out. Take the final boss next.
 
 *No check — study, then advance.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-monzo-cascade-cascade.svg" alt="incident-monzo-cascade cascade diagram" loading="lazy">
+</figure>
+

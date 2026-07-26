@@ -89,3 +89,28 @@ up — all to win back enough control-plane headroom to issue one delete.
   through.
 
 *No check — study, then advance.*
+
+<!-- d2:overload -->
+```text
+  ┌────────────────────┐ 
+  │agent on every node │ 
+  │                    │ 
+  └────────────────────┘ 
+           │             
+   cost x node count     
+           │             
+           ▼             
+ ┌──────────────────────┐
+ │API servers saturated │
+ │                      │
+ └──────────────────────┘
+           │             
+  control plane down     
+           │             
+           ▼             
+    ┌────────────────┐   
+    │discovery fails │   
+    │                │   
+    └────────────────┘   
+```
+<!-- /d2:overload -->

@@ -82,6 +82,31 @@ The check verifies `web-node-02` is `Running` **and** file-sourced — proving
 it's a genuine static pod the kubelet owns, not a pod you created through the
 API.
 
+<!-- d2:manifest -->
+```text
+   ┌─────────────┐  
+   │file on node │  
+   │             │  
+   └─────────────┘  
+          │         
+    no scheduler    
+          │         
+          ▼         
+  ┌────────────────┐
+  │kubelet runs it │
+  │                │
+  └────────────────┘
+          │         
+visible, not managed
+          │         
+          ▼         
+    ┌───────────┐   
+    │mirror pod │   
+    │           │   
+    └───────────┘   
+```
+<!-- /d2:manifest -->
+
 <details>
 <summary>Hint</summary>
 

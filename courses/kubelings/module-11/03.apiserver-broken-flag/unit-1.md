@@ -84,6 +84,31 @@ The check confirms the bad flag is gone from the manifest **and** that
 `/readyz` passes — a manifest edit that doesn't bring the API back doesn't
 count.
 
+<!-- d2:staticpod -->
+```text
+    ┌──────────────┐     
+    │manifest flag │     
+    │              │     
+    └──────────────┘     
+           │             
+  kubelet restarts it    
+           │             
+           ▼             
+ ┌──────────────────────┐
+ │API server crashloops │
+ │                      │
+ └──────────────────────┘
+           │             
+    kubectl is dead      
+           │             
+           ▼             
+      ┌────────────┐     
+      │crictl logs │     
+      │            │     
+      └────────────┘     
+```
+<!-- /d2:staticpod -->
+
 <details>
 <summary>Hint</summary>
 

@@ -56,7 +56,7 @@ pod, because no pod ever makes it past admission.
    ┌──────────────┐   
    │no pod object │   
    │              │   
-   └──────────────┘
+   └──────────────┘   
 ```
 <!-- /d2:denial -->
 

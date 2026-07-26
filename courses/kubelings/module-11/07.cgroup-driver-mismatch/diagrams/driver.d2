@@ -1,0 +1,8 @@
+# Two components manage one cgroup hierarchy. If they disagree about which
+# driver owns it, limits are written where nothing enforces them.
+kl:  "kubelet"
+ctr: "containerd"
+bad: "limits unenforced"
+
+kl  -> bad: "systemd"
+ctr -> bad: "cgroupfs"

@@ -148,6 +148,6 @@ controller these primitives exist for.*
    ┌────────────┐ 
    │ workqueue  │ 
    │            │ 
-   └────────────┘
+   └────────────┘ 
 ```
 <!-- /d2:cache -->

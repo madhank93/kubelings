@@ -65,6 +65,31 @@ prune policy) retires it. The failure mode you're debugging — one child
 red, fleet stuck — reads identically whether children came from a parent
 or a pipeline; the triage below is the same.
 
+<!-- d2:waves -->
+```text
+ ┌─────────────────┐
+ │root Application │
+ │                 │
+ └─────────────────┘
+         │          
+    sync first      
+         │          
+         ▼          
+     ┌─────────┐    
+     │ wave 0  │    
+     │         │    
+     └─────────┘    
+         │          
+   when healthy     
+         │          
+         ▼          
+     ┌─────────┐    
+     │ wave 1  │    
+     │         │    
+     └─────────┘    
+```
+<!-- /d2:waves -->
+
 ## Your task
 
 1. Confirm the diagnosis on `shop-frontend` (`.status.conditions`).

@@ -72,3 +72,8 @@ Fix it:
 
 The check requires the kubelet's `cgroupDriver: systemd`, containerd's
 `SystemdCgroup = true`, and node-02 back to `Ready`.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/cgroup-driver-mismatch-driver.svg" alt="cgroup-driver-mismatch driver diagram" loading="lazy">
+</figure>
+

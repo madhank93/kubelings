@@ -106,3 +106,28 @@ which link to cut, which loop is diverging, where the next blast will land. That
 is knowing Kubernetes as a platform, in and out. Take the final boss next.
 
 *No check — study, then advance.*
+
+<!-- d2:cascade -->
+```text
+   ┌────────────┐    
+   │etcd change │    
+   │            │    
+   └────────────┘    
+          │          
+     stale state     
+          │          
+          ▼          
+ ┌──────────────────┐
+ │service discovery │
+ │                  │
+ └──────────────────┘
+          │          
+    routing wrong    
+          │          
+          ▼          
+   ┌──────────────┐  
+   │payments fail │  
+   │              │  
+   └──────────────┘  
+```
+<!-- /d2:cascade -->

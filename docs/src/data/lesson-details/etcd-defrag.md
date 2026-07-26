@@ -84,3 +84,8 @@ Clear it, on **cplane-01**:
 
 The check writes a probe object and confirms it sticks *without* re-arming
 NOSPACE — so a bare `disarm` that leaves the quota too small won't pass.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/etcd-defrag-nospace.svg" alt="etcd-defrag nospace diagram" loading="lazy">
+</figure>
+

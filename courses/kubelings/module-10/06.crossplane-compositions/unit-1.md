@@ -44,6 +44,31 @@ kubectl get providers.pkg.crossplane.io,functions.pkg.crossplane.io
 # (no providers)                                            ← the gap
 ```
 
+<!-- d2:composition -->
+```text
+    ┌─────────────┐  
+    │XRD: the API │  
+    │             │  
+    └─────────────┘  
+           │         
+     claim maps to   
+           │         
+           ▼         
+    ┌────────────┐   
+    │Composition │   
+    │            │   
+    └────────────┘   
+           │         
+      real infra     
+           │         
+           ▼         
+ ┌──────────────────┐
+ │managed resources │
+ │                  │
+ └──────────────────┘
+```
+<!-- /d2:composition -->
+
 ## Your task
 
 1. Install the provider that owns `nop.crossplane.io` — pinned, like every

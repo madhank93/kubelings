@@ -83,3 +83,8 @@ Restore them properly:
 
 The check verifies the live values *and* that they're persisted — a runtime-only
 fix won't pass, because it wouldn't survive a reboot.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/node-sysctl-networking-kernel.svg" alt="node-sysctl-networking kernel diagram" loading="lazy">
+</figure>
+

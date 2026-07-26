@@ -91,6 +91,19 @@ Restore them properly:
 The check verifies the live values *and* that they're persisted — a runtime-only
 fix won't pass, because it wouldn't survive a reboot.
 
+<!-- d2:kernel -->
+```text
+ ┌───────────────┐                                     
+ │ip_forward off │─────routing───┐                     
+ │               │               └──▶┌────────────────┐
+ └───────────────┘                   │traffic dropped │
+   ┌─────────────┐               ┌──▶│                │
+   │br_netfilter │────filtering──┘   └────────────────┘
+   │             │                                     
+   └─────────────┘                                     
+```
+<!-- /d2:kernel -->
+
 <details>
 <summary>Hint</summary>
 

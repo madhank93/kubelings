@@ -54,7 +54,7 @@ They're the timeline of *what the cluster did and why*.
    ┌──────────────────┐    
    │the actual reason │    
    │                  │    
-   └──────────────────┘
+   └──────────────────┘    
 ```
 <!-- /d2:record -->
 

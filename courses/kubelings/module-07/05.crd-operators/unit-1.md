@@ -60,7 +60,7 @@ server responds by growing a whole new REST endpoint, with storage in etcd
     ┌────────────────┐   
     │controller acts │   
     │                │   
-    └────────────────┘
+    └────────────────┘   
 ```
 <!-- /d2:extension -->
 

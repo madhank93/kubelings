@@ -1,0 +1,8 @@
+# Below the kubelet is the runtime it talks to over a socket. Lose that socket
+# and the kubelet can see the node but cannot act on it.
+ctr:  "containerd stopped"
+sock: "CRI socket gone"
+kl:   "kubelet cannot act"
+
+ctr  -> sock: "no endpoint"
+sock -> kl:   "PLEG errors"

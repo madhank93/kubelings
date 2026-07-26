@@ -78,3 +78,8 @@ Get the node in:
 
 The check passes only when the CSR is **Approved and a certificate has been
 issued** — approval that the signer then refuses doesn't count.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/kubelet-csr-approval-csr.svg" alt="kubelet-csr-approval csr diagram" loading="lazy">
+</figure>
+

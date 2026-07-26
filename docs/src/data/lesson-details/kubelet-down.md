@@ -66,3 +66,8 @@ Bring it back:
 The check verifies the *cause* is gone, not just the symptom: the bad drop-in
 must be removed (not merely overridden), the kubelet running, and node-01
 Ready.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/kubelet-down-agent.svg" alt="kubelet-down agent diagram" loading="lazy">
+</figure>
+

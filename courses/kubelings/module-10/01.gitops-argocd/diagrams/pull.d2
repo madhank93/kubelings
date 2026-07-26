@@ -1,0 +1,8 @@
+# GitOps inverts the deploy arrow: nothing is pushed at the cluster, an agent
+# inside it pulls the declared state and keeps reconciling toward it.
+git:  "git repo"
+argo: "Argo CD agent"
+live: "cluster state"
+
+git  -> argo: "desired state"
+argo -> live: "continuous sync"

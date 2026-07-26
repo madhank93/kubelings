@@ -1,0 +1,8 @@
+# The agent was harmless per node. Multiplied by fleet size it saturated every
+# API server at once, and the data plane went with it.
+agent: "agent on every node"
+api:   "API servers saturated"
+dns:   "discovery fails"
+
+agent -> api: "cost x node count"
+api   -> dns: "control plane down"

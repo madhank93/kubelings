@@ -82,3 +82,8 @@ up — all to win back enough control-plane headroom to issue one delete.
   through.
 
 *No check — study, then advance.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-openai-cascade-overload.svg" alt="incident-openai-cascade overload diagram" loading="lazy">
+</figure>
+

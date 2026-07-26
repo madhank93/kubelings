@@ -1,0 +1,8 @@
+# One Application manages others, and sync waves order the fleet: a wave must be
+# healthy before the next one begins.
+root: "root Application"
+w0:   "wave 0"
+w1:   "wave 1"
+
+root -> w0: "sync first"
+w0   -> w1: "when healthy"

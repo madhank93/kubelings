@@ -183,7 +183,7 @@ The check runs on node-02 and passes once it holds a *freshly issued*
     ┌─────────────┐     
     │kubeadm join │     
     │             │     
-    └─────────────┘
+    └─────────────┘     
 ```
 <!-- /d2:join -->
 

@@ -1,0 +1,8 @@
+# Certificates are valid for a window of time, so a wrong clock invalidates a
+# perfectly good certificate and the node cannot authenticate.
+clock: "clock drifts"
+tls:   "cert not yet valid"
+node:  "node NotReady"
+
+clock -> tls:  "outside window"
+tls   -> node: "handshake fails"

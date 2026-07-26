@@ -59,3 +59,8 @@ Recover it:
 
 The check verifies the runtime is genuinely healthy: the bad override removed,
 containerd active, `crictl` connecting, and the node back to `Ready`.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/containerd-down-runtime.svg" alt="containerd-down runtime diagram" loading="lazy">
+</figure>
+

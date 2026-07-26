@@ -1,0 +1,8 @@
+# The API server is itself a static pod: a bad flag in its manifest takes the
+# API down, so the only way back in is the runtime beneath it.
+man:  "manifest flag"
+api:  "API server crashloops"
+cri:  "crictl logs"
+
+man -> api: "kubelet restarts it"
+api -> cri: "kubectl is dead"

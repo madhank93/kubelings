@@ -79,3 +79,8 @@ recovery plans; they're recovery *hypotheses*. Total: ~314 minutes. On Pi Day.
   clone its quirks somewhere disposable if you must keep it.
 
 *No check — study, then advance.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-reddit-piday-label.svg" alt="incident-reddit-piday label diagram" loading="lazy">
+</figure>
+

@@ -1,0 +1,8 @@
+# One network blip below Kubernetes made every workload reconnect at once, and
+# each dependent system amplified it for the next one.
+blip: "network blip"
+herd: "everything reconnects"
+amp:  "each layer amplifies"
+
+blip -> herd: "no backoff"
+herd -> amp:  "days to recover"

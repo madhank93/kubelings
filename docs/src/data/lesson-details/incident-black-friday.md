@@ -77,3 +77,8 @@ acceptance is an outage with a delay on it.
   μ for your queues before the day that decides your year.
 
 *No check — study, then take the final boss.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-black-friday-arrival.svg" alt="incident-black-friday arrival diagram" loading="lazy">
+</figure>
+

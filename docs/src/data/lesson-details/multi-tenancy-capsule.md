@@ -30,6 +30,10 @@ denial isn't RBAC (alice is *allowed* to create namespaces — that's the
 tenant promise); it's the tenant's own capacity wall. You are the system
 administrator the error mentions.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/multi-tenancy-capsule-tenant.svg" alt="multi-tenancy-capsule tenant diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Resize the tenant:

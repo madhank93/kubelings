@@ -74,3 +74,8 @@ On **node-02**, author a static pod:
 The check verifies `web-node-02` is `Running` **and** file-sourced — proving
 it's a genuine static pod the kubelet owns, not a pod you created through the
 API.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/static-pod-create-manifest.svg" alt="static-pod-create manifest diagram" loading="lazy">
+</figure>
+

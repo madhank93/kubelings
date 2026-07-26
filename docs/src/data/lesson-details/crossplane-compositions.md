@@ -37,6 +37,10 @@ kubectl get providers.pkg.crossplane.io,functions.pkg.crossplane.io
 # (no providers)                                            ← the gap
 ```
 
+<figure class="lesson-diagram">
+<img src="/diagrams/crossplane-compositions-composition.svg" alt="crossplane-compositions composition diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Install the provider that owns `nop.crossplane.io` — pinned, like every
