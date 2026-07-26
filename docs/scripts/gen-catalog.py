@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Regenerate docs/src/data/catalog.ts from the course (source of truth).
 # Run from anywhere:  python3 docs/scripts/gen-catalog.py
-import os, re, glob, json
+import os, re, glob, json, shutil
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.normpath(os.path.join(_HERE, "..", ".."))
@@ -142,6 +142,30 @@ INCIDENTS = {
 # hint/solution so the modal can't spoil the exercise; readings have no task to
 # spoil, so they carry through in full.
 DETAILS_DIR = os.path.join(_REPO, "docs", "src", "data", "lesson-details")
+# Diagrams: one .d2 source per lesson renders to ASCII (embedded in unit-1.md,
+# for the TUI and iximiuz) and to SVG (copied here, for the site). The site
+# swaps the ASCII block out for the SVG — same diagram, right medium.
+DIAGRAMS_DIR = os.path.join(_REPO, "docs", "public", "diagrams")
+_DIAGRAM_RE = re.compile(r'(?ms)^<!-- d2:([a-z0-9-]+) -->\n```text\n.*?\n```\n<!-- /d2:\1 -->\n?')
+
+def swap_diagrams(body, lesson_dir, slug):
+    """Replace embedded ASCII diagrams with the SVG the same .d2 produced.
+
+    Falls through untouched when the SVG is missing, so a half-generated tree
+    degrades to readable ASCII rather than a broken image.
+    """
+    def sub(m):
+        name = m.group(1)
+        svg = os.path.join(lesson_dir, "diagrams", name + ".svg")
+        if not os.path.isfile(svg):
+            return m.group(0)
+        os.makedirs(DIAGRAMS_DIR, exist_ok=True)
+        asset = f"{slug}-{name}.svg"
+        shutil.copyfile(svg, os.path.join(DIAGRAMS_DIR, asset))
+        return (f'<figure class="lesson-diagram">\n'
+                f'<img src="/diagrams/{asset}" alt="{slug} {name} diagram" loading="lazy">\n'
+                f'</figure>\n')
+    return _DIAGRAM_RE.sub(sub, body)
 
 def strip_frontmatter(text):
     if not text.startswith("---"):
@@ -242,6 +266,7 @@ for n in _module_nums:
 
         detail = extract_detail(os.path.join(d, "unit-1.md"), tasks)
         if detail:
+            detail = swap_diagrams(detail, d, slug)
             os.makedirs(DETAILS_DIR, exist_ok=True)
             with open(os.path.join(DETAILS_DIR, slug + ".md"), "w", encoding="utf-8") as fh:
                 fh.write(detail + "\n")

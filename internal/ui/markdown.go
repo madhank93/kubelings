@@ -1,8 +1,12 @@
 package ui
 
 import (
+	"fmt"
 	"os"
+	"regexp"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/ansi"
@@ -52,6 +56,59 @@ func renderMarkdown(md string, width int) string {
 	}
 	// glamour pads with blank lines; trim so it sits flush in the viewport.
 	return strings.Trim(out, "\n")
+}
+
+// d2Fence matches a generated diagram: ASCII art between the marker comments
+// scripts/gen-diagrams.py writes. Same block the docs build swaps for an SVG.
+// RE2 has no backreferences, so the closing marker's name is matched loosely;
+// the generator is what guarantees the pair agrees.
+var d2Fence = regexp.MustCompile("(?ms)^<!-- d2:([a-z0-9-]+) -->\n```text\n(.*?)\n```\n<!-- /d2:[a-z0-9-]+ -->\n?")
+
+// diagramStyle keeps box art visually distinct from prose and from code the
+// learner is meant to type.
+var diagramStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("110"))
+
+// renderLesson renders lesson markdown, drawing embedded diagrams centered in
+// the pane instead of handing them to glamour. Glamour would render the art as
+// a code block: left-aligned, background-filled, and indented by its own
+// margin — which reads as a command to run rather than a picture.
+func renderLesson(md string, width int) string {
+	locs := d2Fence.FindAllStringSubmatchIndex(md, -1)
+	if len(locs) == 0 {
+		return renderMarkdown(md, width)
+	}
+	var b strings.Builder
+	prev := 0
+	for _, loc := range locs {
+		if prose := strings.TrimSpace(md[prev:loc[0]]); prose != "" {
+			b.WriteString(renderMarkdown(prose, width) + "\n\n")
+		}
+		art := strings.TrimRight(md[loc[4]:loc[5]], "\n")
+		b.WriteString(lipgloss.PlaceHorizontal(width, lipgloss.Center, diagramStyle.Render(art)) + "\n\n")
+		prev = loc[1]
+	}
+	if rest := strings.TrimSpace(md[prev:]); rest != "" {
+		b.WriteString(renderMarkdown(rest, width))
+	}
+	return strings.Trim(b.String(), "\n")
+}
+
+// md renders markdown through renderMarkdown, memoised per lesson/section/width.
+// The cache is dropped whenever the course is re-read from disk (reload).
+func (m *model) md(key, src string, width int) string {
+	if strings.TrimSpace(src) == "" {
+		return ""
+	}
+	ck := fmt.Sprintf("%s|%d", key, width)
+	if out, ok := m.mdCache[ck]; ok {
+		return out
+	}
+	out := renderLesson(src, width)
+	if m.mdCache == nil {
+		m.mdCache = map[string]string{}
+	}
+	m.mdCache[ck] = out
+	return out
 }
 
 // shellWidth is the terminal width to wrap the shell's task/hint/solution to,

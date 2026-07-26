@@ -10,6 +10,7 @@ go      = "1.25.1"
 kubectl = "1.36.1"
 kind    = "0.31.0"
 yq      = "4.53.2"
+d2      = "0.7.1"   # diagram source -> ASCII (TUI) + SVG (site)
 
 [tasks.setup]
 description = "Install pinned tools and verify the build"

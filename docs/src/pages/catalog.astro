@@ -482,6 +482,17 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     .cat-modal .m-md :global(h2) { font-size: 1rem; margin-top: 1.2rem; }
     .cat-modal .m-md :global(h3) { font-size: 0.9rem; }
     .cat-modal .m-md :global(pre) { font-size: 0.78rem; }
+    /* Lesson diagrams: the SVG the lesson's .d2 source also renders to ASCII
+       for the TUI. It carries its own light/dark palette, so no filter here. */
+    .cat-modal .m-md :global(figure.lesson-diagram) { margin: 1.1rem 0; text-align: center; }
+    /* These render tall and narrow (D2 `direction: down`, ~214x482), so the
+       height is what has to be capped — a width cap alone leaves the diagram
+       taller than the prose it illustrates. */
+    /* display:block + auto margins: Starlight's reset makes images block-level,
+       so text-align on the figure alone leaves them stuck to the left edge. */
+    .cat-modal .m-md :global(figure.lesson-diagram img) {
+      display: block; margin-inline: auto;
+      max-height: 17rem; max-width: 100%; width: auto; height: auto; }
     .cat-modal .m-loading { color: var(--sl-color-gray-3); font-size: 0.82rem; margin: 1rem 0 0; }
 
     .cat-modal footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;

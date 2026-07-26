@@ -1,0 +1,11 @@
+# The chain this lesson is about: a Service that resolves fine selects a label
+# no pod carries, so the endpoint list it programs is empty — and the healthy
+# pods sitting right there are unreachable.
+# Orientation is picked by scripts/gen-diagrams.py; no `direction:` on purpose.
+
+svc:  "Service api"
+ep:   "Endpoints: none"
+pods: "2 pods app=api"
+
+svc -> ep:   "selects app=api-server"
+ep  -> pods: "matches 0 of 2"

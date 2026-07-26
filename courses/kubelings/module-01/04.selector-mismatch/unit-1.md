@@ -34,6 +34,31 @@ api    <none>      3m
 DNS resolves the Service's virtual IP fine — but behind that IP, the routing
 table is empty, so connections go nowhere and time out.
 
+<!-- d2:topology -->
+```text
+     ┌────────────┐   
+     │Service api │   
+     │            │   
+     └────────────┘   
+           │          
+selects app=api-server
+           │          
+           ▼          
+   ┌────────────────┐ 
+   │Endpoints: none │ 
+   │                │ 
+   └────────────────┘ 
+           │          
+    matches 0 of 2    
+           │          
+           ▼          
+   ┌───────────────┐  
+   │2 pods app=api │  
+   │               │  
+   └───────────────┘  
+```
+<!-- /d2:topology -->
+
 ## Your task
 
 Get traffic flowing to `api`:

@@ -130,15 +130,32 @@ func markerStyle(s progress.State) lipgloss.Style {
 	}
 }
 
+// headerBar carries every cluster fact that is the same for all lessons —
+// state, shape, namespace, lifecycle — so the detail pane never repeats them.
 func (m model) headerBar() string {
 	st := m.status
-	var dot string
+	// The lifecycle tail is the first thing to go on a narrow terminal: it is
+	// also spelled out on the splash and in help.
+	roomy := m.w >= 104
+	var info string
 	if st.Up {
-		dot = okStyle.Render(fmt.Sprintf("● up · %d nodes · %s", st.Nodes, st.Context))
+		ver := st.Version
+		if ver == "" {
+			ver = "?"
+		}
+		info = okStyle.Render("● "+st.Context) +
+			textStyle.Render(fmt.Sprintf(" · %d nodes · %s · ns kubelings", st.Nodes, ver))
+		if roomy {
+			info += dimStyle.Render(" · persists across lessons, ") + keyStyle.Render("d") + dimStyle.Render(" destroys")
+		}
 	} else {
-		dot = dimStyle.Render("○ down — press u to start")
+		info = dimStyle.Render("○ down — ") + keyStyle.Render("u") + textStyle.Render("/") + keyStyle.Render("↵") +
+			dimStyle.Render(" creates a 3-node kind cluster")
+		if roomy {
+			info += dimStyle.Render(" · ns kubelings · persists across lessons")
+		}
 	}
-	return titleStyle.Render("kubelings") + "   cluster: " + dot
+	return titleStyle.Render("☸ kubelings") + dimStyle.Render("  cluster ") + info
 }
 
 func (m model) issueBanner() string {
@@ -235,9 +252,15 @@ func (m model) footer() string {
 	keys := keybar(
 		[2]string{"↵", "play"}, [2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"r", "reset"},
 		[2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"},
-		[2]string{"/", "find"}, [2]string{"n", "next todo"},
-		[2]string{"u", "up"}, [2]string{"d", "down"}, [2]string{"?", "help"}, [2]string{"q", "quit"})
+		[2]string{"/", "find"}, [2]string{"n", "next"},
+		[2]string{"u", "up"}, [2]string{"d", "down"}, [2]string{"m", "copy mode"},
+		[2]string{"?", "help"}, [2]string{"q", "quit"})
 	status := ""
+	if m.mouseOff {
+		status = warnStyle.Render("copy mode") +
+			dimStyle.Render(" — mouse released, select & copy with the terminal · ") +
+			keyStyle.Render("m") + dimStyle.Render(" restores wheel scroll")
+	}
 	if m.running {
 		status = startedStyle.Render(m.spin.View()+" running "+m.runLbl) +
 			dimStyle.Render(" … ") + keybar([2]string{"esc", "cancel"})
@@ -285,30 +308,43 @@ func (m *model) refreshView() {
 	}
 }
 
-func (m model) detail(l *course.Lesson) string {
+func (m *model) detail(l *course.Lesson) string {
 	if l == nil {
 		return "no lessons found under courses/kubelings/"
 	}
 	state := progress.Get(m.prog, l.Name)
+	w := m.vp.Width
 	var b strings.Builder
 	b.WriteString(titleStyle.Render(l.Title) + "\n\n")
-	b.WriteString(textStyle.Render(l.Description) + "\n\n")
-	b.WriteString(dimStyle.Render("lesson:     ") + textStyle.Render(l.Name) + "\n")
-	b.WriteString(dimStyle.Render("status:     ") + markerStyle(state).Render(state.Marker()+" "+string(state)) + "\n")
+	// The frontmatter description and the body's opening section say the same
+	// thing — the description exists for the list, the catalog card, and the
+	// site's summary. When the body is right below it, printing both is the
+	// same paragraph twice, so the body wins.
+	body := ""
+	if !l.CloudOnly && l.HasTasks {
+		body = m.md(l.Name+"|task", l.Task, w)
+	}
+	if body == "" {
+		// Markdown too: resource names arrive as `api`.
+		b.WriteString(m.md(l.Name+"|desc", l.Description, w) + "\n\n")
+	}
+	// One dim byline instead of a metadata table: the slug (needed for
+	// `just run <slug>`), the state, and the lesson type only when it is not a
+	// plain lab — the list already carries the marker and the type badge, so
+	// anything more is the same fact printed twice.
+	meta := []string{dimStyle.Render(l.Name), markerStyle(state).Render(state.Marker() + " " + string(state))}
 	switch l.Type {
 	case "replay":
-		b.WriteString(dimStyle.Render("type:       ") + replayStyle.Render("⟲ replay — real production incident (cited)") + "\n")
+		meta = append(meta, replayStyle.Render("⟲ replay — real cited incident"))
 	case "drill":
-		b.WriteString(dimStyle.Render("type:       ") + drillStyle.Render("◇ drill — synthetic failure pattern") + "\n")
+		meta = append(meta, drillStyle.Render("◇ drill — synthetic pattern"))
 	case "read":
-		b.WriteString(dimStyle.Render("type:       ") + readStyle.Render("¶ read — guided reading, no tasks") + "\n")
-	default:
-		b.WriteString(dimStyle.Render("type:       ") + textStyle.Render("lab — hands-on concept lesson") + "\n")
+		meta = append(meta, readStyle.Render("¶ read — no tasks"))
 	}
+	b.WriteString(strings.Join(meta, sepStyle.Render(" · ")) + "\n")
 	if l.Source != "" {
-		b.WriteString(dimStyle.Render("source:     ") + readStyle.Render(l.Source) + "\n")
+		b.WriteString(dimStyle.Render("source: ") + readStyle.Render(l.Source) + "\n")
 	}
-	b.WriteString("\n")
 	// Cloud-only is checked before HasTasks: the lesson does have tasks, they
 	// just have nowhere to run on this machine.
 	if l.CloudOnly {
@@ -320,53 +356,32 @@ func (m model) detail(l *course.Lesson) string {
 		if w := m.vp.Width; w > 24 {
 			wrap = wrap.Width(w - 2)
 		}
-		b.WriteString(cloudStyle.Render("☁ Runs on iximiuz Labs only") + "\n")
+		b.WriteString("\n" + cloudStyle.Render("☁ Runs on iximiuz Labs only") + "\n")
 		b.WriteString(wrap.Render("  Not on local kind, because "+reason+".") + "\n")
 		b.WriteString(dimStyle.Render("  Lesson scripts are confined to the kind node container, so host-level") + "\n")
 		b.WriteString(dimStyle.Render("  work has nowhere to happen locally. On iximiuz it gets real VMs.") + "\n")
 		b.WriteString(dimStyle.Render("  run it:  ") + linkStyle.Render(course.CourseURL(m.root)) + "\n")
-		b.WriteString("\n" + keybar([2]string{"↵", "mark done / not done"},
-			[2]string{"h", "hint"}, [2]string{"s", "solution"}))
+		// Only the keys whose meaning differs from the footer are worth repeating.
+		b.WriteString("\n" + dimStyle.Render("here ") + keyStyle.Render("↵") +
+			dimStyle.Render(" marks this done / not done — nothing to run locally"))
 		return b.String()
 	}
 	if l.HasTasks {
-		b.WriteString(m.clusterBlock(l))
-		b.WriteString("\n" + keybar([2]string{"↵", "play (cluster + init + shell)"}) + "\n")
-		b.WriteString(keybar([2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}))
+		// The lesson prose itself — situation, diagram, task list. Rendered
+		// markdown, so the pane reads like the page, not like frontmatter.
+		// No keybar here: the footer already carries ↵/i/v/h/s/t, unchanged.
+		if body != "" {
+			b.WriteString("\n" + body)
+		}
 		return b.String()
 	}
 	// Reading lesson: point at the content, don't render it here.
-	b.WriteString(headerStyle.Render("Read it") + "\n")
+	b.WriteString("\n" + headerStyle.Render("Read it") + "\n")
 	if l.Source != "" {
 		b.WriteString(dimStyle.Render("  cited source: ") + linkStyle.Render(l.Source) + "\n")
 	}
 	b.WriteString(dimStyle.Render("  full lesson:  ") + linkStyle.Render(course.CourseURL(m.root)) + "\n")
-	b.WriteString("\n" + keybar([2]string{"↵", "mark read / unread"}))
-	return b.String()
-}
-
-// clusterBlock describes the local cluster the scenario runs in + its lifecycle.
-func (m model) clusterBlock(l *course.Lesson) string {
-	st := m.status
-	var b strings.Builder
-	b.WriteString(headerStyle.Render("Cluster") + "\n")
-	if st.Up {
-		ver := st.Version
-		if ver == "" {
-			ver = "?"
-		}
-		b.WriteString(dimStyle.Render("  local:   ") + okStyle.Render("● "+st.Context) +
-			textStyle.Render(fmt.Sprintf(" · %d nodes · %s", st.Nodes, ver)) + "\n")
-	} else {
-		b.WriteString(dimStyle.Render("  local:   ") + dimStyle.Render("○ down") +
-			textStyle.Render(" — press ") + keyStyle.Render("u") + textStyle.Render("/") + keyStyle.Render("↵") +
-			textStyle.Render(" to create a 3-node kind cluster") + "\n")
-	}
-	b.WriteString(dimStyle.Render("  namespace:") + textStyle.Render(" kubelings") + "\n")
-	b.WriteString(dimStyle.Render("  mirrors:  ") + textStyle.Render(" iximiuz playground ") + textStyle.Render(l.Playground) + "\n")
-	b.WriteString(dimStyle.Render("  lifecycle:") + textStyle.Render(" created on ") + keyStyle.Render("u") +
-		textStyle.Render("/") + keyStyle.Render("↵") + textStyle.Render(", persists across lessons & quit, destroyed on ") +
-		keyStyle.Render("d") + "\n")
+	b.WriteString("\n" + dimStyle.Render("here ") + keyStyle.Render("↵") + dimStyle.Render(" marks it read / unread — no tasks to run"))
 	return b.String()
 }
 
@@ -412,7 +427,7 @@ func (m model) splashView() string {
 		[2]string{"↑↓/jk", "move"}, [2]string{"↵", "play"}, [2]string{"i", "init"}, [2]string{"v", "verify"},
 		[2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"}) + "\n")
 	b.WriteString(dimStyle.Render("      ") + keybar(
-		[2]string{"/", "find a lesson"}, [2]string{"n", "next unsolved"},
+		[2]string{"/", "find a lesson"}, [2]string{"n", "next unsolved"}, [2]string{"m", "copy mode"},
 		[2]string{"?", "all keys"}, [2]string{"q", "quit"}) + "\n\n")
 	b.WriteString(warnStyle.Render("press any key to start →"))
 
@@ -434,10 +449,12 @@ func helpText() string {
 		row("n", "jump to the next lesson you haven't solved") +
 		row("u / d", "cluster up / down (down asks to confirm)") +
 		row("esc", "cancel a running task · clear the filter · back to detail") +
+		row("m", "copy mode — release the mouse so you can select & copy text") +
 		row("g", "refresh status & progress") +
 		row("a", "about / welcome screen") +
 		row("? / q", "toggle help / quit") + "\n" +
-		dimStyle.Render("mouse:   wheel scrolls · click selects a lesson") + "\n" +
+		dimStyle.Render("mouse:   wheel scrolls · click selects a lesson · ") + keyStyle.Render("m") +
+		dimStyle.Render(" frees it for text selection (shift/⌥-drag also works in most terminals)") + "\n" +
 		dimStyle.Render("markers: ") + noneStyle.Render("◌ not started") + dimStyle.Render(" · ") +
 		startedStyle.Render("◐ started") + dimStyle.Render(" · ") + solvedStyle.Render("✓ solved") + "\n" +
 		dimStyle.Render("types:   ") + textStyle.Render("lab (unmarked) hands-on") + dimStyle.Render(" · ") +

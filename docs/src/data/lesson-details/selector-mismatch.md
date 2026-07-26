@@ -27,6 +27,10 @@ api    <none>      3m
 DNS resolves the Service's virtual IP fine — but behind that IP, the routing
 table is empty, so connections go nowhere and time out.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/selector-mismatch-topology.svg" alt="selector-mismatch topology diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Get traffic flowing to `api`:

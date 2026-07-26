@@ -3,3 +3,4 @@
 /tmp/
 /bin/
 .labctl/progress.tsv
+__pycache__/

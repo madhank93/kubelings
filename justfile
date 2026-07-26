@@ -35,6 +35,10 @@ run lesson verb="verify":
 list:
     scripts/run-challenge-local.sh list
 
+# Render lesson diagrams: .d2 -> ASCII (into unit-1.md) + SVG (for the site).
+diagrams:
+    python3 scripts/gen-diagrams.py
+
 # Regenerate docs/src/data/catalog.ts from the course (the source of truth).
 # Also validates .labctl/cloud-only.tsv against the lessons on disk.
 gen-catalog:

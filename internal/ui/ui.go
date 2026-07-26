@@ -73,6 +73,15 @@ type model struct {
 
 	confirmDown bool               // guard on the destroy-cluster key
 	cancelRun   context.CancelFunc // set while an action is in flight
+
+	// mouseOff releases mouse capture so the terminal's own selection works
+	// again — with capture on, drags never reach the terminal and copy is dead.
+	mouseOff bool
+
+	// mdCache memoises glamour renders, keyed lesson|section|width. Rendering
+	// the whole lesson body on every cursor move is the one real cost of
+	// showing prose in the detail pane; it is also perfectly cacheable.
+	mdCache map[string]string
 }
 
 type runDoneMsg struct {
@@ -92,6 +101,7 @@ func New(root string) model {
 
 // reload re-reads the course from disk, then rebuilds rows + progress + status.
 func (m *model) reload() {
+	m.mdCache = nil // lesson text may have changed on disk
 	m.mods, _ = course.Discover(m.root)
 	m.prog = progress.Load(m.root)
 	m.status = runner.Status()
@@ -495,6 +505,14 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "g":
 		m.reload()
 		m.refreshView()
+	case "m":
+		// Hand the mouse back to the terminal so text can be selected/copied,
+		// at the cost of wheel scroll and click-to-select until toggled back.
+		m.mouseOff = !m.mouseOff
+		if m.mouseOff {
+			return m, tea.DisableMouse
+		}
+		return m, tea.EnableMouseCellMotion
 	case "?":
 		if m.mode == modeHelp {
 			m.mode = modeDetail
