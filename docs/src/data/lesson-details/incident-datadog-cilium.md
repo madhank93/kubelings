@@ -103,3 +103,8 @@ two major platforms, publicly, with the same root shape.
 
 *No check — study, then advance. Module 9 shows what these cascades look like
 from inside the incident channel.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-datadog-cilium-statelost.svg" alt="incident-datadog-cilium statelost diagram" loading="lazy">
+</figure>
+

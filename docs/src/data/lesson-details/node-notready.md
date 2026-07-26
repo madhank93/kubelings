@@ -53,6 +53,10 @@ NotReady — `kubectl describe node` conditions, then the kubelet's own logs on
 the host (`journalctl -u kubelet`): cert expiry, disk full, container runtime
 dead, or true network partition.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/node-notready-leftover.svg" alt="node-notready leftover diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Return the node to service and get `checkout` back to 3/3:

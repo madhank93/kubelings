@@ -101,3 +101,8 @@ gear.** The teams that upgrade quarterly do it calmly; the teams that
 upgrade every three years star in Module 9.
 
 *No check — study, then advance.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/upgrade-runbook-order.svg" alt="upgrade-runbook order diagram" loading="lazy">
+</figure>
+

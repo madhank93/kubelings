@@ -46,6 +46,10 @@ by anything is empty: your "fixed" ratio emits *no sample at all*, and an
 alert on it can't tell "perfectly healthy" from "pipeline broken". Zero
 errors must produce the number 0: `... or vector(0)`.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/slo-errorbudget-burn.svg" alt="slo-errorbudget burn diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Fix the PrometheusRule (`kubectl edit prometheusrule checkout-slo -n

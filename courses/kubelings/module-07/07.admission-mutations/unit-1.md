@@ -39,6 +39,31 @@ Order matters and is the exam-grade fact: **mutation first, then validation**
 — validators see the *final* object, so a mutating default can be what makes
 a pod pass (or fail) validation.
 
+<!-- d2:rewrite -->
+```text
+        ┌──────────┐       
+        │your spec │       
+        │          │       
+        └──────────┘       
+             │             
+   defaults, injections    
+             │             
+             ▼             
+    ┌───────────────────┐  
+    │mutating admission │  
+    │                   │  
+    └───────────────────┘  
+             │             
+differs from what you wrote
+             │             
+             ▼             
+      ┌──────────────┐     
+      │stored object │     
+      │              │     
+      └──────────────┘
+```
+<!-- /d2:rewrite -->
+
 ## Your task
 
 Drive both halves yourself with the one in-tree policy object built for it —

@@ -32,6 +32,31 @@ that watches for pods with an empty `nodeName`, decides which node fits, and
 **writes the node's name into that field.** One string. The kubelet on the named
 node then notices "a pod is assigned to me" and runs it.
 
+<!-- d2:binding -->
+```text
+  ┌────────────┐   
+  │pod Pending │   
+  │            │   
+  └────────────┘   
+         │         
+ scheduler decides 
+         │         
+         ▼         
+ ┌─────────────┐   
+ │nodeName set │   
+ │             │   
+ └─────────────┘   
+         │         
+  node claims pod  
+         │         
+         ▼         
+ ┌────────────────┐
+ │kubelet runs it │
+ │                │
+ └────────────────┘
+```
+<!-- /d2:binding -->
+
 ## Your task
 
 Be the scheduler:

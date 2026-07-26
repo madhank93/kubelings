@@ -171,3 +171,8 @@ scheduling can resume:
 
 The check passes once the holder differs from the baseline **and** the new
 holder is renewing (i.e. it's a live leader, not just a dead one).
+
+<figure class="lesson-diagram">
+<img src="/diagrams/ha-control-plane-quorum.svg" alt="ha-control-plane quorum diagram" loading="lazy">
+</figure>
+

@@ -18,6 +18,10 @@ This single fact explains a lot:
 
 Let's see it with your own eyes.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/etcd-truth-source.svg" alt="etcd-truth source diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Create a ConfigMap that will be your sentinel:

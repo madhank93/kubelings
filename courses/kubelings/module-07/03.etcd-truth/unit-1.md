@@ -25,6 +25,31 @@ This single fact explains a lot:
 
 Let's see it with your own eyes.
 
+<!-- d2:source -->
+```text
+  ┌────────────┐  
+  │kubectl get │  
+  │            │  
+  └────────────┘  
+        │         
+      HTTP        
+        │         
+        ▼         
+  ┌───────────┐   
+  │API server │   
+  │           │   
+  └───────────┘   
+        │         
+ the only reader  
+        │         
+        ▼         
+ ┌───────────────┐
+ │etcd /registry │
+ │               │
+ └───────────────┘
+```
+<!-- /d2:source -->
+
 ## Your task
 
 1. Create a ConfigMap that will be your sentinel:

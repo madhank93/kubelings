@@ -133,6 +133,31 @@ The check verifies two independent things — that etcd is running a restored
 cluster, and that `treasure` came back as the *same object*, not a
 lookalike you typed in again.
 
+<!-- d2:snapshot -->
+```text
+     ┌─────────┐      
+     │etcd now │      
+     │         │      
+     └─────────┘      
+          │           
+    etcdctl save      
+          │           
+          ▼           
+   ┌──────────────┐   
+   │snapshot file │   
+   │              │   
+   └──────────────┘   
+          │           
+restore, then restart 
+          │           
+          ▼           
+  ┌──────────────────┐
+  │restored data dir │
+  │                  │
+  └──────────────────┘
+```
+<!-- /d2:snapshot -->
+
 <details>
 <summary>Hint</summary>
 

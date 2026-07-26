@@ -95,3 +95,28 @@ Kubernetes behavior is a black box again — including every failure in the
 each of which is one of these components doing exactly what it was told.
 
 *No check — you've toured the machine. Module 8 puts you on call inside it.*
+
+<!-- d2:path -->
+```text
+ ┌──────────────┐
+ │authn + authz │
+ │              │
+ └──────────────┘
+         │       
+   who, allowed? 
+         │       
+         ▼       
+  ┌──────────┐   
+  │admission │   
+  │          │   
+  └──────────┘   
+         │       
+ mutate, validate
+         │       
+         ▼       
+  ┌───────────┐  
+  │etcd write │  
+  │           │  
+  └───────────┘
+```
+<!-- /d2:path -->

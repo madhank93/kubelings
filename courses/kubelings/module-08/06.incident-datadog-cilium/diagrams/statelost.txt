@@ -1,0 +1,20 @@
+    ┌──────────┐      
+    │OS update │      
+    │          │      
+    └──────────┘      
+          │           
+   package upgrade    
+          │           
+          ▼           
+ ┌───────────────────┐
+ │CNI agent restarts │
+ │                   │
+ └───────────────────┘
+          │           
+ state was in memory  
+          │           
+          ▼           
+    ┌────────────┐    
+    │routes lost │    
+    │            │    
+    └────────────┘    

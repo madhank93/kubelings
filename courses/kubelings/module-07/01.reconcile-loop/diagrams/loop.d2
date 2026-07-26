@@ -1,0 +1,9 @@
+# Every controller is this loop and nothing more: compare what is declared with
+# what exists, act on the difference, observe again.
+want:   "desired: 3"
+have:   "observed: 2"
+act:    "create one"
+
+want -> have: "compare"
+have -> act:  "close the gap"
+act  -> want

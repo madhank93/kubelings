@@ -26,6 +26,10 @@ There's your cause, timestamped and specific. **Events** are short-lived
 decisions, image pulls, probe failures, OOM kills, evictions, volume mounts.
 They're the timeline of *what the cluster did and why*.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/events-forensics-record.svg" alt="events-forensics record diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Read the events for `analytics-job` and find why it can't schedule.

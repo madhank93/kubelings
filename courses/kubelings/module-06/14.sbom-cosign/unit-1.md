@@ -130,7 +130,7 @@ checked against identity
      ┌──────────────┐   
      │cosign verify │   
      │              │   
-     └──────────────┘
+     └──────────────┘   
 ```
 <!-- /d2:provenance -->
 

@@ -37,6 +37,35 @@ Deployment controller manages ReplicaSets; ReplicaSet controller manages Pods;
 node controller manages node health; and so on. Declarative "desired state" works
 *because* something is always reconciling toward it.
 
+<!-- d2:loop -->
+```text
+       ┌───────────┐
+       │desired: 3 │
+       │           │
+       └───────────┘
+           │   ▲    
+           │   └──┐ 
+           │      │ 
+        compare   │ 
+           │      │ 
+           ▼      │ 
+ ┌────────────┐   │ 
+ │observed: 2 │   │ 
+ │            │   │ 
+ └────────────┘   │ 
+           │      │ 
+     close the gap│ 
+           │      │ 
+           │   ┌──┘ 
+           │   │    
+           ▼   │    
+       ┌───────────┐
+       │create one │
+       │           │
+       └───────────┘
+```
+<!-- /d2:loop -->
+
 ## Your task
 
 Make the reconcile loop visibly fire:

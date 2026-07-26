@@ -44,6 +44,10 @@ in the middle, invisibly to both ends** — the app sees successful sends,
 Jaeger sees nothing. That's why collector logs, not app logs, are where
 tracing outages live.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/otel-collector-pipeline-pipeline.svg" alt="otel-collector-pipeline pipeline diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Fix the exporter endpoint in the ConfigMap to the Service that actually

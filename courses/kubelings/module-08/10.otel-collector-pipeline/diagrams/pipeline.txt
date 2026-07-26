@@ -1,0 +1,20 @@
+    ┌──────────┐   
+    │receivers │   
+    │          │   
+    └──────────┘   
+         │         
+declared in service
+         │         
+         ▼         
+   ┌───────────┐   
+   │processors │   
+   │           │   
+   └───────────┘   
+         │         
+  pipeline order   
+         │         
+         ▼         
+    ┌──────────┐   
+    │exporters │   
+    │          │   
+    └──────────┘   

@@ -20,6 +20,31 @@ The target runs two tenants: the `node-agent` DaemonSet pod and the
 the drain is the job — done in the right order, with eyes open at each
 refusal.
 
+<!-- d2:sequence -->
+```text
+  ┌─────────┐ 
+  │ cordon  │ 
+  │         │ 
+  └─────────┘ 
+       │      
+  no new pods 
+       │      
+       ▼      
+   ┌────────┐ 
+   │ drain  │ 
+   │        │ 
+   └────────┘ 
+       │      
+ patch, reboot
+       │      
+       ▼      
+ ┌───────────┐
+ │ uncordon  │
+ │           │
+ └───────────┘
+```
+<!-- /d2:sequence -->
+
 ## Your task
 
 Read the target node into a variable first:

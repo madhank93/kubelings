@@ -125,3 +125,8 @@ restore a world that never had the ConfigMap in it.
 The check verifies two independent things — that etcd is running a restored
 cluster, and that `treasure` came back as the *same object*, not a
 lookalike you typed in again.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/etcd-backup-restore-snapshot.svg" alt="etcd-backup-restore snapshot diagram" loading="lazy">
+</figure>
+

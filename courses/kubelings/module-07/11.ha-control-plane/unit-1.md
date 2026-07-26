@@ -179,6 +179,31 @@ scheduling can resume:
 The check passes once the holder differs from the baseline **and** the new
 holder is renewing (i.e. it's a live leader, not just a dead one).
 
+<!-- d2:quorum -->
+```text
+    ┌─────────────┐    
+    │one endpoint │    
+    │             │    
+    └─────────────┘    
+           │           
+     load balanced     
+           │           
+           ▼           
+   ┌─────────────────┐ 
+   │3 control planes │ 
+   │                 │ 
+   └─────────────────┘ 
+           │           
+writes need a majority 
+           │           
+           ▼           
+  ┌───────────────────┐
+  │etcd quorum 2 of 3 │
+  │                   │
+  └───────────────────┘
+```
+<!-- /d2:quorum -->
+
 <details>
 <summary>Hint</summary>
 

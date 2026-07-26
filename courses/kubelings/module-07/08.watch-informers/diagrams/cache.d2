@@ -1,0 +1,8 @@
+# Controllers do not poll. A watch streams changes into a local cache, and the
+# handler works from a queue, not from the API.
+watch: "watch stream"
+cache: "informer cache"
+queue: "workqueue"
+
+watch -> cache: "events applied"
+cache -> queue: "keys to reconcile"

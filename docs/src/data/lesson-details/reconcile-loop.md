@@ -30,6 +30,10 @@ Deployment controller manages ReplicaSets; ReplicaSet controller manages Pods;
 node controller manages node health; and so on. Declarative "desired state" works
 *because* something is always reconciling toward it.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/reconcile-loop-loop.svg" alt="reconcile-loop loop diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make the reconcile loop visibly fire:

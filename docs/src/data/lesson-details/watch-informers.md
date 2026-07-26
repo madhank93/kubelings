@@ -119,3 +119,8 @@ from an answer.)
 
 *No check — run the experiments, then advance: the next lesson builds the
 controller these primitives exist for.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/watch-informers-cache.svg" alt="watch-informers cache diagram" loading="lazy">
+</figure>
+

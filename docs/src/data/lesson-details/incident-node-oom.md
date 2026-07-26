@@ -34,6 +34,10 @@ kubectl -n kubelings get pods -l app=log-shipper \
   -o custom-columns=NAME:.metadata.name,LIM:.spec.containers[0].resources.limits.memory
 ```
 
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-node-oom-killer.svg" alt="incident-node-oom killer diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Cap the blast radius before the kernel has to:

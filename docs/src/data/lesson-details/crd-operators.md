@@ -32,6 +32,10 @@ Kubernetes: the API is *extensible at runtime*. A
 server responds by growing a whole new REST endpoint, with storage in etcd
 (7.3), RBAC verbs (6.1), and watch support (7.1), for free.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/crd-operators-extension.svg" alt="crd-operators extension diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Define the noun — apply this CRD:

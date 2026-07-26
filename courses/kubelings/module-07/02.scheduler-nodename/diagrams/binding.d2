@@ -1,0 +1,8 @@
+# Scheduling is one write: the scheduler picks a node and sets nodeName, and the
+# kubelet on that node starts watching for the pod.
+pend: "pod Pending"
+bind: "nodeName set"
+kube: "kubelet runs it"
+
+pend -> bind: "scheduler decides"
+bind -> kube: "node claims pod"

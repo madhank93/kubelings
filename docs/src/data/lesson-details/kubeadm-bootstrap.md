@@ -154,3 +154,8 @@ Bring it back Ready, using the real bootstrap-token flow:
 
 The check runs on node-02 and passes once it holds a *freshly issued*
 `kubelet.conf` (newer than the reset) and the cluster reports it Ready.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/kubeadm-bootstrap-join.svg" alt="kubeadm-bootstrap join diagram" loading="lazy">
+</figure>
+

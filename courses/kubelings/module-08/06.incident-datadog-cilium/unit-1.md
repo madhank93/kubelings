@@ -110,3 +110,28 @@ two major platforms, publicly, with the same root shape.
 
 *No check — study, then advance. Module 9 shows what these cascades look like
 from inside the incident channel.*
+
+<!-- d2:statelost -->
+```text
+    ┌──────────┐      
+    │OS update │      
+    │          │      
+    └──────────┘      
+          │           
+   package upgrade    
+          │           
+          ▼           
+ ┌───────────────────┐
+ │CNI agent restarts │
+ │                   │
+ └───────────────────┘
+          │           
+ state was in memory  
+          │           
+          ▼           
+    ┌────────────┐    
+    │routes lost │    
+    │            │    
+    └────────────┘
+```
+<!-- /d2:statelost -->

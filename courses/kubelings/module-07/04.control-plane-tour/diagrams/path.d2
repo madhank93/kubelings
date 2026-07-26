@@ -1,0 +1,8 @@
+# The write path, in order. Each stage can reject, and only the last one makes
+# the change durable.
+authn: "authn + authz"
+adm:   "admission"
+etcd:  "etcd write"
+
+authn -> adm:  "who, allowed?"
+adm   -> etcd: "mutate, validate"

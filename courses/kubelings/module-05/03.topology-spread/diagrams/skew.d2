@@ -4,5 +4,5 @@ busy: "node A: 5 pods"
 thin: "node B: 1 pod"
 rule: "maxSkew 1"
 
-busy -> rule: "skew of 4"
-thin -> rule: "violates it"
+busy -> rule: "excess"
+thin -> rule: "cap"

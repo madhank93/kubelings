@@ -13,6 +13,10 @@ The target runs two tenants: the `node-agent` DaemonSet pod and the
 the drain is the job — done in the right order, with eyes open at each
 refusal.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/node-maintenance-sequence.svg" alt="node-maintenance sequence diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Read the target node into a variable first:

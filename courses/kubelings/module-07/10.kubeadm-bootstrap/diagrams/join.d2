@@ -1,0 +1,8 @@
+# Bootstrapping is two halves: one machine becomes the control plane and mints
+# a token, and every other machine joins with it.
+init: "kubeadm init"
+tok:  "join token + CA hash"
+join: "kubeadm join"
+
+init -> tok:  "control plane up"
+tok  -> join: "worker enrols"

@@ -1,0 +1,8 @@
+# A snapshot is the whole cluster state in one file, and restoring it means
+# replacing the data directory the API server reads through.
+etcd: "etcd now"
+snap: "snapshot file"
+new:  "restored data dir"
+
+etcd -> snap: "etcdctl save"
+snap -> new:  "restore, then restart"

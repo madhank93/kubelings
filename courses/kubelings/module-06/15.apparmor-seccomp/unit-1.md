@@ -65,7 +65,7 @@ kubectl -n kubelings get pod audit-me -o jsonpath='{.spec.securityContext.seccom
      ┌───────┐       
      │kernel │       
      │       │       
-     └───────┘
+     └───────┘       
 ```
 <!-- /d2:filter -->
 

@@ -1,0 +1,8 @@
+# Maintenance is a sequence with a gate in the middle: stop new work, move the
+# running work, then do the work — and only then invite pods back.
+cord: "cordon"
+drain: "drain"
+back: "uncordon"
+
+cord  -> drain: "no new pods"
+drain -> back:  "patch, reboot"

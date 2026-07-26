@@ -126,3 +126,28 @@ from an answer.)
 
 *No check — run the experiments, then advance: the next lesson builds the
 controller these primitives exist for.*
+
+<!-- d2:cache -->
+```text
+  ┌─────────────┐ 
+  │watch stream │ 
+  │             │ 
+  └─────────────┘ 
+         │        
+  events applied  
+         │        
+         ▼        
+ ┌───────────────┐
+ │informer cache │
+ │               │
+ └───────────────┘
+         │        
+ keys to reconcile
+         │        
+         ▼        
+   ┌────────────┐ 
+   │ workqueue  │ 
+   │            │ 
+   └────────────┘
+```
+<!-- /d2:cache -->

@@ -1,0 +1,8 @@
+# Every component's identity is a certificate signed by the cluster CA, and each
+# one has an expiry that stops the cluster when it passes.
+ca:   "cluster CA"
+cert: "component certs"
+exp:  "expiry stops it"
+
+ca   -> cert: "signs"
+cert -> exp:  "1 year default"

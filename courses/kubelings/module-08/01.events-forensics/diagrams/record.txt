@@ -1,0 +1,20 @@
+ ┌────────────────────────┐
+ │container never started │
+ │                        │
+ └────────────────────────┘
+            │              
+     no logs to read       
+            │              
+            ▼              
+  ┌─────────────────────┐  
+  │events on the object │  
+  │                     │  
+  └─────────────────────┘  
+            │              
+ describe or get events    
+            │              
+            ▼              
+   ┌──────────────────┐    
+   │the actual reason │    
+   │                  │    
+   └──────────────────┘    

@@ -25,6 +25,10 @@ that watches for pods with an empty `nodeName`, decides which node fits, and
 **writes the node's name into that field.** One string. The kubelet on the named
 node then notices "a pod is assigned to me" and runs it.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/scheduler-nodename-binding.svg" alt="scheduler-nodename binding diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Be the scheduler:

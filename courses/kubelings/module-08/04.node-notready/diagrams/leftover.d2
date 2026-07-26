@@ -1,0 +1,8 @@
+# The node recovered but the mitigation did not: a NoExecute taint added during
+# triage keeps evicting pods long after the fault is gone.
+ready: "node Ready again"
+taint: "NoExecute remains"
+empty: "pods stay away"
+
+ready -> taint: "from triage"
+taint -> empty: "still repelling"

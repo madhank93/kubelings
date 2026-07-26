@@ -51,6 +51,31 @@ in the middle, invisibly to both ends** — the app sees successful sends,
 Jaeger sees nothing. That's why collector logs, not app logs, are where
 tracing outages live.
 
+<!-- d2:pipeline -->
+```text
+    ┌──────────┐   
+    │receivers │   
+    │          │   
+    └──────────┘   
+         │         
+declared in service
+         │         
+         ▼         
+   ┌───────────┐   
+   │processors │   
+   │           │   
+   └───────────┘   
+         │         
+  pipeline order   
+         │         
+         ▼         
+    ┌──────────┐   
+    │exporters │   
+    │          │   
+    └──────────┘
+```
+<!-- /d2:pipeline -->
+
 ## Your task
 
 1. Fix the exporter endpoint in the ConfigMap to the Service that actually

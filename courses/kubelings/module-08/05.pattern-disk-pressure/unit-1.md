@@ -54,6 +54,31 @@ Two things memory taught you that do **not** carry over:
 - OOMKilled pods vanish into restart counts; **Evicted pods linger as Failed
   objects** until a human (or a tuned GC threshold) deletes them.
 
+<!-- d2:eviction -->
+```text
+ ┌────────────────┐
+ │node disk fills │
+ │                │
+ └────────────────┘
+         │         
+ threshold crossed 
+         │         
+         ▼         
+  ┌─────────────┐  
+  │DiskPressure │  
+  │             │  
+  └─────────────┘  
+         │         
+   reclaim first   
+         │         
+         ▼         
+ ┌───────────────┐ 
+ │kubelet evicts │ 
+ │               │ 
+ └───────────────┘
+```
+<!-- /d2:eviction -->
+
 ## Your task
 
 1. Budget the real footprint: raise the container's `ephemeral-storage` limit

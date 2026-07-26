@@ -1,0 +1,8 @@
+# The pods do not exist to be broken: the quota rejected the ReplicaSet's
+# create calls, so the failure is recorded one level up.
+rs:    "ReplicaSet creates"
+quota: "ResourceQuota"
+none:  "no pod object"
+
+rs    -> quota: "5th pod"
+quota -> none:  "forbidden"

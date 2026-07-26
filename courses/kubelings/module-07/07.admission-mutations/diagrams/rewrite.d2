@@ -1,0 +1,8 @@
+# What you submit is not what is stored: mutating admission edits the object in
+# flight, before validation and before etcd.
+sent:  "your spec"
+mut:   "mutating admission"
+saved: "stored object"
+
+sent -> mut:   "defaults, injections"
+mut  -> saved: "differs from what you wrote"

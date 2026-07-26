@@ -1,0 +1,8 @@
+# Defining a receiver and an exporter is not enough: nothing flows until the
+# service section wires them into a pipeline.
+recv: "receivers"
+proc: "processors"
+exp:  "exporters"
+
+recv -> proc: "declared in service"
+proc -> exp:  "pipeline order"

@@ -41,6 +41,31 @@ kubectl -n kubelings get pods -l app=log-shipper \
   -o custom-columns=NAME:.metadata.name,LIM:.spec.containers[0].resources.limits.memory
 ```
 
+<!-- d2:killer -->
+```text
+ ┌─────────────────┐  
+ │node memory full │  
+ │                 │  
+ └─────────────────┘  
+          │           
+   no memory left     
+          │           
+          ▼           
+ ┌──────────────────┐ 
+ │kernel OOM killer │ 
+ │                  │ 
+ └──────────────────┘ 
+          │           
+   not by priority    
+          │           
+          ▼           
+ ┌───────────────────┐
+ │highest score dies │
+ │                   │
+ └───────────────────┘
+```
+<!-- /d2:killer -->
+
 ## Your task
 
 Cap the blast radius before the kernel has to:

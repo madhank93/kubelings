@@ -88,3 +88,8 @@ Kubernetes behavior is a black box again — including every failure in the
 each of which is one of these components doing exactly what it was told.
 
 *No check — you've toured the machine. Module 8 puts you on call inside it.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/control-plane-tour-path.svg" alt="control-plane-tour path diagram" loading="lazy">
+</figure>
+

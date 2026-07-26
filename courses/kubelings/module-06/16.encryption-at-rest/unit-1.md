@@ -171,7 +171,7 @@ The check requires all three: the Secret must still read back as
     ┌─────────────┐    
     │etcd on disk │    
     │             │    
-    └─────────────┘
+    └─────────────┘    
 ```
 <!-- /d2:envelope -->
 

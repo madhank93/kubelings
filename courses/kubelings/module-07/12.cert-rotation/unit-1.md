@@ -156,6 +156,31 @@ expires. Today they're identical. Make both of them later:
 The check tests those last three separately, and will tell you which one
 you've skipped.
 
+<!-- d2:pki -->
+```text
+    ┌───────────┐   
+    │cluster CA │   
+    │           │   
+    └───────────┘   
+          │         
+        signs       
+          │         
+          ▼         
+ ┌────────────────┐ 
+ │component certs │ 
+ │                │ 
+ └────────────────┘ 
+          │         
+   1 year default   
+          │         
+          ▼         
+  ┌────────────────┐
+  │expiry stops it │
+  │                │
+  └────────────────┘
+```
+<!-- /d2:pki -->
+
 <details>
 <summary>Hint</summary>
 

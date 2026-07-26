@@ -33,6 +33,31 @@ There's your cause, timestamped and specific. **Events** are short-lived
 decisions, image pulls, probe failures, OOM kills, evictions, volume mounts.
 They're the timeline of *what the cluster did and why*.
 
+<!-- d2:record -->
+```text
+ ┌────────────────────────┐
+ │container never started │
+ │                        │
+ └────────────────────────┘
+            │              
+     no logs to read       
+            │              
+            ▼              
+  ┌─────────────────────┐  
+  │events on the object │  
+  │                     │  
+  └─────────────────────┘  
+            │              
+ describe or get events    
+            │              
+            ▼              
+   ┌──────────────────┐    
+   │the actual reason │    
+   │                  │    
+   └──────────────────┘
+```
+<!-- /d2:record -->
+
 ## Your task
 
 1. Read the events for `analytics-job` and find why it can't schedule.

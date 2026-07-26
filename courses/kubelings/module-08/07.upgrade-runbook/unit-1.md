@@ -108,3 +108,28 @@ gear.** The teams that upgrade quarterly do it calmly; the teams that
 upgrade every three years star in Module 9.
 
 *No check — study, then advance.*
+
+<!-- d2:order -->
+```text
+   ┌────────────────────┐  
+   │control plane first │  
+   │                    │  
+   └────────────────────┘  
+            │              
+   one minor at a time     
+            │              
+            ▼              
+     ┌──────────────┐      
+     │then kubelets │      
+     │              │      
+     └──────────────┘      
+            │              
+    supported window       
+            │              
+            ▼              
+ ┌────────────────────────┐
+ │nodes may lag, not lead │
+ │                        │
+ └────────────────────────┘
+```
+<!-- /d2:order -->

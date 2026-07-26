@@ -176,7 +176,7 @@ Metadata or Request body
      ┌────────────┐     
      │log backend │     
      │            │     
-     └────────────┘
+     └────────────┘     
 ```
 <!-- /d2:stages -->
 

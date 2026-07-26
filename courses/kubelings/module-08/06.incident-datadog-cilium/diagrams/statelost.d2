@@ -1,0 +1,8 @@
+# The update did not break the network directly: it restarted the agent that
+# owned the routing state, and that state was not on disk.
+upd:  "OS update"
+cni:  "CNI agent restarts"
+lost: "routes lost"
+
+upd -> cni:  "package upgrade"
+cni -> lost: "state was in memory"

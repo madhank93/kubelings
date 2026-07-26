@@ -148,3 +148,8 @@ expires. Today they're identical. Make both of them later:
 
 The check tests those last three separately, and will tell you which one
 you've skipped.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/cert-rotation-pki.svg" alt="cert-rotation pki diagram" loading="lazy">
+</figure>
+

@@ -32,6 +32,10 @@ Order matters and is the exam-grade fact: **mutation first, then validation**
 — validators see the *final* object, so a mutating default can be what makes
 a pod pass (or fail) validation.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/admission-mutations-rewrite.svg" alt="admission-mutations rewrite diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Drive both halves yourself with the one in-tree policy object built for it —

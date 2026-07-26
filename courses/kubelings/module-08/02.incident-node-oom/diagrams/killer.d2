@@ -1,0 +1,8 @@
+# Below Kubernetes there is a kernel that does not read your manifests: it picks
+# a victim by memory score and kills it.
+node: "node memory full"
+oom:  "kernel OOM killer"
+proc: "highest score dies"
+
+node -> oom:  "no memory left"
+oom  -> proc: "not by priority"

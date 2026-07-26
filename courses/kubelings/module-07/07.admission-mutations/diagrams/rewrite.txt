@@ -1,0 +1,20 @@
+        ┌──────────┐       
+        │your spec │       
+        │          │       
+        └──────────┘       
+             │             
+   defaults, injections    
+             │             
+             ▼             
+    ┌───────────────────┐  
+    │mutating admission │  
+    │                   │  
+    └───────────────────┘  
+             │             
+differs from what you wrote
+             │             
+             ▼             
+      ┌──────────────┐     
+      │stored object │     
+      │              │     
+      └──────────────┘     

@@ -1,0 +1,8 @@
+# Disk fills quietly, then the kubelet enforces: it signals pressure and starts
+# reclaiming, evicting pods before the node itself dies.
+disk: "node disk fills"
+sig:  "DiskPressure"
+evict: "kubelet evicts"
+
+disk -> sig:   "threshold crossed"
+sig  -> evict: "reclaim first"

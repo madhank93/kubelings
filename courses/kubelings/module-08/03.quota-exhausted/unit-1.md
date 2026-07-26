@@ -35,6 +35,31 @@ allows 160Mi of memory requests; two 64Mi pods use 128Mi; a third would hit 192
 trying and keeps getting 403 — the error surfaces on the *controller*, never on a
 pod, because no pod ever makes it past admission.
 
+<!-- d2:denial -->
+```text
+ ┌───────────────────┐
+ │ReplicaSet creates │
+ │                   │
+ └───────────────────┘
+          │           
+       5th pod        
+          │           
+          ▼           
+  ┌──────────────┐    
+  │ResourceQuota │    
+  │              │    
+  └──────────────┘    
+          │           
+      forbidden       
+          │           
+          ▼           
+   ┌──────────────┐   
+   │no pod object │   
+   │              │   
+   └──────────────┘
+```
+<!-- /d2:denial -->
+
 ## Your task
 
 Get `workers` to 5/5. Two honest paths — pick one:

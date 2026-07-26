@@ -1,0 +1,8 @@
+# HA is an etcd quorum behind one endpoint: clients see a single address, and
+# the cluster survives losing a minority of members.
+lb:   "one endpoint"
+cps:  "3 control planes"
+quor: "etcd quorum 2 of 3"
+
+lb  -> cps:  "load balanced"
+cps -> quor: "writes need a majority"

@@ -1,0 +1,8 @@
+# When there is no process there are no logs, but the cluster has been narrating
+# the whole time — the record is on the object, not in the container.
+fail: "container never started"
+ev:   "events on the object"
+why:  "the actual reason"
+
+fail -> ev:  "no logs to read"
+ev   -> why: "describe or get events"

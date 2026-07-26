@@ -53,6 +53,31 @@ by anything is empty: your "fixed" ratio emits *no sample at all*, and an
 alert on it can't tell "perfectly healthy" from "pipeline broken". Zero
 errors must produce the number 0: `... or vector(0)`.
 
+<!-- d2:burn -->
+```text
+ ┌────────────┐ 
+ │error ratio │ 
+ │            │ 
+ └────────────┘ 
+       │        
+ over a window  
+       │        
+       ▼        
+  ┌──────────┐  
+  │burn rate │  
+  │          │  
+  └──────────┘  
+       │        
+above threshold 
+       │        
+       ▼        
+  ┌────────────┐
+  │alert fires │
+  │            │
+  └────────────┘
+```
+<!-- /d2:burn -->
+
 ## Your task
 
 1. Fix the PrometheusRule (`kubectl edit prometheusrule checkout-slo -n

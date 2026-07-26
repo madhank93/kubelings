@@ -28,6 +28,10 @@ allows 160Mi of memory requests; two 64Mi pods use 128Mi; a third would hit 192
 trying and keeps getting 403 — the error surfaces on the *controller*, never on a
 pod, because no pod ever makes it past admission.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/quota-exhausted-denial.svg" alt="quota-exhausted denial diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Get `workers` to 5/5. Two honest paths — pick one:

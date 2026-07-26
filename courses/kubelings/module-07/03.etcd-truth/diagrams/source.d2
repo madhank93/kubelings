@@ -1,0 +1,8 @@
+# Nothing in the cluster is asked at read time: the answer comes from etcd, via
+# the only component that talks to it.
+get:  "kubectl get"
+api:  "API server"
+etcd: "etcd /registry"
+
+get -> api:  "HTTP"
+api -> etcd: "the only reader"

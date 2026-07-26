@@ -1,0 +1,8 @@
+# A burn-rate alert compares the error ratio against the budget over a window —
+# if either side of that comparison is wrong, it never fires.
+ratio: "error ratio"
+rate:  "burn rate"
+page:  "alert fires"
+
+ratio -> rate: "over a window"
+rate  -> page: "above threshold"

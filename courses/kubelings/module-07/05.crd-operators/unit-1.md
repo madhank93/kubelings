@@ -39,6 +39,31 @@ Kubernetes: the API is *extensible at runtime*. A
 server responds by growing a whole new REST endpoint, with storage in etcd
 (7.3), RBAC verbs (6.1), and watch support (7.1), for free.
 
+<!-- d2:extension -->
+```text
+   ┌───────────────────┐ 
+   │CRD registers kind │ 
+   │                   │ 
+   └───────────────────┘ 
+            │            
+      now accepted       
+            │            
+            ▼            
+ ┌──────────────────────┐
+ │BackupSchedule object │
+ │                      │
+ └──────────────────────┘
+            │            
+         watched         
+            │            
+            ▼            
+    ┌────────────────┐   
+    │controller acts │   
+    │                │   
+    └────────────────┘
+```
+<!-- /d2:extension -->
+
 ## Your task
 
 1. Define the noun — apply this CRD:

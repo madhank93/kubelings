@@ -1,0 +1,8 @@
+# Skew rules set the order: the control plane goes first and may be ahead, and
+# nodes are never allowed to lead it.
+cp:    "control plane first"
+nodes: "then kubelets"
+skew:  "nodes may lag, not lead"
+
+cp    -> nodes: "one minor at a time"
+nodes -> skew:  "supported window"

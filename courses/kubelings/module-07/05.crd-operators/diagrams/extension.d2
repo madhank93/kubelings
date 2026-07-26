@@ -1,0 +1,8 @@
+# A CRD only teaches the API server a new noun. The verb comes from a
+# controller that watches those objects and acts on them.
+crd:  "CRD registers kind"
+cr:   "BackupSchedule object"
+ctrl: "controller acts"
+
+crd -> cr:   "now accepted"
+cr  -> ctrl: "watched"

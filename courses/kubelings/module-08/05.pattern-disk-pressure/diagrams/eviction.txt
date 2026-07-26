@@ -1,0 +1,20 @@
+ ┌────────────────┐
+ │node disk fills │
+ │                │
+ └────────────────┘
+         │         
+ threshold crossed 
+         │         
+         ▼         
+  ┌─────────────┐  
+  │DiskPressure │  
+  │             │  
+  └─────────────┘  
+         │         
+   reclaim first   
+         │         
+         ▼         
+ ┌───────────────┐ 
+ │kubelet evicts │ 
+ │               │ 
+ └───────────────┘ 
