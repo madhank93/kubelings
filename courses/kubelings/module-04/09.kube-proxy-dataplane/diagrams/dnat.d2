@@ -1,0 +1,8 @@
+# A Service IP is not an address anything answers on: it is a DNAT rule the
+# node's dataplane rewrites into one of the backing pod IPs.
+vip:  "Service ClusterIP"
+rule: "iptables KUBE-SERVICES"
+pod:  "pod IP"
+
+vip  -> rule: "packet matched"
+rule -> pod:  "DNAT to a backend"

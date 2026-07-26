@@ -1,0 +1,8 @@
+# The selector is right and the endpoints are populated: the traffic arrives at
+# the correct pod, on a port where nothing is listening.
+svc:  "Service port 80"
+tgt:  "targetPort 8080"
+pod:  "pod listens on 80"
+
+svc -> tgt: "forwards to"
+tgt -> pod: "nothing there"

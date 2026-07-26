@@ -1,0 +1,20 @@
+ ┌─────────────────────┐
+ │default-deny ingress │
+ │                     │
+ └─────────────────────┘
+           │            
+follow-up never merged  
+           │            
+           ▼            
+    ┌──────────────┐    
+    │no allow rule │    
+    │              │    
+    └──────────────┘    
+           │            
+   timeout, no error    
+           │            
+           ▼            
+   ┌────────────────┐   
+   │packets dropped │   
+   │                │   
+   └────────────────┘   

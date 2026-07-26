@@ -47,6 +47,31 @@ This drill is the *other* case — the one legitimate use: **the controller is
 provably, permanently gone.** No deployment watches Widgets; there is no
 cleanup that could run. The finalizer is a promise with no one left to keep it.
 
+<!-- d2:finalizer -->
+```text
+  ┌──────────────────────┐  
+  │namespace Terminating │  
+  │                      │  
+  └──────────────────────┘  
+             │              
+     must empty first       
+             │              
+             ▼              
+  ┌────────────────────────┐
+  │resource with finalizer │
+  │                        │
+  └────────────────────────┘
+             │              
+controller never clears it  
+             │              
+             ▼              
+     ┌─────────────────┐    
+     │deletion blocked │    
+     │                 │    
+     └─────────────────┘    
+```
+<!-- /d2:finalizer -->
+
 ## Your task
 
 1. Confirm the diagnosis chain yourself: ns conditions → remaining resource →

@@ -34,6 +34,31 @@ allows."** With zero allow rules, that's a namespace-wide ingress blackhole.
 > objects; on iximiuz Labs (enforcing CNI) the same objects gate real packets.
 > The reasoning you practice is identical.
 
+<!-- d2:silent -->
+```text
+ ┌─────────────────────┐
+ │default-deny ingress │
+ │                     │
+ └─────────────────────┘
+           │            
+follow-up never merged  
+           │            
+           ▼            
+    ┌──────────────┐    
+    │no allow rule │    
+    │              │    
+    └──────────────┘    
+           │            
+   timeout, no error    
+           │            
+           ▼            
+   ┌────────────────┐   
+   │packets dropped │   
+   │                │   
+   └────────────────┘   
+```
+<!-- /d2:silent -->
+
 ## Your task
 
 Keep the wall, add a door:

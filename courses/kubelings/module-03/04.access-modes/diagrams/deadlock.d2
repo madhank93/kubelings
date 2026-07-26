@@ -1,0 +1,8 @@
+# ReadWriteOnce binds the volume to one node, while anti-affinity forbids the
+# second replica from landing there — the two rules cannot both be satisfied.
+rwo:  "RWO, one node"
+anti: "anti-affinity"
+pend: "replica 2 Pending"
+
+rwo  -> anti: "same node required"
+anti -> pend: "same node forbidden"

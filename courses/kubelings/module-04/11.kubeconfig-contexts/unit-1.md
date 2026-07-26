@@ -27,6 +27,19 @@ where every bare `kubectl` command lands — and right now it's `prod`. Every
 default has starred in several of this course's incident files (Spotify's
 cluster deletion began with a terminal pointed at the wrong cluster).
 
+<!-- d2:context -->
+```text
+                          ┌───────────────┐   
+                      ┌──▶│cluster + user │   
+ ┌────────────────┐───┘   │               │   
+ │current-context │       └───────────────┘   
+ │                │───┐   ┌──────────────────┐
+ └────────────────┘   └──▶│default namespace │
+                          │                  │
+                          └──────────────────┘
+```
+<!-- /d2:context -->
+
 ## Your task
 
 All against the files in `$DIR` (leave your real `~/.kube/config` alone):

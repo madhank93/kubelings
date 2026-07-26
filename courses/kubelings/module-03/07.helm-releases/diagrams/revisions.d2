@@ -1,0 +1,8 @@
+# A release is a numbered stack, not a live edit: every upgrade appends a
+# revision, which is why rollback is just pointing at an earlier one.
+r1: "revision 1 ok"
+r2: "revision 2 broken"
+rb: "rollback"
+
+r1 -> r2: "helm upgrade"
+r2 -> rb: "redeploys revision 1"

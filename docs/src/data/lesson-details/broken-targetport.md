@@ -39,6 +39,10 @@ Learn the distinction — it's half of network debugging:
 - **timeout** → packets vanish. Reachability problem: NetworkPolicy, routing,
   wrong IP, firewall.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/broken-targetport-ports.svg" alt="broken-targetport ports diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Fix the chain so `http://search.kubelings.svc/` answers:

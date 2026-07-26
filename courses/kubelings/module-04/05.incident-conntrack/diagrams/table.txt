@@ -1,0 +1,20 @@
+    ┌────────────────┐    
+    │new connections │    
+    │                │    
+    └────────────────┘    
+            │             
+      one row each        
+            │             
+            ▼             
+   ┌─────────────────────┐
+   │conntrack table full │
+   │                     │
+   └─────────────────────┘
+            │             
+nf_conntrack: table full  
+            │             
+            ▼             
+     ┌────────────┐       
+     │SYN dropped │       
+     │            │       
+     └────────────┘       

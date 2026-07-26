@@ -1,0 +1,8 @@
+# Volumes are resolved by name at mount time. The name in the pod spec and the
+# name in the namespace differ, so the volume never assembles.
+spec:   "pod wants gateway-tls"
+actual: "secret gateway-tls-cert"
+stuck:  "ContainerCreating forever"
+
+spec   -> actual: "no such name"
+actual -> stuck:  "volume never mounts"

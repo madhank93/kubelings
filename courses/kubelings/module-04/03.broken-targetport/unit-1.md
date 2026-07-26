@@ -46,6 +46,31 @@ Learn the distinction — it's half of network debugging:
 - **timeout** → packets vanish. Reachability problem: NetworkPolicy, routing,
   wrong IP, firewall.
 
+<!-- d2:ports -->
+```text
+  ┌────────────────┐ 
+  │Service port 80 │ 
+  │                │ 
+  └────────────────┘ 
+          │          
+     forwards to     
+          │          
+          ▼          
+  ┌────────────────┐ 
+  │targetPort 8080 │ 
+  │                │ 
+  └────────────────┘ 
+          │          
+    nothing there    
+          │          
+          ▼          
+ ┌──────────────────┐
+ │pod listens on 80 │
+ │                  │
+ └──────────────────┘
+```
+<!-- /d2:ports -->
+
 ## Your task
 
 Fix the chain so `http://search.kubelings.svc/` answers:

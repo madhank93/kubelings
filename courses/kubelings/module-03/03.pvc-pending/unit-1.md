@@ -40,6 +40,31 @@ No `fast-ssd`. The claim is addressed to a department that doesn't exist in this
 building. Nothing errors — dynamic provisioning simply never begins, and PVC and
 pod wait forever, politely.
 
+<!-- d2:binding -->
+```text
+  ┌────────────┐  
+  │PVC pending │  
+  │            │  
+  └────────────┘  
+         │        
+asks by class name
+         │        
+         ▼        
+  ┌─────────────┐ 
+  │StorageClass │ 
+  │             │ 
+  └─────────────┘ 
+         │        
+    provisions    
+         │        
+         ▼        
+   ┌─────────┐    
+   │PV bound │    
+   │         │    
+   └─────────┘    
+```
+<!-- /d2:binding -->
+
 ## Your task
 
 Get the PVC **Bound** and `analytics` Running with a writable `/data`:

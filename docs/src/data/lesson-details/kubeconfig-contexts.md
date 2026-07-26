@@ -20,6 +20,10 @@ where every bare `kubectl` command lands — and right now it's `prod`. Every
 default has starred in several of this course's incident files (Spotify's
 cluster deletion began with a terminal pointed at the wrong cluster).
 
+<figure class="lesson-diagram">
+<img src="/diagrams/kubeconfig-contexts-context.svg" alt="kubeconfig-contexts context diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 All against the files in `$DIR` (leave your real `~/.kube/config` alone):

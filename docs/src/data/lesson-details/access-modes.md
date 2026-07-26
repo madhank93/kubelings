@@ -32,6 +32,10 @@ Unpack the deadlock:
 
 Pod 2 must be where the disk isn't. Checkmate.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/access-modes-deadlock.svg" alt="access-modes deadlock diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make `wiki` fully Available (no Pending pods). Think about what "HA" honestly

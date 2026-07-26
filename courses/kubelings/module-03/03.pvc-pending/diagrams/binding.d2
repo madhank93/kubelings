@@ -1,0 +1,8 @@
+# A claim is only half the transaction: something must answer it with a volume,
+# and in modern clusters the StorageClass is what does.
+pvc: "PVC pending"
+sc:  "StorageClass"
+pv:  "PV bound"
+
+pvc -> sc: "asks by class name"
+sc  -> pv: "provisions"

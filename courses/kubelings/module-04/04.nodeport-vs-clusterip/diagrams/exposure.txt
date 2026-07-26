@@ -1,0 +1,20 @@
+    ┌───────────────┐     
+    │client outside │     
+    │               │     
+    └───────────────┘     
+           │              
+   node IP and port       
+           │              
+           ▼              
+  ┌─────────────────┐     
+  │NodePort on node │     
+  │                 │     
+  └─────────────────┘     
+           │              
+  then normal routing     
+           │              
+           ▼              
+ ┌───────────────────────┐
+ │ClusterIP, inside only │
+ │                       │
+ └───────────────────────┘

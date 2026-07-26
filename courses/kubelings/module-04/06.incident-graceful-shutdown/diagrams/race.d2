@@ -1,0 +1,8 @@
+# SIGTERM and endpoint removal are sent at the same moment and travel at
+# different speeds, so requests keep arriving after the app starts shutting down.
+del:  "pod deleted"
+sig:  "SIGTERM to app"
+ep:   "endpoints still list it"
+
+del -> sig: "immediate"
+del -> ep:  "propagates slower"

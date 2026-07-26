@@ -24,6 +24,19 @@ The fix isn't discipline; it's making drift *impossible to express*. Enter
 **base** holds what all environments share; an **overlay** per environment
 holds only the differences; nothing is copy-pasted, so nothing can disagree.
 
+<!-- d2:overlay -->
+```text
+   ┌───────┐                                    
+   │ base  │─────shared─────┐                   
+   │       │                └──▶┌──────────────┐
+   └───────┘                    │rendered YAML │
+ ┌──────────┐               ┌──▶│              │
+ │ overlay  │─────patches───┘   └──────────────┘
+ │          │                                   
+ └──────────┘                                   
+```
+<!-- /d2:overlay -->
+
 ## Your task
 
 In your lesson shell, build the tree and apply the prod overlay. Files:

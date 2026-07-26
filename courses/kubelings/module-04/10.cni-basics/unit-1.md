@@ -124,3 +124,28 @@ kubelet ──► containerd ──► /opt/cni/bin/<type>   (per conflist order
   addresses available" pages at 3 a.m. (Neon's 2024 IP-exhaustion incident
   in the [library](https://kubelings.madhan.app/reference/incident-library/)
   is this at cloud scale.)
+
+<!-- d2:plumbing -->
+```text
+    ┌────────┐      
+    │kubelet │      
+    │        │      
+    └────────┘      
+         │          
+   ADD, sandbox     
+         │          
+         ▼          
+   ┌───────────┐    
+   │CNI plugin │    
+   │           │    
+   └───────────┘    
+         │          
+ wires and assigns  
+         │          
+         ▼          
+ ┌─────────────────┐
+ │veth plus pod IP │
+ │                 │
+ └─────────────────┘
+```
+<!-- /d2:plumbing -->

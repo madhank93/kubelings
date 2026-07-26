@@ -1,0 +1,8 @@
+# The kubelet does not do pod networking: it calls a CNI plugin, which is what
+# creates the interface and assigns the address.
+kubelet: "kubelet"
+cni:     "CNI plugin"
+netns:   "veth plus pod IP"
+
+kubelet -> cni:   "ADD, sandbox"
+cni     -> netns: "wires and assigns"

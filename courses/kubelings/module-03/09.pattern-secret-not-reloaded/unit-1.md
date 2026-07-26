@@ -41,6 +41,19 @@ which makes the postmortem extra confusing.)
 Mounted Secret **volumes** behave differently: the kubelet re-syncs them
 (~1 min), and the file content updates in place, no restart.
 
+<!-- d2:reload -->
+```text
+                                      ┌─────────────┐
+                    ┌─────mounted────▶│file updates │
+ ┌───────────────┐──┘                 │             │
+ │Secret rotated │                    └─────────────┘
+ │               │──┐                 ┌───────────┐  
+ └───────────────┘  └─────envFrom────▶│env frozen │  
+                                      │           │  
+                                      └───────────┘  
+```
+<!-- /d2:reload -->
+
 ## Your task
 
 Recreate `billing` consuming `db-creds` as a **volume mount** instead of env:

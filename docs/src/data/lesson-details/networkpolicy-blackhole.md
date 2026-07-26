@@ -27,6 +27,10 @@ allows."** With zero allow rules, that's a namespace-wide ingress blackhole.
 > objects; on iximiuz Labs (enforcing CNI) the same objects gate real packets.
 > The reasoning you practice is identical.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/networkpolicy-blackhole-silent.svg" alt="networkpolicy-blackhole silent diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Keep the wall, add a door:

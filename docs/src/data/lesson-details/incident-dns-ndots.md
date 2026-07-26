@@ -32,6 +32,10 @@ The `checkout` Deployment in `kubelings` resolves `payments.example.com` in a
 loop — stand-in for prod retry traffic. It runs with stock DNS settings, i.e.
 the amplifier is armed.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-dns-ndots-amplifier.svg" alt="incident-dns-ndots amplifier diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Defuse the amplifier without losing cluster DNS:

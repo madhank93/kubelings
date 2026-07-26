@@ -1,0 +1,8 @@
+# A context is a named triple, and current-context is what every bare kubectl
+# command silently resolves against.
+ctx: "current-context"
+who: "cluster + user"
+ns:  "default namespace"
+
+ctx -> who
+ctx -> ns

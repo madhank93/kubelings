@@ -1,0 +1,8 @@
+# Endpoint removal and pod shutdown race, and the proxy rules are always a few
+# moments behind — traffic keeps arriving at a pod that is already going away.
+term: "pod terminating"
+ep:   "endpoint removal"
+prox: "proxy still forwards"
+
+term -> ep:   "propagates"
+ep   -> prox: "seconds of 503s"

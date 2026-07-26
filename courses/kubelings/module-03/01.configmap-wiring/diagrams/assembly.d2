@@ -1,0 +1,8 @@
+# The failure is before the process: the kubelet resolves every env and volume
+# reference while assembling the container, and a missing key stops it there.
+pull: "image pulled"
+asm:  "kubelet assembles env"
+fail: "missing key, no process"
+
+pull -> asm:  "next step"
+asm  -> fail: "CreateContainerConfigError"

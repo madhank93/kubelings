@@ -1,0 +1,8 @@
+# A default-deny policy without a matching allow does not reject, it drops —
+# there is no RST and no log line, only a timeout.
+pol:  "default-deny ingress"
+none: "no allow rule"
+drop: "packets dropped"
+
+pol  -> none: "follow-up never merged"
+none -> drop: "timeout, no error"

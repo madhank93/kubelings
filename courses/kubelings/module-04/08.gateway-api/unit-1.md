@@ -38,6 +38,31 @@ Note `allowedRoutes: namespaces: from: Same` on the listener — attachment is
 Ingress could claim any class); the Gateway declares who may attach. That
 handshake is the security fix Ingress never had.
 
+<!-- d2:roles -->
+```text
+ ┌───────────────────────┐
+ │GatewayClass, platform │
+ │                       │
+ └───────────────────────┘
+            │             
+       implements         
+            │             
+            ▼             
+  ┌─────────────────────┐ 
+  │Gateway, cluster ops │ 
+  │                     │ 
+  └─────────────────────┘ 
+            │             
+     attaches routes      
+            │             
+            ▼             
+  ┌────────────────────┐  
+  │HTTPRoute, app team │  
+  │                    │  
+  └────────────────────┘  
+```
+<!-- /d2:roles -->
+
 ## Your task
 
 Write the app team's half: an HTTPRoute named `catalog` in `kubelings` that

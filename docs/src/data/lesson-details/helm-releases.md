@@ -30,6 +30,10 @@ The chart itself is vendored on disk at `/tmp/kubelings-charts/orders` —
 look at `values.yaml` and `templates/deployment.yaml` to see what the knobs
 control.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/helm-releases-revisions.svg" alt="helm-releases revisions diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. **Stabilize**: roll back to the last good revision:

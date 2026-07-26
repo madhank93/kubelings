@@ -1,0 +1,8 @@
+# Gateway API splits the one Ingress object by owner: infrastructure, listener,
+# and route become separate resources with separate permissions.
+gc:  "GatewayClass, platform"
+gw:  "Gateway, cluster ops"
+rt:  "HTTPRoute, app team"
+
+gc -> gw: "implements"
+gw -> rt: "attaches routes"

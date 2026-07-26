@@ -1,0 +1,8 @@
+# Every tracked flow occupies a row. When the table is full the kernel drops
+# new connections, and the failure looks like a network problem, not a limit.
+conn: "new connections"
+ct:   "conntrack table full"
+drop: "SYN dropped"
+
+conn -> ct:   "one row each"
+ct   -> drop: "nf_conntrack: table full"

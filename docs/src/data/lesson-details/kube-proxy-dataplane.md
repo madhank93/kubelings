@@ -83,3 +83,8 @@ failure-domain choice).
   show you.
 
 *No check — study, then advance.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/kube-proxy-dataplane-dnat.svg" alt="kube-proxy-dataplane dnat diagram" loading="lazy">
+</figure>
+

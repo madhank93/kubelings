@@ -37,6 +37,31 @@ Two breaks, same chain:
    pod listens on 80, but the Ingress talks to the *Service*, not the pod;
    the Service's `targetPort` handles the last hop.
 
+<!-- d2:chain -->
+```text
+    ┌──────────┐   
+    │host rule │   
+    │          │   
+    └──────────┘   
+         │         
+ by name and port  
+         │         
+         ▼         
+ ┌────────────────┐
+ │backend Service │
+ │                │
+ └────────────────┘
+         │         
+ must be populated 
+         │         
+         ▼         
+   ┌──────────┐    
+   │endpoints │    
+   │          │    
+   └──────────┘    
+```
+<!-- /d2:chain -->
+
 ## Your task
 
 Fix the Ingress (leave Deployment and Service alone — they're what the rest

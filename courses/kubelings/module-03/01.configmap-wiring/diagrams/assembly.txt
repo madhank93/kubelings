@@ -1,0 +1,20 @@
+      ┌─────────────┐       
+      │image pulled │       
+      │             │       
+      └─────────────┘       
+             │              
+         next step          
+             │              
+             ▼              
+  ┌──────────────────────┐  
+  │kubelet assembles env │  
+  │                      │  
+  └──────────────────────┘  
+             │              
+CreateContainerConfigError  
+             │              
+             ▼              
+  ┌────────────────────────┐
+  │missing key, no process │
+  │                        │
+  └────────────────────────┘

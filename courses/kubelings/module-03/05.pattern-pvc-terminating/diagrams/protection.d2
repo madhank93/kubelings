@@ -1,0 +1,8 @@
+# Deletion is a request, not an act: a finalizer holds the object open until
+# whatever depends on it lets go.
+del:  "PVC deleted"
+fin:  "pvc-protection finalizer"
+pod:  "pod still mounts it"
+
+del -> fin: "marked Terminating"
+fin -> pod: "waits for release"

@@ -39,6 +39,25 @@ catches up, then the app gets SIGTERM and exits clean.
 `terminationGracePeriodSeconds: 1` — the pod is SIGKILLed one second after
 SIGTERM, mid-flight requests be damned. Every rollout is a micro-outage.
 
+<!-- d2:race -->
+```text
+            ┌────────────┐                   
+            │pod deleted │                   
+            │            │                   
+            └────────────┘                   
+                 │   │                       
+         ┌───────┘   └───────┐               
+         │                   │               
+     immediate       propagates slower       
+         │                   │               
+         ▼                   ▼               
+ ┌───────────────┐ ┌────────────────────────┐
+ │SIGTERM to app │ │endpoints still list it │
+ │               │ │                        │
+ └───────────────┘ └────────────────────────┘
+```
+<!-- /d2:race -->
+
 ## Your task
 
 Make termination outlast endpoint propagation:

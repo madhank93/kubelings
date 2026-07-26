@@ -30,6 +30,10 @@ kubectl -n kubelings get deploy storefront -o jsonpath='{.spec.template.spec.con
 deletion begins, guaranteeing a window where the routing mesh points at a
 corpse. Someone set it "to make deploys faster".
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pattern-ghost-endpoints-lag.svg" alt="pattern-ghost-endpoints lag diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Fix the `storefront` Deployment's termination timeline:

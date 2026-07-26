@@ -1,0 +1,20 @@
+  ┌──────────────┐   
+  │RWO, one node │   
+  │              │   
+  └──────────────┘   
+          │          
+ same node required  
+          │          
+          ▼          
+   ┌──────────────┐  
+   │anti-affinity │  
+   │              │  
+   └──────────────┘  
+          │          
+ same node forbidden 
+          │          
+          ▼          
+ ┌──────────────────┐
+ │replica 2 Pending │
+ │                  │
+ └──────────────────┘

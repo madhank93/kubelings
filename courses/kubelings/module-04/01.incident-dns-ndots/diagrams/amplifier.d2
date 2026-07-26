@@ -1,0 +1,8 @@
+# ndots:5 means any name with fewer than five dots is tried against the search
+# path first, so one external lookup becomes several failures then the answer.
+q:    "one lookup"
+srch: "search path tried"
+ans:  "answer on last try"
+
+q    -> srch: "ndots 5"
+srch -> ans:  "4 NXDOMAIN first"

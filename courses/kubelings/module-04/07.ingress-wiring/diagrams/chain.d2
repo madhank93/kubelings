@@ -1,0 +1,8 @@
+# An Ingress is a chain of names, and it 404s at the first link that does not
+# resolve — controller, host, Service, port.
+host: "host rule"
+svc:  "backend Service"
+ep:   "endpoints"
+
+host -> svc: "by name and port"
+svc  -> ep:  "must be populated"

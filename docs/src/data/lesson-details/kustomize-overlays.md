@@ -17,6 +17,10 @@ The fix isn't discipline; it's making drift *impossible to express*. Enter
 **base** holds what all environments share; an **overlay** per environment
 holds only the differences; nothing is copy-pasted, so nothing can disagree.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/kustomize-overlays-overlay.svg" alt="kustomize-overlays overlay diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 In your lesson shell, build the tree and apply the prod overlay. Files:

@@ -90,3 +90,28 @@ failure-domain choice).
   show you.
 
 *No check — study, then advance.*
+
+<!-- d2:dnat -->
+```text
+    ┌──────────────────┐  
+    │Service ClusterIP │  
+    │                  │  
+    └──────────────────┘  
+            │             
+     packet matched       
+            │             
+            ▼             
+ ┌───────────────────────┐
+ │iptables KUBE-SERVICES │
+ │                       │
+ └───────────────────────┘
+            │             
+    DNAT to a backend     
+            │             
+            ▼             
+        ┌───────┐         
+        │pod IP │         
+        │       │         
+        └───────┘         
+```
+<!-- /d2:dnat -->

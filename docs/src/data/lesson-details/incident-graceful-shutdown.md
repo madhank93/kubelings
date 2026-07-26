@@ -32,6 +32,10 @@ catches up, then the app gets SIGTERM and exits clean.
 `terminationGracePeriodSeconds: 1` — the pod is SIGKILLed one second after
 SIGTERM, mid-flight requests be damned. Every rollout is a micro-outage.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-graceful-shutdown-race.svg" alt="incident-graceful-shutdown race diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make termination outlast endpoint propagation:

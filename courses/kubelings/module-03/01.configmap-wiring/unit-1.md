@@ -31,6 +31,31 @@ Error: couldn't find key taxRate in ConfigMap kubelings/pricing-config
 The ConfigMap exists. It has `tax_rate`. The Deployment asks for `taxRate`.
 snake_case vs camelCase — a one-key typo, and the kubelet retries forever.
 
+<!-- d2:assembly -->
+```text
+      ┌─────────────┐       
+      │image pulled │       
+      │             │       
+      └─────────────┘       
+             │              
+         next step          
+             │              
+             ▼              
+  ┌──────────────────────┐  
+  │kubelet assembles env │  
+  │                      │  
+  └──────────────────────┘  
+             │              
+CreateContainerConfigError  
+             │              
+             ▼              
+  ┌────────────────────────┐
+  │missing key, no process │
+  │                        │
+  └────────────────────────┘
+```
+<!-- /d2:assembly -->
+
 ## Your task
 
 Get `pricing` Running with `TAX_RATE=0.19` actually inside the container:

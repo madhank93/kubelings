@@ -1,0 +1,8 @@
+# Nothing is copied: the overlay is a patch over a shared base, and the cluster
+# only ever sees what the two render to together.
+base:    "base"
+overlay: "overlay"
+out:     "rendered YAML"
+
+base    -> out: "shared"
+overlay -> out: "patches"

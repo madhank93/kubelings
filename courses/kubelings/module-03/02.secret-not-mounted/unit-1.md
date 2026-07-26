@@ -35,6 +35,31 @@ than start it without its Secret. A gateway that boots without TLS material and
 serves plaintext would be a much worse failure than a pod that visibly never
 starts. The hang is the safety feature.
 
+<!-- d2:name -->
+```text
+   ┌──────────────────────┐  
+   │pod wants gateway-tls │  
+   │                      │  
+   └──────────────────────┘  
+             │               
+       no such name          
+             │               
+             ▼               
+  ┌────────────────────────┐ 
+  │secret gateway-tls-cert │ 
+  │                        │ 
+  └────────────────────────┘ 
+             │               
+    volume never mounts      
+             │               
+             ▼               
+ ┌──────────────────────────┐
+ │ContainerCreating forever │
+ │                          │
+ └──────────────────────────┘
+```
+<!-- /d2:name -->
+
 ## Your task
 
 Get `gateway` Running with the cert actually mounted at `/etc/tls/`:

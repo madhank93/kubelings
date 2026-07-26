@@ -39,6 +39,31 @@ Unpack the deadlock:
 
 Pod 2 must be where the disk isn't. Checkmate.
 
+<!-- d2:deadlock -->
+```text
+  ┌──────────────┐   
+  │RWO, one node │   
+  │              │   
+  └──────────────┘   
+          │          
+ same node required  
+          │          
+          ▼          
+   ┌──────────────┐  
+   │anti-affinity │  
+   │              │  
+   └──────────────┘  
+          │          
+ same node forbidden 
+          │          
+          ▼          
+ ┌──────────────────┐
+ │replica 2 Pending │
+ │                  │
+ └──────────────────┘
+```
+<!-- /d2:deadlock -->
+
 ## Your task
 
 Make `wiki` fully Available (no Pending pods). Think about what "HA" honestly

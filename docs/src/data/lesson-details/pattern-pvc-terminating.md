@@ -33,6 +33,10 @@ actually goes. `pvc-protection`'s condition is simple: **no pod may still be
 using this claim.** Some pod still is. The system is refusing to yank a disk out
 from under a running process. That's not a bug. That's the seatbelt.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pattern-pvc-terminating-protection.svg" alt="pattern-pvc-terminating protection diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Release the claim *properly*:

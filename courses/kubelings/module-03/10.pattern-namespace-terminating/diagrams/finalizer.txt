@@ -1,0 +1,20 @@
+  ┌──────────────────────┐  
+  │namespace Terminating │  
+  │                      │  
+  └──────────────────────┘  
+             │              
+     must empty first       
+             │              
+             ▼              
+  ┌────────────────────────┐
+  │resource with finalizer │
+  │                        │
+  └────────────────────────┘
+             │              
+controller never clears it  
+             │              
+             ▼              
+     ┌─────────────────┐    
+     │deletion blocked │    
+     │                 │    
+     └─────────────────┘    

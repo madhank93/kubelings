@@ -1,0 +1,8 @@
+# Where a Secret is consumed decides whether a rotation reaches the process:
+# mounted files are refreshed, environment variables are frozen at start.
+sec: "Secret rotated"
+vol: "file updates"
+env: "env frozen"
+
+sec -> vol: "mounted"
+sec -> env: "envFrom"

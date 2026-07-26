@@ -1,0 +1,8 @@
+# A namespace cannot finish deleting while anything inside it still holds a
+# finalizer — the namespace is waiting on its contents, not on the API.
+ns:   "namespace Terminating"
+res:  "resource with finalizer"
+wait: "deletion blocked"
+
+ns  -> res:  "must empty first"
+res -> wait: "controller never clears it"

@@ -1,0 +1,8 @@
+# ClusterIP is reachable only from inside the cluster; NodePort adds a port on
+# every node, which is what makes the same Service reachable from outside.
+out:  "client outside"
+np:   "NodePort on node"
+svc:  "ClusterIP, inside only"
+
+out -> np:  "node IP and port"
+np  -> svc: "then normal routing"

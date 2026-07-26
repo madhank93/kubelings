@@ -1,0 +1,20 @@
+     ┌────────────┐         
+     │PVC deleted │         
+     │            │         
+     └────────────┘         
+            │               
+   marked Terminating       
+            │               
+            ▼               
+ ┌─────────────────────────┐
+ │pvc-protection finalizer │
+ │                         │
+ └─────────────────────────┘
+            │               
+    waits for release       
+            │               
+            ▼               
+   ┌────────────────────┐   
+   │pod still mounts it │   
+   │                    │   
+   └────────────────────┘   

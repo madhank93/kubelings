@@ -41,6 +41,31 @@ actually goes. `pvc-protection`'s condition is simple: **no pod may still be
 using this claim.** Some pod still is. The system is refusing to yank a disk out
 from under a running process. That's not a bug. That's the seatbelt.
 
+<!-- d2:protection -->
+```text
+     ┌────────────┐         
+     │PVC deleted │         
+     │            │         
+     └────────────┘         
+            │               
+   marked Terminating       
+            │               
+            ▼               
+ ┌─────────────────────────┐
+ │pvc-protection finalizer │
+ │                         │
+ └─────────────────────────┘
+            │               
+    waits for release       
+            │               
+            ▼               
+   ┌────────────────────┐   
+   │pod still mounts it │   
+   │                    │   
+   └────────────────────┘   
+```
+<!-- /d2:protection -->
+
 ## Your task
 
 Release the claim *properly*:

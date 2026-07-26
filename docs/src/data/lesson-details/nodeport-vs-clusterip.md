@@ -17,6 +17,10 @@ The Service type ladder, each rung adding exposure:
 forever. Today's tool is **NodePort**: kube-proxy programs every node to forward
 a high port (default range 30000–32767) into the Service.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/nodeport-vs-clusterip-exposure.svg" alt="nodeport-vs-clusterip exposure diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Make Service `demo` type `NodePort` with `nodePort: 30080` (pinned, so the

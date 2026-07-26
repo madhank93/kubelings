@@ -30,6 +30,10 @@ Two breaks, same chain:
    pod listens on 80, but the Ingress talks to the *Service*, not the pod;
    the Service's `targetPort` handles the last hop.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/ingress-wiring-chain.svg" alt="ingress-wiring chain diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Fix the Ingress (leave Deployment and Service alone — they're what the rest

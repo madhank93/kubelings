@@ -82,3 +82,28 @@ invisible defaults are load-bearing.** Module 7 shows you the machinery itself.
 
 *No check for this lesson — mark it done by moving on. The next one has you back
 in the terminal.*
+
+<!-- d2:table -->
+```text
+    ┌────────────────┐    
+    │new connections │    
+    │                │    
+    └────────────────┘    
+            │             
+      one row each        
+            │             
+            ▼             
+   ┌─────────────────────┐
+   │conntrack table full │
+   │                     │
+   └─────────────────────┘
+            │             
+nf_conntrack: table full  
+            │             
+            ▼             
+     ┌────────────┐       
+     │SYN dropped │       
+     │            │       
+     └────────────┘       
+```
+<!-- /d2:table -->

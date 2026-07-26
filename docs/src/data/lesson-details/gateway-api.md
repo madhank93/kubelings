@@ -31,6 +31,10 @@ Note `allowedRoutes: namespaces: from: Same` on the listener — attachment is
 Ingress could claim any class); the Gateway declares who may attach. That
 handshake is the security fix Ingress never had.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/gateway-api-roles.svg" alt="gateway-api roles diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Write the app team's half: an HTTPRoute named `catalog` in `kubelings` that

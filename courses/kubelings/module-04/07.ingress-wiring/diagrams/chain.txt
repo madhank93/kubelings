@@ -1,0 +1,20 @@
+    ┌──────────┐   
+    │host rule │   
+    │          │   
+    └──────────┘   
+         │         
+ by name and port  
+         │         
+         ▼         
+ ┌────────────────┐
+ │backend Service │
+ │                │
+ └────────────────┘
+         │         
+ must be populated 
+         │         
+         ▼         
+   ┌──────────┐    
+   │endpoints │    
+   │          │    
+   └──────────┘    

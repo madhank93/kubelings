@@ -28,6 +28,10 @@ than start it without its Secret. A gateway that boots without TLS material and
 serves plaintext would be a much worse failure than a pod that visibly never
 starts. The hang is the safety feature.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/secret-not-mounted-name.svg" alt="secret-not-mounted name diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Get `gateway` Running with the cert actually mounted at `/etc/tls/`:

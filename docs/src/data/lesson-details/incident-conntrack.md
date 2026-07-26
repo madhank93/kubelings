@@ -75,3 +75,8 @@ invisible defaults are load-bearing.** Module 7 shows you the machinery itself.
 
 *No check for this lesson — mark it done by moving on. The next one has you back
 in the terminal.*
+
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-conntrack-table.svg" alt="incident-conntrack table diagram" loading="lazy">
+</figure>
+
