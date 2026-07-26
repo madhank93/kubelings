@@ -21,6 +21,7 @@ export default defineConfig({
     starlight({
       title: 'Kubelings',
       logo: { src: './src/assets/kubernetes.svg', replacesTitle: false },
+      favicon: '/favicon-32.png',
       description:
         'Learn Kubernetes the rustlings way — fix broken-on-purpose clusters until an automated check passes. By Madhan Kumaravelu.',
       head: [
@@ -28,6 +29,18 @@ export default defineConfig({
           tag: 'meta',
           attrs: { name: 'author', content: 'Madhan Kumaravelu' },
         },
+        // Social/link-preview metadata. This site previously had none at all,
+        // so shared links rendered with no title card and no icon. og:image
+        // must be raster — X, LinkedIn, Slack and iMessage all ignore SVG.
+        { tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
+        { tag: 'meta', attrs: { property: 'og:site_name', content: 'Kubelings' } },
+        { tag: 'meta', attrs: { property: 'og:image', content: 'https://kubelings.madhan.app/og.png' } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://kubelings.madhan.app/og.png' } },
+        { tag: 'meta', attrs: { name: 'theme-color', content: '#326ce5' } },
+        { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
         {
           tag: 'meta',
           attrs: {
