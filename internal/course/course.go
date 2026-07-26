@@ -62,7 +62,20 @@ type frontmatter struct {
 var (
 	moduleDirRe = regexp.MustCompile(`^module-(\d+)$`)
 	lessonDirRe = regexp.MustCompile(`^(\d+)\.(.+)$`)
+
+	// lessonNameRe is the shape a lesson name must have to be usable. The name
+	// is passed as an argument to the bash runner and joined into paths by it,
+	// and lessonDirRe's `(.+)` is happy to yield ".." (from a directory named
+	// "1...") or a name containing a slash. Names that don't match are skipped
+	// rather than rejected: one malformed directory should not stop the whole
+	// course from loading.
+	lessonNameRe = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
 )
+
+// ValidLessonName reports whether name is safe to hand to the runner.
+func ValidLessonName(name string) bool {
+	return name != ".." && lessonNameRe.MatchString(name)
+}
 
 // CourseDir returns courses/kubelings under root.
 func CourseDir(root string) string { return filepath.Join(root, "courses", "kubelings") }
@@ -91,7 +104,7 @@ func Discover(root string) ([]Module, error) {
 				continue
 			}
 			mm := lessonDirRe.FindStringSubmatch(le.Name())
-			if mm == nil {
+			if mm == nil || !ValidLessonName(mm[2]) {
 				continue
 			}
 			ldir := filepath.Join(base, e.Name(), le.Name())

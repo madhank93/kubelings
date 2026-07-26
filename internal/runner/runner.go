@@ -14,9 +14,26 @@ import (
 
 const script = "scripts/run-challenge-local.sh"
 
+// safeArg rejects a runner argument that the bash script would misread. Every
+// argument it takes is a bare word — a lesson name or a verb — so anything
+// carrying a path separator, or leading with a dash the script would parse as
+// a flag, is a bug upstream and must not reach the shell.
+func safeArg(a string) bool {
+	return a != "" && !strings.ContainsAny(a, "/\\") && !strings.HasPrefix(a, "-")
+}
+
 // Cmd builds an *exec.Cmd for the runner with the given args, rooted at root.
+// Unsafe arguments are dropped: the course loader already refuses lesson names
+// of the wrong shape, and this is the structural backstop for any future call
+// path that skips it.
 func Cmd(root string, args ...string) *exec.Cmd {
-	c := exec.Command("bash", append([]string{filepath.Join(root, script)}, args...)...)
+	clean := make([]string, 0, len(args))
+	for _, a := range args {
+		if safeArg(a) {
+			clean = append(clean, a)
+		}
+	}
+	c := exec.Command("bash", append([]string{filepath.Join(root, script)}, clean...)...)
 	c.Dir = root
 	return c
 }

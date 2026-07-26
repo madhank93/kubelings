@@ -78,3 +78,20 @@ func TestExtractDetails(t *testing.T) {
 		}
 	}
 }
+
+func TestValidLessonName(t *testing.T) {
+	ok := []string{"rolling-update", "incident-node-oom", "pattern-ghost-endpoints", "vpa", "k8s1.30"}
+	for _, n := range ok {
+		if !ValidLessonName(n) {
+			t.Errorf("ValidLessonName(%q) = false, want true", n)
+		}
+	}
+	// lessonDirRe's `(.+)` happily yields these from directories named
+	// "1...", "1./etc" and so on.
+	bad := []string{"", "..", ".", "../etc", "a/b", "-flag", "Upper"}
+	for _, n := range bad {
+		if ValidLessonName(n) {
+			t.Errorf("ValidLessonName(%q) = true, want false", n)
+		}
+	}
+}
