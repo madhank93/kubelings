@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/madhank93/kubelings/internal/course"
 )
@@ -15,6 +16,12 @@ import (
 func shellEnv(repoRoot string, l *course.Lesson) (string, string, error) {
 	dir, err := os.MkdirTemp("", "kubelings-shell")
 	if err != nil {
+		return "", "", err
+	}
+	// This directory holds a cluster-admin kubeconfig. MkdirTemp creates it
+	// 0700 on every platform Go supports, but say so explicitly rather than
+	// depending on it — the files inside are only 0600 because of this.
+	if err := os.Chmod(dir, 0o700); err != nil {
 		return "", "", err
 	}
 
@@ -58,14 +65,29 @@ func shellEnv(repoRoot string, l *course.Lesson) (string, string, error) {
 	return kubeconfig, rc, nil
 }
 
+// shellQuote renders s as a single POSIX shell word.
+//
+// Go's %q is *Go* quoting, not shell quoting: it produces a double-quoted
+// string, inside which the shell still expands $, backticks and history
+// references. Titles and lesson names reach this file from
+// course frontmatter and directory names, so a title containing $(…) would be
+// executed when the learner opened a shell. Single quotes are literal in POSIX
+// sh; the only character needing care is the single quote itself, which is
+// closed, escaped, and reopened.
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
 // buildRC produces the interactive bash rcfile body. Separated for testing.
 func buildRC(repoRoot, lesson, klDir, title string) string {
+	repoRoot, lesson, klDir, title =
+		shellQuote(repoRoot), shellQuote(lesson), shellQuote(klDir), shellQuote(title)
 	return fmt.Sprintf(`
 source ~/.bashrc 2>/dev/null || true
-cd %[1]q
+cd %[1]s
 kubectl config set-context --current --namespace=kubelings >/dev/null 2>&1
 alias k=kubectl
-REPO=%[1]q; LESSON=%[2]q; KLDIR=%[3]q
+REPO=%[1]s; LESSON=%[2]s; KLDIR=%[3]s
 task()     { cat "$KLDIR/task.md"; }
 hint()     { cat "$KLDIR/hint.md"; }
 solution() { cat "$KLDIR/solution.md"; }
@@ -110,7 +132,7 @@ export do='--dry-run=client -o yaml'    # k run web --image=nginx $do > web.yaml
 export now='--force --grace-period=0'   # k delete pod web $now
 
 clear
-printf '\e[1;36m%%s\e[0m\n\n' %[4]q
+printf '\e[1;36m%%s\e[0m\n\n' %[4]s
 task
 printf '\n\e[2mcommands:\e[0m \e[36mtask\e[0m · \e[36mhint\e[0m · \e[36mverify\e[0m · \e[36msolution\e[0m · \e[36mklreset\e[0m · exit\n'
 printf '\e[2mshortcuts:\e[0m \e[36mk\e[0m=kubectl · \e[36m<tab>\e[0m completes · \e[36m$do\e[0m=--dry-run=client -o yaml · \e[36m$now\e[0m=--force --grace-period=0\n'
