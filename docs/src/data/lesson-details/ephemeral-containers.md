@@ -23,6 +23,10 @@ grafts a *temporary* container with real tools into the running pod. With
 `/proc/<pid>/root/` you can read the app container's entire filesystem —
 mounts, config files, all of it. No restart, no image rebuild.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/ephemeral-containers-debug.svg" alt="ephemeral-containers debug diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Attach a debug container to `orders-api`:

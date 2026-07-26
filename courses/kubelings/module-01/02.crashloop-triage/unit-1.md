@@ -26,6 +26,32 @@ between attempts keeps doubling.
 keeps exiting, and I'm pausing between retries."* The actual error is somewhere
 else — and there is exactly one reliable place to find it.
 
+<!-- d2:backoff -->
+```text
+      ┌─────────────────┐  
+      │container starts │  
+      │                 │  
+      └─────────────────┘  
+         │          ▲      
+         │          │      
+   seconds later    │      
+         │          │      
+         ▼          │      
+ ┌───────────────┐  │      
+ │exits non-zero │  │      
+ │               │  │      
+ └───────────────┘  │      
+           │        │      
+   kubelet restarts │      
+           │        │      
+           ▼        │      
+     ┌────────────────────┐
+     │backoff 10s 20s 40s │
+     │                    │
+     └────────────────────┘
+```
+<!-- /d2:backoff -->
+
 ## Your task
 
 Make `orders` run steadily (2/2 Available, no CrashLoopBackOff):

@@ -1,0 +1,8 @@
+# Readiness is a traffic switch, and a probe that is merely too tight flips it
+# — connections in flight are dropped each time the pod leaves the set.
+probe: "probe times out"
+not:   "pod NotReady"
+ep:    "endpoint removed"
+
+probe -> not: "1 failure"
+not   -> ep:  "in-flight requests 502"

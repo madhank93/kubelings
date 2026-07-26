@@ -1,0 +1,8 @@
+# KEDA does not replace the HPA — it creates one and feeds it metrics from an
+# event source the HPA could not read by itself.
+so:  "ScaledObject"
+kd:  "KEDA metrics API"
+hpa: "HPA it created"
+
+so -> kd:  "queue depth, cron"
+kd -> hpa: "external metric"

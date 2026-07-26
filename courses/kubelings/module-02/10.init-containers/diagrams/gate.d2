@@ -1,0 +1,8 @@
+# Init containers are a gate: the app containers do not exist until every init
+# container has exited 0, in order.
+init: "init: wait-for-config"
+ok:   "exits 0"
+app:  "app container starts"
+
+init -> ok:  "condition met"
+ok   -> app: "gate opens"

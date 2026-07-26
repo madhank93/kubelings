@@ -11,6 +11,19 @@ There's no per-node log collection. You need an agent that runs **one pod on
 every node** in the cluster — and automatically on any node that joins later.
 That workload shape is a **DaemonSet**, not a Deployment.
 
+<!-- d2:pernode -->
+```text
+                                           ┌─────────┐
+                           ┌─────1 pod────▶│worker-1 │
+ ┌──────────────────────┐──┘               │         │
+ │DaemonSet node-logger │                  └─────────┘
+ │                      │──┐               ┌─────────┐
+ └──────────────────────┘  └─────1 pod────▶│worker-2 │
+                                           │         │
+                                           └─────────┘
+```
+<!-- /d2:pernode -->
+
 ## Your task
 
 In the `kubelings` namespace, create a DaemonSet named **`node-logger`**:

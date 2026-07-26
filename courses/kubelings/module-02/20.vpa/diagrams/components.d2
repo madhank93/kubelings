@@ -1,0 +1,8 @@
+# VPA is three parts, and only the recommender is running here: it computes
+# targets, the others are what would act on them.
+rec: "recommender"
+tgt: "target requests"
+act: "updater, admission"
+
+rec -> tgt: "from usage"
+tgt -> act: "applied on recreate"

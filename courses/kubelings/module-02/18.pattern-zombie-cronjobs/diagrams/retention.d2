@@ -1,0 +1,8 @@
+# Nothing cleans up by itself: the CronJob keeps Jobs, and each Job keeps its
+# pods, so the namespace grows one generation per schedule tick.
+cj:   "CronJob hourly"
+jobs: "Jobs retained"
+pods: "pods retained"
+
+cj   -> jobs: "history limit"
+jobs -> pods: "owner keeps them"

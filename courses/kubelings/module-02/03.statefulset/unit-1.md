@@ -12,6 +12,23 @@ other by **stable hostname** (e.g. `web-0.web`, `web-1.web`). A Deployment +
 ClusterIP Service can't give that — you need a **StatefulSet** plus a **headless
 Service** (`clusterIP: None`) to publish per-pod DNS records.
 
+<!-- d2:identity -->
+```text
+  ┌────────────────────────────┐
+  │Service web, clusterIP None │
+  │                            │
+  └────────────────────────────┘
+        │             │         
+    A record      A record      
+        │             │         
+        ▼             ▼         
+ ┌────────────┐ ┌────────────┐  
+ │ web-0.web  │ │ web-1.web  │  
+ │            │ │            │  
+ └────────────┘ └────────────┘  
+```
+<!-- /d2:identity -->
+
 ## Your task
 
 In namespace `kubelings`:

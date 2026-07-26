@@ -21,6 +21,10 @@ kubectl -n kubelings exec orders-checkout -c app -- wget -qO- -T2 http://127.0.0
 kubectl -n kubelings exec orders-metrics -c app -- ls /shared/                             # no metrics.prom
 ```
 
+<figure class="lesson-diagram">
+<img src="/diagrams/multi-container-patterns-shapes.svg" alt="multi-container-patterns shapes diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. **`orders-logs`** (sidecar): the app writes `order shipped` lines every 2 s,

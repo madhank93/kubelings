@@ -24,6 +24,10 @@ You've seen everything here before, pointed at a new purpose: the Service
 selector (lesson 1.4's mismatch, used *deliberately*), readiness probes
 (lesson 2.8) as the flip gate, and Endpoints as the proof.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/blue-green-canary-flip.svg" alt="blue-green-canary flip diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Ship v2 without dropping a request, keeping the escape hatch:

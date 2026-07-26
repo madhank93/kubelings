@@ -23,6 +23,31 @@ been "waiting for config volume..." for 22 minutes. The ConfigMap it wants
 
 Look closely at the two names in the pod spec.
 
+<!-- d2:gate -->
+```text
+ ┌──────────────────────┐
+ │init: wait-for-config │
+ │                      │
+ └──────────────────────┘
+           │             
+     condition met       
+           │             
+           ▼             
+      ┌────────┐         
+      │exits 0 │         
+      │        │         
+      └────────┘         
+           │             
+      gate opens         
+           │             
+           ▼             
+ ┌─────────────────────┐ 
+ │app container starts │ 
+ │                     │ 
+ └─────────────────────┘ 
+```
+<!-- /d2:gate -->
+
 ## Your task
 
 Get `reports` Running and Available:

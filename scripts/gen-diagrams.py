@@ -79,6 +79,24 @@ def best_layout(src, name, tmp):
     return best[1], best[2], best[3], best[4]
 
 
+def place(body, name, art):
+    """Insert a new diagram block at the seam between situation and task.
+
+    A diagram earns its place by being read before the work starts, so it goes
+    directly above the task heading. Lessons that want it elsewhere just move
+    the markers; this only ever fires when they are absent.
+    """
+    block = f"\n<!-- d2:{name} -->\n```text\n{art.rstrip()}\n```\n<!-- /d2:{name} -->\n"
+    m = re.search(r'(?m)^##\s+(Your task|The task|Task)\s*$', body)
+    if m:
+        return body[:m.start()].rstrip("\n") + "\n" + block + "\n" + body[m.start():]
+    # No task heading (readings): before the first hint/solution/check instead.
+    m = re.search(r'(?m)^(?:<details>|::[a-z-]+)', body)
+    if m:
+        return body[:m.start()].rstrip("\n") + "\n" + block + "\n" + body[m.start():]
+    return body.rstrip("\n") + "\n" + block
+
+
 def inject(unit, name, art):
     """Put the ASCII between this diagram's markers in unit-1.md."""
     if not os.path.isfile(unit):
@@ -86,8 +104,10 @@ def inject(unit, name, art):
     body = open(unit, encoding="utf-8").read()
     pat = re.compile(r'(?ms)^(<!-- d2:%s -->\n)```text\n.*?\n```\n(<!-- /d2:%s -->)' % (name, name))
     if not pat.search(body):
-        print(f"  ! {os.path.relpath(unit, _REPO)} has no <!-- d2:{name} --> markers — skipped")
-        return False
+        new = place(body, name, art)
+        open(unit, "w", encoding="utf-8").write(new)
+        print(f"  + placed <!-- d2:{name} --> in {os.path.relpath(unit, _REPO)}")
+        return True
     new = pat.sub(lambda m: m.group(1) + "```text\n" + art.rstrip("\n") + "\n```\n" + m.group(2), body)
     if new == body:
         return False
@@ -129,7 +149,7 @@ for src in sorted(glob.glob(os.path.join(ROOT, "module-*", "*", "diagrams", "*.d
     unit = os.path.join(lesson, "unit-1.md")
     before = open(unit, encoding="utf-8").read() if os.path.isfile(unit) else ""
     if check:
-        if f"<!-- d2:{name} -->" in before and txt.rstrip("\n") not in before:
+        if txt.rstrip("\n") not in before:
             stale.append(os.path.relpath(unit, _REPO))
     elif inject(unit, name, txt):
         rendered += 1

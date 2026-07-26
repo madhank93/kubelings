@@ -36,6 +36,31 @@ The registry is up. The `nginx` repo exists. The *tag* `1.27.9999-alpine` was a
 fat-fingered version that never existed — and `kubectl apply` will happily ship
 a reference to nothing.
 
+<!-- d2:pull -->
+```text
+  ┌──────────────┐  
+  │kubelet pulls │  
+  │              │  
+  └──────────────┘  
+         │          
+     image:tag      
+         │          
+         ▼          
+ ┌─────────────────┐
+ │registry refuses │
+ │                 │
+ └─────────────────┘
+         │          
+ ImagePullBackOff   
+         │          
+         ▼          
+ ┌────────────────┐ 
+ │events, no logs │ 
+ │                │ 
+ └────────────────┘ 
+```
+<!-- /d2:pull -->
+
 ## Your task
 
 Get `frontend` Available (2/2):

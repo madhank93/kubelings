@@ -1,0 +1,8 @@
+# A headless Service publishes one DNS record per pod, which is what gives
+# StatefulSet peers stable names to address each other by.
+svc: "Service web, clusterIP None"
+p0:  "web-0.web"
+p1:  "web-1.web"
+
+svc -> p0: "A record"
+svc -> p1: "A record"

@@ -31,6 +31,25 @@ You've seen everything here before, pointed at a new purpose: the Service
 selector (lesson 1.4's mismatch, used *deliberately*), readiness probes
 (lesson 2.8) as the flip gate, and Endpoints as the proof.
 
+<!-- d2:flip -->
+```text
+            ┌─────────────┐        
+            │Service shop │        
+            │             │        
+            └─────────────┘        
+                │    │             
+          ┌─────┘    └─────┐       
+          │                │       
+selector version=blueflip, instant 
+          │                │       
+          ▼                ▼       
+   ┌─────────────┐ ┌──────────────┐
+   │shop-blue v1 │ │shop-green v2 │
+   │             │ │              │
+   └─────────────┘ └──────────────┘
+```
+<!-- /d2:flip -->
+
 ## Your task
 
 Ship v2 without dropping a request, keeping the escape hatch:

@@ -45,6 +45,31 @@ workload doesn't error — the recommender simply has nothing to watch and
 says nothing, forever. Same silent-observability failure as the typo'd
 metric in M8.9: wrong reference, empty result, no alarm.
 
+<!-- d2:components -->
+```text
+   ┌──────────────┐   
+   │ recommender  │   
+   │              │   
+   └──────────────┘   
+           │          
+      from usage      
+           │          
+           ▼          
+   ┌────────────────┐ 
+   │target requests │ 
+   │                │ 
+   └────────────────┘ 
+           │          
+  applied on recreate 
+           │          
+           ▼          
+ ┌───────────────────┐
+ │updater, admission │
+ │                   │
+ └───────────────────┘
+```
+<!-- /d2:components -->
+
 ## Your task
 
 1. Point the VPA at the real Deployment:

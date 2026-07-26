@@ -34,6 +34,31 @@ them; etcd stores them. Multiply by fifty CronJobs across a real cluster and
 the control plane is doing real work to remember garbage. (M7's watch-informers
 lesson shows exactly who pays.)
 
+<!-- d2:retention -->
+```text
+ ┌───────────────┐
+ │CronJob hourly │
+ │               │
+ └───────────────┘
+         │        
+   history limit  
+         │        
+         ▼        
+  ┌──────────────┐
+  │Jobs retained │
+  │              │
+  └──────────────┘
+         │        
+ owner keeps them 
+         │        
+         ▼        
+  ┌──────────────┐
+  │pods retained │
+  │              │
+  └──────────────┘
+```
+<!-- /d2:retention -->
+
 ## Your task
 
 1. **Clear the existing pile** — the 25 backfill Jobs (label `app=report-gen`).

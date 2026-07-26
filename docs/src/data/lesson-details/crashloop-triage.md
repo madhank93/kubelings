@@ -19,6 +19,10 @@ between attempts keeps doubling.
 keeps exiting, and I'm pausing between retries."* The actual error is somewhere
 else — and there is exactly one reliable place to find it.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/crashloop-triage-backoff.svg" alt="crashloop-triage backoff diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make `orders` run steadily (2/2 Available, no CrashLoopBackOff):

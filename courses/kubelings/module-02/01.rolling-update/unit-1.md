@@ -13,6 +13,31 @@ every release causes a brief total outage. Its `RollingUpdate` strategy is set t
 to terminate **all** pods before any replacement is Ready, and is **not** allowed
 to surge a single extra pod to cover the gap.
 
+<!-- d2:rollout -->
+```text
+ ┌───────────────────┐
+ │old pods terminate │
+ │                   │
+ └───────────────────┘
+          │           
+ maxUnavailable 100%  
+          │           
+          ▼           
+   ┌─────────────┐    
+   │0 pods Ready │    
+   │             │    
+   └─────────────┘    
+          │           
+maxSurge 0, no cover  
+          │           
+          ▼           
+   ┌───────────────┐  
+   │new pods start │  
+   │               │  
+   └───────────────┘  
+```
+<!-- /d2:rollout -->
+
 ## Your task
 
 Make `web`'s rolling update **zero-downtime**:

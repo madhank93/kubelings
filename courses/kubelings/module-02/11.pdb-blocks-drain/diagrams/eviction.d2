@@ -1,0 +1,8 @@
+# A drain does not delete pods, it asks the eviction API — and the eviction API
+# honours the budget, which is why the drain waits forever instead of failing.
+drain: "kubectl drain"
+api:   "eviction API"
+pdb:   "PDB minAvailable"
+
+drain -> api: "evict pod"
+api   -> pdb: "would breach, refused"

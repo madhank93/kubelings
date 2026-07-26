@@ -1,0 +1,8 @@
+# Blue/green is one Service selector away from either version: the flip and the
+# un-flip are the same single edit.
+svc:   "Service shop"
+blue:  "shop-blue v1"
+green: "shop-green v2"
+
+svc -> blue:  "selector version=blue"
+svc -> green: "flip, instant"

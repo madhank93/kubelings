@@ -4,6 +4,10 @@ The `php-apache` Deployment in `kubelings` runs a single replica and falls over
 under load. metrics-server is already collecting CPU usage. You need a
 **HorizontalPodAutoscaler** so the app scales out on CPU and back in when idle.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/hpa-loop.svg" alt="hpa loop diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Create an HPA named **`php-apache`** that:

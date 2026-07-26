@@ -20,6 +20,10 @@ than the probe's patience. And each kill throws away the boot progress, so the
 
 This is exactly the gap `startupProbe` was invented for.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/startup-probe-patience.svg" alt="startup-probe patience diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 `legacy-erp` must reach Available with its liveness protection intact:

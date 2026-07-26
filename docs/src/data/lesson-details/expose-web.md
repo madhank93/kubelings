@@ -19,6 +19,10 @@ continuously tracks whichever pods match its **label selector**.
 
 No Service exists yet. The pods are healthy and completely unreachable.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/expose-web-service.svg" alt="expose-web service diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Create a Service named `web` in `kubelings` so in-cluster clients can reach the

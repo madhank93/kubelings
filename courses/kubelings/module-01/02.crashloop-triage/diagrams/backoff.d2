@@ -1,0 +1,10 @@
+# CrashLoopBackOff is a loop, not an error: the container keeps starting and
+# keeps dying, and each restart waits longer. The evidence lives in the logs of
+# the run that already ended.
+start: "container starts"
+dead:  "exits non-zero"
+wait:  "backoff 10s 20s 40s"
+
+start -> dead: "seconds later"
+dead  -> wait: "kubelet restarts"
+wait  -> start

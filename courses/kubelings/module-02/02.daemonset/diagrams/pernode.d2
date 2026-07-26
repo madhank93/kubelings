@@ -1,0 +1,8 @@
+# A DaemonSet's replica count is the node count: the controller places one pod
+# per node, including nodes that join later.
+ds: "DaemonSet node-logger"
+a:  "worker-1"
+b:  "worker-2"
+
+ds -> a: "1 pod"
+ds -> b: "1 pod"

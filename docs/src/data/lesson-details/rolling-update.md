@@ -6,6 +6,10 @@ every release causes a brief total outage. Its `RollingUpdate` strategy is set t
 to terminate **all** pods before any replacement is Ready, and is **not** allowed
 to surge a single extra pod to cover the gap.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/rolling-update-rollout.svg" alt="rolling-update rollout diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make `web`'s rolling update **zero-downtime**:

@@ -30,6 +30,10 @@ The probe: `periodSeconds: 1`, `failureThreshold: 1`, and a health check that
 blips roughly one second in three under load. One blip = instant eviction from
 the pool. The app is *fine* — the probe is a hair trigger.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pattern-readiness-flap-flap.svg" alt="pattern-readiness-flap flap diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Tune the readiness probe on the `search-api` Deployment so single blips no

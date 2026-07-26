@@ -1,0 +1,8 @@
+# One pod, shared network and volumes — which is the whole reason the classic
+# helper patterns work at all.
+pod:  "one pod"
+side: "sidecar"
+amb:  "ambassador"
+
+pod -> side: "shared emptyDir"
+pod -> amb:  "shared localhost"

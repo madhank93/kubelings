@@ -1,0 +1,8 @@
+# What a Service adds: one stable name and IP in front of pod IPs that change on
+# every reschedule, with the label selector deciding who is behind it.
+caller: "caller"
+svc:    "Service web"
+pods:   "pods, IPs churn"
+
+caller -> svc:  "web.kubelings.svc"
+svc    -> pods: "selector app=web"

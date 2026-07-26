@@ -1,0 +1,8 @@
+# The strategy, read as a timeline: nothing is allowed to surge and everything
+# is allowed to go at once, so the rollout opens a window with no serving pod.
+old:  "old pods terminate"
+gap:  "0 pods Ready"
+new:  "new pods start"
+
+old -> gap: "maxUnavailable 100%"
+gap -> new: "maxSurge 0, no cover"

@@ -26,6 +26,31 @@ continuously tracks whichever pods match its **label selector**.
 
 No Service exists yet. The pods are healthy and completely unreachable.
 
+<!-- d2:service -->
+```text
+     ┌───────┐     
+     │caller │     
+     │       │     
+     └───────┘     
+         │         
+ web.kubelings.svc 
+         │         
+         ▼         
+  ┌────────────┐   
+  │Service web │   
+  │            │   
+  └────────────┘   
+         │         
+ selector app=web  
+         │         
+         ▼         
+ ┌────────────────┐
+ │pods, IPs churn │
+ │                │
+ └────────────────┘
+```
+<!-- /d2:service -->
+
 ## Your task
 
 Create a Service named `web` in `kubelings` so in-cluster clients can reach the

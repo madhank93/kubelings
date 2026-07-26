@@ -1,0 +1,6 @@
+# Namespaces isolate names, RBAC and quota — not the network. A pod in one
+# namespace still reaches a Service in another by its fully qualified name.
+staging: "ns staging"
+prod:    "ns kubelings"
+
+staging -> prod: "config-api.kubelings.svc"

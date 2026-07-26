@@ -31,6 +31,19 @@ Two probes, two very different promises:
 A liveness probe that's wrong — wrong port, wrong path, too-tight timeout — is
 an automated pod assassin with cluster-admin over your container's life.
 
+<!-- d2:probes -->
+```text
+ ┌────────────────┐                     ┌───────────┐
+ │readiness fails │───left endpoints───▶│no traffic │
+ │                │                     │           │
+ └────────────────┘                     └───────────┘
+  ┌───────────────┐                     ┌──────────┐ 
+  │liveness fails │───process killed───▶│restarted │ 
+  │               │                     │          │ 
+  └───────────────┘                     └──────────┘ 
+```
+<!-- /d2:probes -->
+
 ## Your task
 
 Stop the killings. `payments` must reach 2/2 Available with restarts stopped —

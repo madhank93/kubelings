@@ -38,6 +38,10 @@ never parses, so the trigger can't even evaluate, so KEDA never creates
 the HPA. Not "scales at the wrong time" — *structurally dead*, visible
 only in conditions.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/keda-autoscaling-chain.svg" alt="keda-autoscaling chain diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Fix the window — business hours, say 08:00–23:59 UTC... but this drill

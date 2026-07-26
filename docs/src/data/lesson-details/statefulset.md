@@ -5,6 +5,10 @@ other by **stable hostname** (e.g. `web-0.web`, `web-1.web`). A Deployment +
 ClusterIP Service can't give that — you need a **StatefulSet** plus a **headless
 Service** (`clusterIP: None`) to publish per-pod DNS records.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/statefulset-identity.svg" alt="statefulset identity diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 In namespace `kubelings`:

@@ -1,0 +1,8 @@
+# A startup probe holds the liveness probe back while a slow app boots, so the
+# boot is never counted as a failure.
+boot:  "app boots 40s"
+start: "startupProbe waits"
+live:  "liveness begins"
+
+boot  -> start: "not yet Ready"
+start -> live:  "after first success"

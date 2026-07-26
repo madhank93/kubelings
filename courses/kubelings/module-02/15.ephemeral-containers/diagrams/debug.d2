@@ -1,0 +1,8 @@
+# A debug container is added to the running pod and shares its namespaces, so
+# the tools live outside the distroless image but see inside it.
+pod:   "distroless pod"
+dbg:   "ephemeral container"
+share: "same net, PID, volumes"
+
+dbg -> pod:   "kubectl debug"
+pod -> share: "namespaces shared"

@@ -17,6 +17,10 @@ That name is the FQDN: `<service>.<namespace>.svc.cluster.local`. Within your ow
 namespace you say `config-api`; from another, you say
 `config-api.kubelings.svc.cluster.local` (or the shorter `config-api.kubelings`).
 
+<figure class="lesson-diagram">
+<img src="/diagrams/namespace-basics-crossing.svg" alt="namespace-basics crossing diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Create the `staging` namespace.

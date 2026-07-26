@@ -37,6 +37,10 @@ another environment. Now trace the deadlock:
 (Why not `maxSurge: 0` too? The API rejects it — both zero would make progress
 literally impossible, so validation forbids the combination.)
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pattern-rolling-update-deadlock-deadlock.svg" alt="pattern-rolling-update-deadlock deadlock diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Ship v2 — fix the *cause*, keep the policy:

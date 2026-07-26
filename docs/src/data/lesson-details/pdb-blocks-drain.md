@@ -28,6 +28,10 @@ Zero. Not "wait until it's safer" — **structurally zero, at all times**. Whoev
 wrote this PDB demanded 100% of replicas be up always, which outlaws
 maintenance itself.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pdb-blocks-drain-eviction.svg" alt="pdb-blocks-drain eviction diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make maintenance possible without giving up protection:

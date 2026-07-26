@@ -27,6 +27,31 @@ than the probe's patience. And each kill throws away the boot progress, so the
 
 This is exactly the gap `startupProbe` was invented for.
 
+<!-- d2:patience -->
+```text
+   ┌──────────────┐   
+   │app boots 40s │   
+   │              │   
+   └──────────────┘   
+           │          
+     not yet Ready    
+           │          
+           ▼          
+ ┌───────────────────┐
+ │startupProbe waits │
+ │                   │
+ └───────────────────┘
+           │          
+  after first success 
+           │          
+           ▼          
+   ┌────────────────┐ 
+   │liveness begins │ 
+   │                │ 
+   └────────────────┘ 
+```
+<!-- /d2:patience -->
+
 ## Your task
 
 `legacy-erp` must reach Available with its liveness protection intact:

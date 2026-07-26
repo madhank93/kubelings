@@ -45,6 +45,31 @@ never parses, so the trigger can't even evaluate, so KEDA never creates
 the HPA. Not "scales at the wrong time" — *structurally dead*, visible
 only in conditions.
 
+<!-- d2:chain -->
+```text
+   ┌─────────────┐  
+   │ScaledObject │  
+   │             │  
+   └─────────────┘  
+          │         
+  queue depth, cron 
+          │         
+          ▼         
+ ┌─────────────────┐
+ │KEDA metrics API │
+ │                 │
+ └─────────────────┘
+          │         
+   external metric  
+          │         
+          ▼         
+  ┌───────────────┐ 
+  │HPA it created │ 
+  │               │ 
+  └───────────────┘ 
+```
+<!-- /d2:chain -->
+
 ## Your task
 
 1. Fix the window — business hours, say 08:00–23:59 UTC... but this drill

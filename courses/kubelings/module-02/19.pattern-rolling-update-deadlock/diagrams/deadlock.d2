@@ -1,0 +1,8 @@
+# The rollout is not stuck on the new pod alone: the budget forbids removing an
+# old pod until the new one is Ready, and the new one never will be.
+new: "new pod not Ready"
+rule: "maxUnavailable 0"
+old:  "old pod stays"
+
+new  -> rule: "never satisfied"
+rule -> old:  "cannot be removed"

@@ -1,0 +1,9 @@
+# The autoscaling loop: usage is measured, compared against the target, and the
+# replica count is the output — which changes usage again.
+usage: "CPU usage"
+hpa:   "HPA target 50%"
+reps:  "replicas 1 to 5"
+
+usage -> hpa:  "metrics-server"
+hpa   -> reps: "scale out or in"
+reps  -> usage

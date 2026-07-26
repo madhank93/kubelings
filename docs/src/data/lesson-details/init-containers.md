@@ -16,6 +16,10 @@ been "waiting for config volume..." for 22 minutes. The ConfigMap it wants
 
 Look closely at the two names in the pod spec.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/init-containers-gate.svg" alt="init-containers gate diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Get `reports` Running and Available:

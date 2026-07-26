@@ -4,6 +4,10 @@ There's no per-node log collection. You need an agent that runs **one pod on
 every node** in the cluster — and automatically on any node that joins later.
 That workload shape is a **DaemonSet**, not a Deployment.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/daemonset-pernode.svg" alt="daemonset pernode diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 In the `kubelings` namespace, create a DaemonSet named **`node-logger`**:

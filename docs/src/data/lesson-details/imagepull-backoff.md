@@ -29,6 +29,10 @@ The registry is up. The `nginx` repo exists. The *tag* `1.27.9999-alpine` was a
 fat-fingered version that never existed — and `kubectl apply` will happily ship
 a reference to nothing.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/imagepull-backoff-pull.svg" alt="imagepull-backoff pull diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Get `frontend` Available (2/2):

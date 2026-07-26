@@ -30,6 +30,31 @@ grafts a *temporary* container with real tools into the running pod. With
 `/proc/<pid>/root/` you can read the app container's entire filesystem —
 mounts, config files, all of it. No restart, no image rebuild.
 
+<!-- d2:debug -->
+```text
+  ┌────────────────────┐  
+  │ephemeral container │  
+  │                    │  
+  └────────────────────┘  
+            │             
+      kubectl debug       
+            │             
+            ▼             
+     ┌───────────────┐    
+     │distroless pod │    
+     │               │    
+     └───────────────┘    
+            │             
+    namespaces shared     
+            │             
+            ▼             
+ ┌───────────────────────┐
+ │same net, PID, volumes │
+ │                       │
+ └───────────────────────┘
+```
+<!-- /d2:debug -->
+
 ## Your task
 
 1. Attach a debug container to `orders-api`:

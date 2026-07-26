@@ -1,0 +1,9 @@
+# Two probes, two consequences. Readiness moves traffic; liveness kills the
+# container — so liveness pointed at a slow dependency restarts a healthy app.
+ready: "readiness fails"
+live:  "liveness fails"
+ep:    "no traffic"
+kill:  "restarted"
+
+ready -> ep:   "left endpoints"
+live  -> kill: "process killed"

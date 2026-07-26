@@ -45,6 +45,31 @@ another environment. Now trace the deadlock:
 (Why not `maxSurge: 0` too? The API rejects it — both zero would make progress
 literally impossible, so validation forbids the combination.)
 
+<!-- d2:deadlock -->
+```text
+ ┌──────────────────┐
+ │new pod not Ready │
+ │                  │
+ └──────────────────┘
+          │          
+   never satisfied   
+          │          
+          ▼          
+  ┌─────────────────┐
+  │maxUnavailable 0 │
+  │                 │
+  └─────────────────┘
+          │          
+  cannot be removed  
+          │          
+          ▼          
+   ┌──────────────┐  
+   │old pod stays │  
+   │              │  
+   └──────────────┘  
+```
+<!-- /d2:deadlock -->
+
 ## Your task
 
 Ship v2 — fix the *cause*, keep the policy:

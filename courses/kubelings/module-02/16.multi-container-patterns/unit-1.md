@@ -28,6 +28,19 @@ kubectl -n kubelings exec orders-checkout -c app -- wget -qO- -T2 http://127.0.0
 kubectl -n kubelings exec orders-metrics -c app -- ls /shared/                             # no metrics.prom
 ```
 
+<!-- d2:shapes -->
+```text
+                                       ┌────────┐     
+                ┌───shared emptyDir───▶│sidecar │     
+ ┌──────────┐───┘                      │        │     
+ │ one pod  │                          └────────┘     
+ │          │───┐                      ┌─────────────┐
+ └──────────┘   └──shared localhost───▶│ ambassador  │
+                                       │             │
+                                       └─────────────┘
+```
+<!-- /d2:shapes -->
+
 ## Your task
 
 1. **`orders-logs`** (sidecar): the app writes `order shipped` lines every 2 s,

@@ -38,6 +38,31 @@ The probe: `periodSeconds: 1`, `failureThreshold: 1`, and a health check that
 blips roughly one second in three under load. One blip = instant eviction from
 the pool. The app is *fine* — the probe is a hair trigger.
 
+<!-- d2:flap -->
+```text
+   ┌────────────────┐ 
+   │probe times out │ 
+   │                │ 
+   └────────────────┘ 
+           │          
+       1 failure      
+           │          
+           ▼          
+   ┌─────────────┐    
+   │pod NotReady │    
+   │             │    
+   └─────────────┘    
+           │          
+in-flight requests 502
+           │          
+           ▼          
+  ┌─────────────────┐ 
+  │endpoint removed │ 
+  │                 │ 
+  └─────────────────┘ 
+```
+<!-- /d2:flap -->
+
 ## Your task
 
 Tune the readiness probe on the `search-api` Deployment so single blips no

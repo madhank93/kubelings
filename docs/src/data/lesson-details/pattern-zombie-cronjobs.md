@@ -26,6 +26,10 @@ them; etcd stores them. Multiply by fifty CronJobs across a real cluster and
 the control plane is doing real work to remember garbage. (M7's watch-informers
 lesson shows exactly who pays.)
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pattern-zombie-cronjobs-retention.svg" alt="pattern-zombie-cronjobs retention diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. **Clear the existing pile** — the 25 backfill Jobs (label `app=report-gen`).

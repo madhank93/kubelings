@@ -1,0 +1,8 @@
+# A pull failure never starts a process, so there are no logs to read — the
+# kubelet records the registry's refusal as an event instead.
+kubelet:  "kubelet pulls"
+registry: "registry refuses"
+events:   "events, no logs"
+
+kubelet  -> registry: "image:tag"
+registry -> events:   "ImagePullBackOff"
