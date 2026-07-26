@@ -32,6 +32,31 @@ you've re-run Moonlight's morning.
 kubectl -n kubelings get pods -l app=website -o wide   # NODE column: all identical
 ```
 
+<!-- d2:placement -->
+```text
+      ┌───────────┐     
+      │3 replicas │     
+      │           │     
+      └───────────┘     
+            │           
+     no spread rule     
+            │           
+            ▼           
+     ┌──────────────┐   
+     │all on node A │   
+     │              │   
+     └──────────────┘   
+            │           
+       single fate      
+            │           
+            ▼           
+ ┌─────────────────────┐
+ │node dies, 100% down │
+ │                     │
+ └─────────────────────┘
+```
+<!-- /d2:placement -->
+
 ## Your task
 
 Make one node's death survivable:

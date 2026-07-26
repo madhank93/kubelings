@@ -1,0 +1,8 @@
+# Falco watches what actually happens, not what was declared: syscalls are read
+# in the kernel and compared against rules while the container runs.
+sys:  "syscalls"
+probe: "eBPF probe"
+rule: "rule matched, alert"
+
+sys   -> probe: "in the kernel"
+probe -> rule:  "at runtime"

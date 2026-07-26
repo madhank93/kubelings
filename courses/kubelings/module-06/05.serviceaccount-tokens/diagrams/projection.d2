@@ -1,0 +1,8 @@
+# Every pod runs as a ServiceAccount, and its token is mounted whether or not
+# the workload has any business calling the API.
+sa:  "default ServiceAccount"
+tok: "token projected"
+api: "API access"
+
+sa  -> tok: "mounted automatically"
+tok -> api: "whatever RBAC allows"

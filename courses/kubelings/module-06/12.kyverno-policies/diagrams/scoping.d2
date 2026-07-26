@@ -1,0 +1,8 @@
+# A policy that matches everything denies everything: match and exclude are the
+# blast radius, and Enforce makes it immediate.
+match: "match: all Pods"
+mode:  "Enforce"
+all:   "every namespace denied"
+
+match -> mode: "no exclusions"
+mode  -> all:  "hard deny"

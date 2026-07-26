@@ -109,6 +109,31 @@ rules:
 Same identity policy you just typed, enforced on every pull. Gatekeeper
 pairs with `ratify` for the equivalent.
 
+<!-- d2:provenance -->
+```text
+    ┌──────────────────┐
+    │digest: integrity │
+    │                  │
+    └──────────────────┘
+            │           
+   does not prove who   
+            │           
+            ▼           
+    ┌──────────────────┐
+    │signature: origin │
+    │                  │
+    └──────────────────┘
+            │           
+checked against identity
+            │           
+            ▼           
+     ┌──────────────┐   
+     │cosign verify │   
+     │              │   
+     └──────────────┘
+```
+<!-- /d2:provenance -->
+
 ::simple-task
 ---
 :tasks: tasks

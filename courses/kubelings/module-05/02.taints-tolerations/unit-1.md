@@ -38,6 +38,31 @@ ignore the taint. Taint = lock on the node; toleration = key in the pod.
 Git blame the taint: last week's "dedicated batch node pool" project — cancelled
 on Friday. The taints weren't.
 
+<!-- d2:repel -->
+```text
+      ┌───────────┐        
+      │node taint │        
+      │           │        
+      └───────────┘        
+            │              
+         repels            
+            │              
+            ▼              
+  ┌───────────────────────┐
+  │pod without toleration │
+  │                       │
+  └───────────────────────┘
+            │              
+   no node accepts it      
+            │              
+            ▼              
+ ┌───────────────────────┐ 
+ │Pending, unschedulable │ 
+ │                       │ 
+ └───────────────────────┘ 
+```
+<!-- /d2:repel -->
+
 ## Your task
 
 The migration is dead; its policy must die too:

@@ -139,3 +139,8 @@ Your job: make that rule fire, for real.
 
 The check passes once a shell-in-container alert naming `alarm-test` has
 appeared since `init`.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/falco-runtime-detection-detection.svg" alt="falco-runtime-detection detection diagram" loading="lazy">
+</figure>
+

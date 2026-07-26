@@ -142,3 +142,8 @@ Encrypt it at rest, on this control plane:
 The check requires all three: the Secret must still read back as
 `s3cure-NEW-9917` through the API, **and** its raw etcd row must carry the
 `k8s:enc:` prefix with no plaintext left in it.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/encryption-at-rest-envelope.svg" alt="encryption-at-rest envelope diagram" loading="lazy">
+</figure>
+

@@ -26,6 +26,31 @@ the image content itself. `nginx@sha256:abc...` names *bytes*, not a mapping.
 The registry can't re-point it; a tampered image can't match it; the runtime
 verifies it on pull. Content-addressing — the same trick git uses.
 
+<!-- d2:pointer -->
+```text
+    ┌───────────┐   
+    │image:1.27 │   
+    │           │   
+    └───────────┘   
+          │         
+  resolved at pull  
+          │         
+          ▼         
+ ┌─────────────────┐
+ │registry mapping │
+ │                 │
+ └─────────────────┘
+          │         
+may change under you
+          │         
+          ▼         
+   ┌──────────────┐ 
+   │sha256 digest │ 
+   │              │ 
+   └──────────────┘
+```
+<!-- /d2:pointer -->
+
 ## Your task
 
 Pin `checkout` to the digest of what it's *verifiably running right now*.

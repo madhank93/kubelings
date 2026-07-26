@@ -24,6 +24,10 @@ dependency CVE, a supply-chain artifact, an exposed debug port — and the
 attacker holds cluster-admin. This exact chain, on a real company's clusters, is
 the next lesson. Today you shrink the blast radius *before* the breach.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/rbac-least-privilege-binding.svg" alt="rbac-least-privilege binding diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Replace the god-grant with least privilege:

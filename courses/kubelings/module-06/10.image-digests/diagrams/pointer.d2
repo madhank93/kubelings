@@ -1,0 +1,8 @@
+# A tag is a pointer the registry may repoint at any time; a digest names the
+# bytes themselves, so it cannot drift.
+tag:  "image:1.27"
+reg:  "registry mapping"
+dig:  "sha256 digest"
+
+tag -> reg: "resolved at pull"
+reg -> dig: "may change under you"

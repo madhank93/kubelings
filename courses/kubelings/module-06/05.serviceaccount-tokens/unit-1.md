@@ -47,6 +47,31 @@ exist**. And the deployment never sets `serviceAccountName`, so it runs as
 `default` anyway. The grant points at a ghost; the workload carries the wrong
 badge.
 
+<!-- d2:projection -->
+```text
+ ┌───────────────────────┐
+ │default ServiceAccount │
+ │                       │
+ └───────────────────────┘
+            │             
+  mounted automatically   
+            │             
+            ▼             
+    ┌────────────────┐    
+    │token projected │    
+    │                │    
+    └────────────────┘    
+            │             
+  whatever RBAC allows    
+            │             
+            ▼             
+      ┌───────────┐       
+      │API access │       
+      │           │       
+      └───────────┘
+```
+<!-- /d2:projection -->
+
 ## Your task
 
 Three moves — give the agent its identity, wire it in, and take the default

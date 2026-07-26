@@ -1,0 +1,20 @@
+   ┌────────────────┐      
+   │namespace label │      
+   │                │      
+   └────────────────┘      
+            │              
+    enforce=baseline       
+            │              
+            ▼              
+    ┌────────────────┐     
+    │admission check │     
+    │                │     
+    └────────────────┘     
+            │              
+     at create time        
+            │              
+            ▼              
+ ┌────────────────────────┐
+ │privileged pod rejected │
+ │                        │
+ └────────────────────────┘

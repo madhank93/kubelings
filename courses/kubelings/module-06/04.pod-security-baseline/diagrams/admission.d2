@@ -1,0 +1,8 @@
+# Pod Security is a namespace label read at admission: the pod is judged when it
+# is created, not while it runs.
+ns:  "namespace label"
+adm: "admission check"
+pod: "privileged pod rejected"
+
+ns  -> adm: "enforce=baseline"
+adm -> pod: "at create time"

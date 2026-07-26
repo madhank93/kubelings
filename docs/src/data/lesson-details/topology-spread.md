@@ -27,6 +27,10 @@ topologySpreadConstraints:
       matchLabels: {app: sessions}
 ```
 
+<figure class="lesson-diagram">
+<img src="/diagrams/topology-spread-skew.svg" alt="topology-spread skew diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Declare a spread constraint on `sessions` (hostname domain, maxSkew 1).

@@ -1,0 +1,20 @@
+    ┌──────────────────┐
+    │digest: integrity │
+    │                  │
+    └──────────────────┘
+            │           
+   does not prove who   
+            │           
+            ▼           
+    ┌──────────────────┐
+    │signature: origin │
+    │                  │
+    └──────────────────┘
+            │           
+checked against identity
+            │           
+            ▼           
+     ┌──────────────┐   
+     │cosign verify │   
+     │              │   
+     └──────────────┘   

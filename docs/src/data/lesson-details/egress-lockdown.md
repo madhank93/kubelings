@@ -22,6 +22,10 @@ NetworkPolicy lesson (4.2) built the ingress side of the fence. The SOC
 mandate after 6.2 is the egress side: payments pods may talk to (a) DNS and
 (b) the payment gateway. Nothing else, anywhere, ever.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/egress-lockdown-outbound.svg" alt="egress-lockdown outbound diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Three policies — the same default-deny-then-allow pattern as 4.2, pointed

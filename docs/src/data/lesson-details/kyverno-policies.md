@@ -30,6 +30,10 @@ One thing saved the control plane itself: Kyverno's install ships default
 seatbelt you did not put on and can accidentally remove — never *rely* on it
 for scoping; write the scope into the policy.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/kyverno-policies-scoping.svg" alt="kyverno-policies scoping diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Replace `pod-guardrails` with a version that:

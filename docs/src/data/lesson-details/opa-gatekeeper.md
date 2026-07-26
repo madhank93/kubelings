@@ -45,6 +45,10 @@ field doesn't error; the expression is simply *undefined* and the rule body
 silently never matches. A typo'd path equals an always-allow policy —
 that's the sharpest edge in the language.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/opa-gatekeeper-pipeline.svg" alt="opa-gatekeeper pipeline diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Fix the Rego so the rule iterates the actual containers array:

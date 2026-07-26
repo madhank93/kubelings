@@ -1,0 +1,8 @@
+# Priority is a licence to evict: a pending high-priority pod makes the
+# scheduler remove running lower-priority pods to fit it.
+high: "high-priority pending"
+sched: "scheduler preempts"
+low:  "running pods evicted"
+
+high  -> sched: "no room"
+sched -> low:   "lowest priority first"

@@ -25,6 +25,10 @@ you've re-run Moonlight's morning.
 kubectl -n kubelings get pods -l app=website -o wide   # NODE column: all identical
 ```
 
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-same-node-placement.svg" alt="incident-same-node placement diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make one node's death survivable:

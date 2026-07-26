@@ -49,6 +49,31 @@ Kubernetes' built-in admission control for exactly this, three levels:
 You opt a namespace in with labels — `enforce` (reject), plus `warn`/`audit`
 (allow but flag). No webhook to run; it's built into the API server.
 
+<!-- d2:admission -->
+```text
+   ┌────────────────┐      
+   │namespace label │      
+   │                │      
+   └────────────────┘      
+            │              
+    enforce=baseline       
+            │              
+            ▼              
+    ┌────────────────┐     
+    │admission check │     
+    │                │     
+    └────────────────┘     
+            │              
+     at create time        
+            │              
+            ▼              
+ ┌────────────────────────┐
+ │privileged pod rejected │
+ │                        │
+ └────────────────────────┘
+```
+<!-- /d2:admission -->
+
 ## Your task
 
 1. Enforce at least **baseline** on the `kubelings` namespace (a namespace

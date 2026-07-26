@@ -1,0 +1,8 @@
+# failurePolicy Fail means unreachable equals denied: the API server refuses the
+# writes it cannot get an opinion on, including the ones that would fix it.
+api:  "API server"
+hook: "webhook, Fail policy"
+deny: "writes rejected"
+
+api  -> hook: "must consult"
+hook -> deny: "backend unreachable"

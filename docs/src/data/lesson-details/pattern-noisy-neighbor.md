@@ -22,6 +22,10 @@ family of production pain: **contention**. Two tenants on this node:
 
 Two resource lies, one slow service, no red statuses anywhere.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pattern-noisy-neighbor-contention.svg" alt="pattern-noisy-neighbor contention diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Make both tenants honest:

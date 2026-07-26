@@ -1,0 +1,8 @@
+# Nothing is broken on the victim's side: a co-tenant is consuming the node's
+# shared CPU, and the latency shows up in the pod that did not change.
+hog:    "co-tenant burns CPU"
+node:   "shared node runqueue"
+victim: "p99 climbs"
+
+hog  -> node:   "no limits"
+node -> victim: "waits for CPU"

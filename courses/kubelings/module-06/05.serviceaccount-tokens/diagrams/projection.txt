@@ -1,0 +1,20 @@
+ ┌───────────────────────┐
+ │default ServiceAccount │
+ │                       │
+ └───────────────────────┘
+            │             
+  mounted automatically   
+            │             
+            ▼             
+    ┌────────────────┐    
+    │token projected │    
+    │                │    
+    └────────────────┘    
+            │             
+  whatever RBAC allows    
+            │             
+            ▼             
+      ┌───────────┐       
+      │API access │       
+      │           │       
+      └───────────┘       

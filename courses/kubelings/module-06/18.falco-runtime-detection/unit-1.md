@@ -147,6 +147,31 @@ Your job: make that rule fire, for real.
 The check passes once a shell-in-container alert naming `alarm-test` has
 appeared since `init`.
 
+<!-- d2:detection -->
+```text
+     ┌─────────┐       
+     │syscalls │       
+     │         │       
+     └─────────┘       
+          │            
+    in the kernel      
+          │            
+          ▼            
+    ┌───────────┐      
+    │eBPF probe │      
+    │           │      
+    └───────────┘      
+          │            
+     at runtime        
+          │            
+          ▼            
+ ┌────────────────────┐
+ │rule matched, alert │
+ │                    │
+ └────────────────────┘
+```
+<!-- /d2:detection -->
+
 <details>
 <summary>Hint</summary>
 

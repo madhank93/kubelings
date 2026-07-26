@@ -44,6 +44,31 @@ kubectl -n kubelings get pod audit-me -o jsonpath='{.spec.securityContext.seccom
 # RuntimeDefault
 ```
 
+<!-- d2:filter -->
+```text
+ ┌──────────────────┐
+ │container syscall │
+ │                  │
+ └──────────────────┘
+          │          
+     every call      
+          │          
+          ▼          
+  ┌────────────────┐ 
+  │seccomp profile │ 
+  │                │ 
+  └────────────────┘ 
+          │          
+ allowed subset only 
+          │          
+          ▼          
+     ┌───────┐       
+     │kernel │       
+     │       │       
+     └───────┘
+```
+<!-- /d2:filter -->
+
 <details>
 <summary>Hint</summary>
 

@@ -1,0 +1,8 @@
+# A digest proves the bytes did not change; a signature proves who produced
+# them. Verification checks the second claim against a known identity.
+dig:  "digest: integrity"
+sig:  "signature: origin"
+ver:  "cosign verify"
+
+dig -> sig: "does not prove who"
+sig -> ver: "checked against identity"

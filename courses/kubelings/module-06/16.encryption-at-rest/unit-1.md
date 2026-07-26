@@ -150,6 +150,31 @@ The check requires all three: the Secret must still read back as
 `s3cure-NEW-9917` through the API, **and** its raw etcd row must carry the
 `k8s:enc:` prefix with no plaintext left in it.
 
+<!-- d2:envelope -->
+```text
+     ┌───────────┐     
+     │API server │     
+     │           │     
+     └───────────┘     
+           │           
+     before write      
+           │           
+           ▼           
+ ┌────────────────────┐
+ │encryption provider │
+ │                    │
+ └────────────────────┘
+           │           
+   ciphertext stored   
+           │           
+           ▼           
+    ┌─────────────┐    
+    │etcd on disk │    
+    │             │    
+    └─────────────┘
+```
+<!-- /d2:envelope -->
+
 <details>
 <summary>Hint</summary>
 

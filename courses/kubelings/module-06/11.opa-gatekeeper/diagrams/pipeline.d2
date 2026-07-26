@@ -1,0 +1,8 @@
+# Gatekeeper only acts where a Constraint says it should: the template carries
+# the logic, the constraint carries the scope.
+tpl:  "ConstraintTemplate"
+cons: "Constraint scope"
+adm:  "admission decision"
+
+tpl  -> cons: "rego logic"
+cons -> adm:  "kinds it matches"

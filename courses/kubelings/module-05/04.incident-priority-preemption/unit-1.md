@@ -43,6 +43,31 @@ Nothing is broken *right now* — the cluster has room. That's the Grafana lesso
 in miniature: **priority misconfiguration is invisible until the first resource
 fight**, and then it decides who dies.
 
+<!-- d2:preempt -->
+```text
+ ┌──────────────────────┐
+ │high-priority pending │
+ │                      │
+ └──────────────────────┘
+           │             
+        no room          
+           │             
+           ▼             
+  ┌───────────────────┐  
+  │scheduler preempts │  
+  │                   │  
+  └───────────────────┘  
+           │             
+ lowest priority first   
+           │             
+           ▼             
+ ┌─────────────────────┐ 
+ │running pods evicted │ 
+ │                     │ 
+ └─────────────────────┘ 
+```
+<!-- /d2:preempt -->
+
 ## Your task
 
 Disarm the trap before it springs:

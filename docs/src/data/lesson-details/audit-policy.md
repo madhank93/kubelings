@@ -147,3 +147,8 @@ the cluster cannot tell you who has read that Secret. Fix that:
 The check looks for a recorded `get` of `db-creds` in the audit log — **and**
 verifies the event does *not* contain the Secret's value. Getting the level
 right is the point, not just getting logging on.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/audit-policy-stages.svg" alt="audit-policy stages diagram" loading="lazy">
+</figure>
+

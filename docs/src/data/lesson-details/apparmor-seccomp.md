@@ -36,3 +36,8 @@ Verify with the same jsonpath the checker uses:
 kubectl -n kubelings get pod audit-me -o jsonpath='{.spec.securityContext.seccompProfile.type}'
 # RuntimeDefault
 ```
+
+<figure class="lesson-diagram">
+<img src="/diagrams/apparmor-seccomp-filter.svg" alt="apparmor-seccomp filter diagram" loading="lazy">
+</figure>
+

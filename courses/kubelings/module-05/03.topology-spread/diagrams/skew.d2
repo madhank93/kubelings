@@ -1,0 +1,8 @@
+# Spread constraints are a limit on imbalance: maxSkew caps how far the busiest
+# domain may run ahead of the emptiest one.
+busy: "node A: 5 pods"
+thin: "node B: 1 pod"
+rule: "maxSkew 1"
+
+busy -> rule: "skew of 4"
+thin -> rule: "violates it"

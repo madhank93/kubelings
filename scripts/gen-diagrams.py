@@ -38,9 +38,13 @@ if not shutil.which("d2"):
 
 def render(src, out):
     """Render src to out (extension picks the renderer). Returns file bytes."""
-    subprocess.run(["d2"] + (["--theme", "0", "--dark-theme", "200", "--pad", "20"]
-                            if out.endswith(".svg") else []) + [src, out],
-                   check=True, capture_output=True)
+    r = subprocess.run(["d2"] + (["--theme", "0", "--dark-theme", "200", "--pad", "20"]
+                                 if out.endswith(".svg") else []) + [src, out],
+                       capture_output=True, text=True)
+    if r.returncode:
+        # d2's own message names the line and the reason (a reserved keyword
+        # used as a node id, say); a Python traceback would bury it.
+        sys.exit(r.stderr.strip() or f"d2 failed on {src}")
     with open(out, "rb") as fh:
         return fh.read()
 

@@ -36,6 +36,10 @@ Nothing is broken *right now* — the cluster has room. That's the Grafana lesso
 in miniature: **priority misconfiguration is invisible until the first resource
 fight**, and then it decides who dies.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-priority-preemption-preempt.svg" alt="incident-priority-preemption preempt diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Disarm the trap before it springs:

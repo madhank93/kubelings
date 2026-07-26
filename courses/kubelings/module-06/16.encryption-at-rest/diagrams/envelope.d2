@@ -1,0 +1,8 @@
+# Encryption at rest is an API-server concern: the object is encrypted on its
+# way into etcd, so etcd never sees the plaintext.
+api: "API server"
+enc: "encryption provider"
+etcd: "etcd on disk"
+
+api -> enc:  "before write"
+enc -> etcd: "ciphertext stored"

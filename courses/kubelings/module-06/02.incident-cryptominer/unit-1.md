@@ -34,6 +34,31 @@ kubectl -n kubelings get deploy,svc -o wide
 kubectl -n kubelings get pods --show-labels
 ```
 
+<!-- d2:exposure -->
+```text
+   ┌────────────────────┐ 
+   │public LoadBalancer │ 
+   │                    │ 
+   └────────────────────┘ 
+            │             
+   reachable by anyone    
+            │             
+            ▼             
+    ┌──────────────────┐  
+    │Scope UI, no auth │  
+    │                  │  
+    └──────────────────┘  
+            │             
+        by design         
+            │             
+            ▼             
+ ┌───────────────────────┐
+ │commands in containers │
+ │                       │
+ └───────────────────────┘
+```
+<!-- /d2:exposure -->
+
 ## Your task
 
 Incident response, correct order:

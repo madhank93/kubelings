@@ -42,6 +42,10 @@ Kubernetes' built-in admission control for exactly this, three levels:
 You opt a namespace in with labels — `enforce` (reject), plus `warn`/`audit`
 (allow but flag). No webhook to run; it's built into the API server.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/pod-security-baseline-admission.svg" alt="pod-security-baseline admission diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 1. Enforce at least **baseline** on the `kubelings` namespace (a namespace

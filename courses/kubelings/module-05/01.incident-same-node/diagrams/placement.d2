@@ -1,0 +1,8 @@
+# Replica count is not redundancy. Three replicas on one node share that node's
+# fate, and the scheduler had no reason to spread them.
+reps: "3 replicas"
+node: "all on node A"
+loss: "node dies, 100% down"
+
+reps -> node: "no spread rule"
+node -> loss: "single fate"

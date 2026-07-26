@@ -41,6 +41,31 @@ kubectl -n kubelings create configmap test --from-literal=a=b
 kubectl get validatingwebhookconfiguration policy-guard -o yaml | grep -A3 failurePolicy
 ```
 
+<!-- d2:failclosed -->
+```text
+     ┌───────────┐      
+     │API server │      
+     │           │      
+     └───────────┘      
+           │            
+     must consult       
+           │            
+           ▼            
+ ┌─────────────────────┐
+ │webhook, Fail policy │
+ │                     │
+ └─────────────────────┘
+           │            
+  backend unreachable   
+           │            
+           ▼            
+   ┌────────────────┐   
+   │writes rejected │   
+   │                │   
+   └────────────────┘   
+```
+<!-- /d2:failclosed -->
+
 ## Your task
 
 Restore writes to `kubelings` **and** leave the webhook config in a safe state

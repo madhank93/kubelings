@@ -1,0 +1,8 @@
+# A seccomp profile sits between the container and the kernel, so a syscall the
+# workload never makes is one an attacker cannot reach either.
+app:    "container syscall"
+prof:   "seccomp profile"
+kernel: "kernel"
+
+app  -> prof:   "every call"
+prof -> kernel: "allowed subset only"

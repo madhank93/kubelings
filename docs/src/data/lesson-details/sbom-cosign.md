@@ -101,3 +101,8 @@ rules:
 
 Same identity policy you just typed, enforced on every pull. Gatekeeper
 pairs with `ratify` for the equivalent.
+
+<figure class="lesson-diagram">
+<img src="/diagrams/sbom-cosign-provenance.svg" alt="sbom-cosign provenance diagram" loading="lazy">
+</figure>
+

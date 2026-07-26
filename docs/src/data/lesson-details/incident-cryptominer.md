@@ -27,6 +27,10 @@ kubectl -n kubelings get deploy,svc -o wide
 kubectl -n kubelings get pods --show-labels
 ```
 
+<figure class="lesson-diagram">
+<img src="/diagrams/incident-cryptominer-exposure.svg" alt="incident-cryptominer exposure diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Incident response, correct order:

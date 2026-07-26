@@ -1,0 +1,8 @@
+# RBAC is a chain of four links, and the permissions are only ever as narrow as
+# the widest one: cluster-scoped binding plus cluster-scoped role means all.
+sa:   "ServiceAccount"
+bind: "ClusterRoleBinding"
+role: "ClusterRole"
+
+sa   -> bind: "subject"
+bind -> role: "grants everywhere"

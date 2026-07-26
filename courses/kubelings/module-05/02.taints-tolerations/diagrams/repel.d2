@@ -1,0 +1,8 @@
+# A taint is a node saying no by default; a toleration is the pod's permission
+# slip. Without one, the pod is not rejected by the node — it is never placed.
+taint: "node taint"
+pod:   "pod without toleration"
+pend:  "Pending, unschedulable"
+
+taint -> pod:  "repels"
+pod   -> pend: "no node accepts it"

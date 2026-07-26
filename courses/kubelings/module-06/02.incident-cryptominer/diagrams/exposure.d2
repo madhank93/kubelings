@@ -1,0 +1,8 @@
+# The compromise needed no exploit: a management UI with no auth was published
+# to the internet, and that UI can run commands in containers.
+lb:    "public LoadBalancer"
+ui:    "Scope UI, no auth"
+exec:  "commands in containers"
+
+lb -> ui:   "reachable by anyone"
+ui -> exec: "by design"

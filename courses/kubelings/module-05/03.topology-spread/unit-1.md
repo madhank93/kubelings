@@ -34,6 +34,19 @@ topologySpreadConstraints:
       matchLabels: {app: sessions}
 ```
 
+<!-- d2:skew -->
+```text
+ ┌───────────────┐                                  
+ │node A: 5 pods │────skew of─4───┐                 
+ │               │                └──▶┌────────────┐
+ └───────────────┘                    │ maxSkew 1  │
+  ┌──────────────┐                ┌──▶│            │
+  │node B: 1 pod │───violates─it──┘   └────────────┘
+  │              │                                  
+  └──────────────┘                                  
+```
+<!-- /d2:skew -->
+
 ## Your task
 
 1. Declare a spread constraint on `sessions` (hostname domain, maxSkew 1).

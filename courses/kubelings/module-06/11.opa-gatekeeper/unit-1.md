@@ -52,6 +52,31 @@ field doesn't error; the expression is simply *undefined* and the rule body
 silently never matches. A typo'd path equals an always-allow policy —
 that's the sharpest edge in the language.
 
+<!-- d2:pipeline -->
+```text
+ ┌───────────────────┐ 
+ │ConstraintTemplate │ 
+ │                   │ 
+ └───────────────────┘ 
+           │           
+      rego logic       
+           │           
+           ▼           
+  ┌─────────────────┐  
+  │Constraint scope │  
+  │                 │  
+  └─────────────────┘  
+           │           
+   kinds it matches    
+           │           
+           ▼           
+  ┌───────────────────┐
+  │admission decision │
+  │                   │
+  └───────────────────┘
+```
+<!-- /d2:pipeline -->
+
 ## Your task
 
 Fix the Rego so the rule iterates the actual containers array:

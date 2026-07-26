@@ -29,6 +29,31 @@ family of production pain: **contention**. Two tenants on this node:
 
 Two resource lies, one slow service, no red statuses anywhere.
 
+<!-- d2:contention -->
+```text
+  ┌────────────────────┐
+  │co-tenant burns CPU │
+  │                    │
+  └────────────────────┘
+            │           
+        no limits       
+            │           
+            ▼           
+ ┌─────────────────────┐
+ │shared node runqueue │
+ │                     │
+ └─────────────────────┘
+            │           
+      waits for CPU     
+            │           
+            ▼           
+      ┌───────────┐     
+      │p99 climbs │     
+      │           │     
+      └───────────┘     
+```
+<!-- /d2:contention -->
+
 ## Your task
 
 Make both tenants honest:

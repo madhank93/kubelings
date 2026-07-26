@@ -29,6 +29,31 @@ NetworkPolicy lesson (4.2) built the ingress side of the fence. The SOC
 mandate after 6.2 is the egress side: payments pods may talk to (a) DNS and
 (b) the payment gateway. Nothing else, anywhere, ever.
 
+<!-- d2:outbound -->
+```text
+ ┌────────────────┐ 
+ │compromised pod │ 
+ │                │ 
+ └────────────────┘ 
+          │         
+     first step     
+          │         
+          ▼         
+   ┌─────────────┐  
+   │resolve pool │  
+   │             │  
+   └─────────────┘  
+          │         
+     then exfil     
+          │         
+          ▼         
+  ┌────────────────┐
+  │TCP to internet │
+  │                │
+  └────────────────┘
+```
+<!-- /d2:outbound -->
+
 ## Your task
 
 Three policies — the same default-deny-then-allow pattern as 4.2, pointed

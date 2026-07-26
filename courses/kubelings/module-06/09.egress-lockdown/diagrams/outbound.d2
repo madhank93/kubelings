@@ -1,0 +1,8 @@
+# Compromise arrives inbound but pays out outbound: DNS then a session to the
+# attacker's host, which is exactly what an egress policy can refuse.
+pod:  "compromised pod"
+dns:  "resolve pool"
+out:  "TCP to internet"
+
+pod -> dns: "first step"
+dns -> out: "then exfil"

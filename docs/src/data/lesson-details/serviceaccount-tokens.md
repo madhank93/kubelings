@@ -40,6 +40,10 @@ exist**. And the deployment never sets `serviceAccountName`, so it runs as
 `default` anyway. The grant points at a ghost; the workload carries the wrong
 badge.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/serviceaccount-tokens-projection.svg" alt="serviceaccount-tokens projection diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Three moves — give the agent its identity, wire it in, and take the default

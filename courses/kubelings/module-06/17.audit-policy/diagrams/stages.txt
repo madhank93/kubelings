@@ -1,0 +1,20 @@
+     ┌────────────┐     
+     │API request │     
+     │            │     
+     └────────────┘     
+            │           
+    matched by level    
+            │           
+            ▼           
+   ┌───────────────────┐
+   │audit policy rules │
+   │                   │
+   └───────────────────┘
+            │           
+Metadata or Request body
+            │           
+            ▼           
+     ┌────────────┐     
+     │log backend │     
+     │            │     
+     └────────────┘     

@@ -19,6 +19,10 @@ the image content itself. `nginx@sha256:abc...` names *bytes*, not a mapping.
 The registry can't re-point it; a tampered image can't match it; the runtime
 verifies it on pull. Content-addressing — the same trick git uses.
 
+<figure class="lesson-diagram">
+<img src="/diagrams/image-digests-pointer.svg" alt="image-digests pointer diagram" loading="lazy">
+</figure>
+
 ## Your task
 
 Pin `checkout` to the digest of what it's *verifiably running right now*.

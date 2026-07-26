@@ -1,0 +1,8 @@
+# The policy decides how much of each request is recorded, and the backend
+# decides where it lands — no policy means no record at all.
+req:  "API request"
+pol:  "audit policy rules"
+sink: "log backend"
+
+req -> pol:  "matched by level"
+pol -> sink: "Metadata or Request body"

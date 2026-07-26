@@ -37,6 +37,31 @@ One thing saved the control plane itself: Kyverno's install ships default
 seatbelt you did not put on and can accidentally remove — never *rely* on it
 for scoping; write the scope into the policy.
 
+<!-- d2:scoping -->
+```text
+     ┌────────────────┐   
+     │match: all Pods │   
+     │                │   
+     └────────────────┘   
+             │            
+       no exclusions      
+             │            
+             ▼            
+       ┌────────┐         
+       │Enforce │         
+       │        │         
+       └────────┘         
+             │            
+         hard deny        
+             │            
+             ▼            
+ ┌───────────────────────┐
+ │every namespace denied │
+ │                       │
+ └───────────────────────┘
+```
+<!-- /d2:scoping -->
+
 ## Your task
 
 Replace `pod-guardrails` with a version that:

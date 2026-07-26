@@ -155,6 +155,31 @@ The check looks for a recorded `get` of `db-creds` in the audit log — **and**
 verifies the event does *not* contain the Secret's value. Getting the level
 right is the point, not just getting logging on.
 
+<!-- d2:stages -->
+```text
+     ┌────────────┐     
+     │API request │     
+     │            │     
+     └────────────┘     
+            │           
+    matched by level    
+            │           
+            ▼           
+   ┌───────────────────┐
+   │audit policy rules │
+   │                   │
+   └───────────────────┘
+            │           
+Metadata or Request body
+            │           
+            ▼           
+     ┌────────────┐     
+     │log backend │     
+     │            │     
+     └────────────┘
+```
+<!-- /d2:stages -->
+
 <details>
 <summary>Hint</summary>
 
