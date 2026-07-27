@@ -50,9 +50,10 @@ _in_node() {
 # exist. The real containment boundary is _in_node — this narrows the blast radius
 # inside it, it does not replace it.
 #
-# Lessons that teach Pod Security itself must opt out (`skipHardening: true` in
-# frontmatter): they deliberately leave the namespace unlabelled so the learner
-# applies the label, and hardening here would silently pre-solve that check.
+# Lessons that teach Pod Security itself must opt out (listed in
+# .labctl/skip-hardening.tsv): they deliberately leave the namespace unlabelled
+# so the learner applies the label, and hardening here would silently pre-solve
+# that check.
 _harden_ns() {
   [ "${SKIP_HARDENING:-false}" = "true" ] && return 0
   _in_node "kubectl label namespace \"$NS\" \
@@ -87,6 +88,8 @@ has_tasks() { [ "$(frontmatter "$1" | yq -r '.tasks // {} | length')" -gt 0 ] 2>
 # the kind node container by design, so those lessons exist on iximiuz Labs only.
 # Registry: .labctl/cloud-only.tsv (see internal/course/cloudonly.go).
 CLOUD_ONLY="$ROOT/.labctl/cloud-only.tsv"
+# Registry: .labctl/skip-hardening.tsv — lessons that opt out of _harden_ns.
+SKIP_HARDENING_FILE="$ROOT/.labctl/skip-hardening.tsv"
 COURSE_URL="https://labs.iximiuz.com/courses/$(
   awk -F'\t' '$1=="kubelings-course"{print $2; exit}' "$ROOT/.labctl/slugs.tsv" 2>/dev/null \
     || true)"
@@ -103,6 +106,19 @@ cloud_only_reason() {
 }
 
 # is_cloud_only <lesson-name> <index.md> — registry, or the cloudOnly frontmatter fallback.
+# skips_hardening reports whether a lesson opts out of _harden_ns. The registry
+# is authoritative; the frontmatter key is an inert fallback kept only for the
+# day the platform accepts unknown attributes (it currently 400s on them).
+skips_hardening() {
+  if [ -f "$SKIP_HARDENING_FILE" ] && awk -F'\t' -v l="$1" '
+      /^[[:space:]]*#/ || /^[[:space:]]*$/ { next }
+      $1==l { found=1; exit }
+      END { exit !found }' "$SKIP_HARDENING_FILE"; then
+    return 0
+  fi
+  [ -n "${2:-}" ] && [ "$(frontmatter "$2" | yq -r '.skipHardening // false')" = "true" ]
+}
+
 is_cloud_only() {
   cloud_only_reason "$1" >/dev/null 2>&1 && return 0
   [ -n "${2:-}" ] && [ "$(frontmatter "$2" | yq -r '.cloudOnly // false')" = "true" ]
@@ -258,7 +274,8 @@ case "$A1" in
     [ -n "$IDX" ] && [ -f "$IDX" ] || die "could not resolve lesson '$LESSON' (rejected or not found)"
     LDIR="$(dirname "$IDX")"; LNAME="$(_lesson_name "$IDX")"
     # Pod Security lessons opt out of _harden_ns — see its comment.
-    SKIP_HARDENING="$(frontmatter "$IDX" | yq -r '.skipHardening // false')"
+    SKIP_HARDENING=false
+    if skips_hardening "$LNAME" "$IDX"; then SKIP_HARDENING=true; fi
 
     # Refuse cloud-only lessons before any verb runs, so ensure_node, run_tasks,
     # _in_node, _harden_ns and _set_progress are all unreachable for them.
