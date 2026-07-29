@@ -1,0 +1,7 @@
+# restartPolicy belongs to the pod; the Job controller replaces the whole pod.
+pod:  "pod exits 1"
+new:  "Job creates a new pod"
+node: "nodes exhausted"
+
+pod  -> new:  "restartPolicy is the POD's"
+new  -> node: "unbounded backoffLimit"

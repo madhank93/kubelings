@@ -1,0 +1,20 @@
+   ┌──────────────────────┐
+   │primary dies with lag │
+   │                      │
+   └──────────────────────┘
+             │             
+pod replaced, no lag check 
+             │             
+             ▼             
+    ┌─────────────────┐    
+    │replica promoted │    
+    │                 │    
+    └─────────────────┘    
+             │             
+   async replication gap   
+             │             
+             ▼             
+   ┌──────────────────────┐
+   │committed writes lost │
+   │                      │
+   └──────────────────────┘

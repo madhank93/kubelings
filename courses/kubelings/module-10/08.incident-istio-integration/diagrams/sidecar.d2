@@ -1,0 +1,7 @@
+# One pod, two lifecycles: the proxy outlives the work it was injected for.
+inj:  "sidecar injected"
+run:  "proxy runs forever"
+job:  "Job never completes"
+
+inj -> run: "second process in pod"
+run -> job: "app exits, pod does not"

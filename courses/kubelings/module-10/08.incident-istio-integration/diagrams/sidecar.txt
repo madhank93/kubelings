@@ -1,0 +1,20 @@
+   ┌─────────────────┐  
+   │sidecar injected │  
+   │                 │  
+   └─────────────────┘  
+           │            
+ second process in pod  
+           │            
+           ▼            
+  ┌───────────────────┐ 
+  │proxy runs forever │ 
+  │                   │ 
+  └───────────────────┘ 
+           │            
+app exits, pod does not 
+           │            
+           ▼            
+  ┌────────────────────┐
+  │Job never completes │
+  │                    │
+  └────────────────────┘

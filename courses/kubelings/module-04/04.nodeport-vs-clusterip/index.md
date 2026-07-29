@@ -67,8 +67,10 @@ tasks:
         echo "not yet: nodePort is ${np:-unset}, expected 30080"; exit 1
       fi
       # Hit a node's IP:30080 — proves the door is open on the node network.
+      # Node images differ on which fetcher they ship (current kind: curl only).
+      fetch() { if command -v curl >/dev/null 2>&1; then curl -fsS -m 5 "$1"; else wget -q -O- --timeout=5 "$1"; fi; }
       nip=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null)
-      if ! wget -q -O- --timeout=5 "http://$nip:30080/" 2>/dev/null | grep -qi nginx; then
+      if ! fetch "http://$nip:30080/" 2>/dev/null | grep -qi nginx; then
         echo "not yet: http://$nip:30080/ does not answer from the node network"; exit 1
       fi
       echo "PASS — every node now forwards :30080 to demo pods. That's NodePort: simple, port-limited, node-coupled."
