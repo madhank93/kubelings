@@ -1,0 +1,7 @@
+# Empty desired state is indistinguishable from an intentional deletion.
+cfg:  "config loses {{ }}"
+rend: "render is empty"
+del:  "all cells pruned"
+
+cfg  -> rend: "rolled out globally"
+rend -> del:  "apply --prune"

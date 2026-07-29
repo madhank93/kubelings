@@ -1,0 +1,7 @@
+# Every AWS call detours through an agent, and DNS pays the ndots tax first.
+sdk:  "SDK needs credentials"
+hop:  "metadata agent hop"
+tail: "p99 10x worse"
+
+sdk -> hop:  "169.254.169.254"
+hop -> tail: "DNS ladder + STS"

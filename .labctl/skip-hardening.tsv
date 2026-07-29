@@ -1,0 +1,17 @@
+# lesson — lessons that opt out of the local runner's namespace hardening.
+#
+# After init, the local runner labels the lesson namespace with
+# pod-security.kubernetes.io/enforce=baseline as defence-in-depth. A lesson whose
+# subject *is* Pod Security must opt out: hardening there re-applies the very
+# label the learner is asked to add, silently pre-solving the check.
+#
+# Not lesson frontmatter: `labctl content push` 400s on unknown keys — a
+# `skipHardening:` key fails validation with
+#   Unexpected front matter attribute "skipHardening"
+# exactly as `cloudOnly:` would (see cloud-only.tsv and iximiuz/README.md).
+# `.labctl/` is never pushed (`content push --dir courses/kubelings`), so a
+# registry here cannot trip the validator.
+#
+# A frontmatter reader remains as an inert fallback in the runner, so if the
+# platform ever accepts the key, migrating is a data move with no code change.
+pod-security-baseline

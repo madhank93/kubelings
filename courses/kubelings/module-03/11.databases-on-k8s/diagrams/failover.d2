@@ -1,0 +1,7 @@
+# Kubernetes can promote; only the database knows whether it is safe to.
+pri:  "primary dies with lag"
+prom: "replica promoted"
+loss: "committed writes lost"
+
+pri  -> prom: "pod replaced, no lag check"
+prom -> loss: "async replication gap"

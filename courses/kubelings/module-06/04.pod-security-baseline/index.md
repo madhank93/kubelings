@@ -9,11 +9,6 @@ description: |
 name: pod-security-baseline
 slug: pod-security-baseline
 createdAt: "2026-07-07"
-# The local runner labels the lesson namespace with pod-security enforce=baseline
-# after init as defence-in-depth. Here that would re-apply the very label the
-# learner is asked to add — pre-solving check 1 of 3 before they type anything.
-# Opt out: in this lesson the Pod Security Standard IS the exercise.
-skipHardening: true
 playground:
   name: k8s-omni
 tasks:

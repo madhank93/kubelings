@@ -1,0 +1,20 @@
+       ┌────────────┐      
+       │pod exits 1 │      
+       │            │      
+       └────────────┘      
+             │             
+restartPolicy is the POD's 
+             │             
+             ▼             
+   ┌──────────────────────┐
+   │Job creates a new pod │
+   │                      │
+   └──────────────────────┘
+             │             
+  unbounded backoffLimit   
+             │             
+             ▼             
+     ┌────────────────┐    
+     │nodes exhausted │    
+     │                │    
+     └────────────────┘    

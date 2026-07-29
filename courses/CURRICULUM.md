@@ -24,6 +24,8 @@ lessons carry a verified `source:` URL (see
 - [x] 19.pattern-rolling-update-deadlock [DRILL]
 - [x] 20.vpa (recommender-only manifests) · [x] 21.keda-autoscaling (cpu/cron
       trigger — no Prometheus dependency)
+- [x] 22.incident-job-restartpolicy [REAL Universe — restartPolicy is the pod's,
+      the Job retries anyway; bound backoffLimit/deadline/TTL/limits]
 
 ## Module 3 — Config & Storage
 - [x] 1.configmap-wiring · [x] 2.secret-not-mounted · [x] 3.pvc-pending
@@ -33,6 +35,8 @@ lessons carry a verified `source:` URL (see
       "helm not guaranteed" note)
 - [x] 8.pattern-ghost-endpoints [DRILL] · [x] 9.pattern-secret-not-reloaded [DRILL]
 - [x] 10.pattern-namespace-terminating [DRILL]
+- [x] 11.databases-on-k8s [reading: what a StatefulSet does NOT give you —
+      async-replication failover, PVC promises, when an operator earns its keep]
 
 ## Module 4 — Networking
 - [x] 1.incident-dns-ndots [REAL Zalando] · [x] 2.networkpolicy-blackhole
@@ -45,6 +49,10 @@ lessons carry a verified `source:` URL (see
       also covers the old M7 "CNI hands-on" backlog; NetworkPolicy debugging
       stays in 2.networkpolicy-blackhole]
 - [x] 11.kubeconfig-contexts
+- [x] 12.pattern-etp-blackhole [DRILL: externalTrafficPolicy Local + one-node
+      placement = every other node silently drops the traffic]
+- [x] 13.incident-ip-exhaustion [REAL loveholidays, reading: per-node CIDR
+      blocks cap the cluster long before the pod count does]
 
 ## Module 5 — Scheduling & Placement
 - [x] 1.incident-same-node [REAL Moonlight] · [x] 2.taints-tolerations
@@ -67,6 +75,8 @@ lessons carry a verified `source:` URL (see
 - [x] 17.audit-policy [☁ iximiuz-only lab — deep dive from §2]
 - [x] 18.falco-runtime-detection [☁ iximiuz-only lab: install Falco, trip your
       shell-in-container rule for real — deep dive from §5]
+- [x] 19.incident-iam-sidecar [REAL Adevinta, reading: pod identity — metadata
+      interception vs IRSA/Workload Identity, and the p99 it costs]
 
 ## Module 7 — Internals
 - [x] 1.reconcile-loop · [x] 2.scheduler-nodename · [x] 3.etcd-truth
@@ -91,6 +101,8 @@ lessons carry a verified `source:` URL (see
 - [x] 9.slo-errorbudget (prometheus-operator bundle manifests, NOT Helm;
       merged with the platform-SLO-dashboards idea — one lab, both bugs)
 - [x] 10.otel-collector-pipeline (collector Deployment + Jaeger all-in-one)
+- [x] 11.pattern-log-pipeline-drop [DRILL: agent Ready, backend empty — a tail
+      glob that matches nothing, and the ConfigMap that needs a restart]
 
 ## Module 9 — War Stories (capstone)
 - [x] 1.incident-monzo-cascade [REAL Monzo, reading]
@@ -108,6 +120,10 @@ lessons carry a verified `source:` URL (see
       not `flux bootstrap`)
 - [x] 4.multi-tenancy-capsule · [x] 5.cluster-api-intro [reading]
 - [x] 6.crossplane-compositions
+- [x] 7.incident-gitops-prune [REAL Skyscanner — empty render + --prune deleted
+      478 services worldwide; restore, then make the reconciler fail closed]
+- [x] 8.incident-istio-integration [REAL Exponea, reading: what a service mesh
+      actually costs, workload class by workload class]
 
 ## Incident library (docs)
 - [x] Index seeded with 40+ verified [REAL] rows + 14 [PATTERN] stubs; runnable/reading

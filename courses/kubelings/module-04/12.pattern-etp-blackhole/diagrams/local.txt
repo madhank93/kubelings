@@ -1,0 +1,20 @@
+     ┌────────────────────┐
+     │traffic hits node B │
+     │                    │
+     └────────────────────┘
+             │             
+externalTrafficPolicy Local
+             │             
+             ▼             
+    ┌────────────────────┐ 
+    │node B hosts no pod │ 
+    │                    │ 
+    └────────────────────┘ 
+             │             
+     no local endpoint     
+             │             
+             ▼             
+     ┌───────────────┐     
+     │packet dropped │     
+     │               │     
+     └───────────────┘     

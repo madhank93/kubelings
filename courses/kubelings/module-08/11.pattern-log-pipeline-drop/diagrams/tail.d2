@@ -1,0 +1,7 @@
+# A tail input with no matching file is not an error — it is silence.
+app:  "app writes app.log"
+glob: "tail glob wants *.json"
+none: "zero records shipped"
+
+app  -> glob: "shared volume"
+glob -> none: "matches no file"

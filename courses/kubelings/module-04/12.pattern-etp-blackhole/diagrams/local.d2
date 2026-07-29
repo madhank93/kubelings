@@ -1,0 +1,7 @@
+# With Local, a node only forwards to endpoints it hosts — no second hop, no rescue.
+lb:   "traffic hits node B"
+none: "node B hosts no pod"
+drop: "packet dropped"
+
+lb   -> none: "externalTrafficPolicy Local"
+none -> drop: "no local endpoint"

@@ -1,0 +1,7 @@
+# The ceiling is nodes x per-node block, not cluster CIDR / pods.
+node: "each node reserves /24"
+sub:  "subnet exhausted"
+pend: "pods stay Pending"
+
+node -> sub:  "2x max-pods per node"
+sub  -> pend: "IPAM has no address"
