@@ -82,16 +82,45 @@ func TestFooterAdvertisesCancelWhileRunning(t *testing.T) {
 	}
 }
 
-func TestFooterConfirmsClusterDeletion(t *testing.T) {
+// The destroy prompt is a pop-up composited over the frame, not a footer line.
+func TestPopupConfirmsClusterDeletion(t *testing.T) {
 	m := renderModel()
 	m.confirmDown = true
 
-	f := plain(m.footer())
-	if !strings.Contains(f, "delete the kind cluster?") {
-		t.Errorf("destroy-cluster prompt missing:\n%s", f)
+	p := plain(m.popup())
+	if !strings.Contains(p, "delete the kind cluster?") {
+		t.Errorf("destroy-cluster prompt missing:\n%s", p)
 	}
-	if !strings.Contains(f, "lost") {
-		t.Errorf("prompt does not state the consequence:\n%s", f)
+	if !strings.Contains(p, "lost") {
+		t.Errorf("prompt does not state the consequence:\n%s", p)
+	}
+	if !strings.Contains(plain(m.View()), "delete the kind cluster?") {
+		t.Error("the prompt is not composited into the view")
+	}
+}
+
+// TestPopupsKeepTheFrameIntact: a composite taller or wider than the frame
+// wraps, and a wrapped frame scrolls the header off the top.
+func TestPopupsKeepTheFrameIntact(t *testing.T) {
+	base := renderModel()
+	want := len(strings.Split(base.View(), "\n"))
+
+	for name, set := range map[string]func(m *model){
+		"solution": func(m *model) { m.confirm = true },
+		"destroy":  func(m *model) { m.confirmDown = true },
+		"help":     func(m *model) { m.showHelp = true },
+	} {
+		m := renderModel()
+		set(&m)
+		got := m.View()
+		if lines := len(strings.Split(got, "\n")); lines != want {
+			t.Errorf("%s: view is %d lines, frame is %d", name, lines, want)
+		}
+		for i, l := range strings.Split(got, "\n") {
+			if w := lipgloss.Width(l); w > m.w {
+				t.Errorf("%s: line %d is %d wide, terminal is %d", name, i, w, m.w)
+			}
+		}
 	}
 }
 
