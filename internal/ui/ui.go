@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -38,24 +39,27 @@ type row struct {
 }
 
 type model struct {
-	root    string
-	mods    []course.Module // everything discovered, before filtering
-	rows    []row
-	sel     []int // indices into rows that are lessons
-	cursor  int
-	listOff int // first visible row in the left list (scroll offset)
-	prog    map[string]progress.State
-	status  runner.ClusterStatus
-	issues  []preflight.Issue
-	vp      viewport.Model
-	spin    spinner.Model
-	mode    viewMode
-	running bool
-	runLbl  string
-	confirm bool // solution reveal prompt
-	w, h    int
-	ready   bool
-	splash  bool // show the welcome splash
+	root     string
+	mods     []course.Module // everything discovered, before filtering
+	rows     []row
+	sel      []int // indices into rows that are lessons
+	cursor   int
+	listOff  int // first visible row in the left list (scroll offset)
+	prog     map[string]progress.State
+	status   runner.ClusterStatus
+	issues   []preflight.Issue
+	vp       viewport.Model
+	helpVP   viewport.Model // the help pop-up scrolls independently of the pane
+	spin     spinner.Model
+	mode     viewMode
+	running  bool
+	runLbl   string
+	confirm  bool      // solution reveal prompt
+	showHelp bool      // the help pop-up is up
+	started  time.Time // when the running action began, for the elapsed clock
+	w, h     int
+	ready    bool
+	splash   bool // show the welcome splash
 
 	// play / shell chaining + switch-scenario guard
 	pendingPlay   *course.Lesson // run init+shell after the cluster comes up
@@ -350,6 +354,28 @@ func (m model) onMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// The help pop-up owns the keyboard: it scrolls, and every other key closes
+	// it. Anything else would fire an action hidden behind the box.
+	if m.showHelp {
+		switch msg.String() {
+		case "up", "k":
+			m.helpVP.ScrollUp(1)
+		case "down", "j":
+			m.helpVP.ScrollDown(1)
+		case "pgup", "ctrl+u":
+			m.helpVP.HalfPageUp()
+		case "pgdown", "ctrl+d":
+			m.helpVP.HalfPageDown()
+		case "ctrl+c":
+			return m, tea.Quit
+		default:
+			m.showHelp = false
+			// A pop-up rewrites the middle of the frame and nothing else, so the
+			// differential renderer can leave fragments behind when it closes.
+			return m, tea.ClearScreen
+		}
+		return m, nil
+	}
 	// Splash: any key dismisses (q/ctrl+c still quits).
 	if m.splash {
 		switch msg.String() {
@@ -514,12 +540,9 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, tea.EnableMouseCellMotion
 	case "?":
-		if m.mode == modeHelp {
-			m.mode = modeDetail
-		} else {
-			m.mode = modeHelp
-		}
-		m.refreshView()
+		m.showHelp = true
+		m.helpVP.GotoTop()
+		return m, tea.ClearScreen
 	case "a":
 		m.splash = true
 	case "h":
@@ -528,6 +551,7 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "s":
 		if l := m.current(); l != nil && l.Solution != "" {
 			m.confirm = true
+			return m, tea.ClearScreen
 		}
 	case "enter", " ": // PLAY: cluster up (if needed) -> init -> shell
 		l := m.current()
@@ -569,6 +593,7 @@ func (m model) onKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		// minutes to rebuild. Revealing a solution already asks for confirmation;
 		// this is the more expensive of the two.
 		m.confirmDown = true
+		return m, tea.ClearScreen
 	case "t":
 		if l := m.current(); l != nil {
 			// The shell's rcfile wires a `verify` helper straight to the local
@@ -730,6 +755,9 @@ func (m *model) layout() {
 		rightW = 10
 	}
 	m.vp = viewport.New(rightW, bodyH)
+	// The help pop-up is three quarters of the frame, less border and padding.
+	m.helpVP = viewport.New(max(min(m.w*3/4-6, 72), 24), max(min(m.h-10, 24), 5))
+	m.helpVP.SetContent(renderMarkdown(helpText(), m.helpVP.Width))
 	m.clampListOff()
 }
 
@@ -749,5 +777,43 @@ func (m model) View() string {
 	right := paneStyle.Render(m.vp.View())
 	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, left, right) + "\n")
 	b.WriteString(m.footer())
-	return b.String()
+	frame := b.String()
+
+	if box := m.popup(); box != "" {
+		x, y := center(m.w, len(strings.Split(frame, "\n")), lipgloss.Width(box), lipgloss.Height(box))
+		frame = overlay(frame, box, x, y)
+	}
+	return frame
+}
+
+// popup returns the pop-up to composite over the frame, or "" when there is
+// none. Only one is ever up: they are modal, and onKey answers them in this
+// same order.
+func (m model) popup() string {
+	yn := keybar([2]string{"y", "yes"}, [2]string{"N", "no"})
+	switch {
+	case m.showHelp:
+		return modal("help", m.helpVP.View(),
+			keybar([2]string{"↑↓", "scroll"}, [2]string{"any key", "close"}), m.w*3/4)
+	case m.confirm:
+		return modal("reveal the solution?",
+			"The hint is usually enough, and the walkthrough is more useful after you have "+
+				"been stuck than before.", yn, m.w/2)
+	case m.confirmDown:
+		return modal("delete the kind cluster?",
+			"Every scenario in progress is lost, and the next start rebuilds a three-node "+
+				"cluster from scratch — minutes, not seconds.", yn, m.w/2)
+	case m.confirmSwitch:
+		t := ""
+		if m.switchTarget != nil {
+			t = m.switchTarget.Name
+		}
+		return modal("‘"+m.switchOther+"’ is still active",
+			"Its resources are still in the cluster. Destroying them starts ‘"+t+"’ clean; "+
+				"keeping them starts ‘"+t+"’ on top, which is how two scenarios end up "+
+				"fighting over the same namespace.",
+			keybar([2]string{"d", "destroy & start"}, [2]string{"k", "keep & start"}, [2]string{"c", "cancel"}),
+			m.w*2/3)
+	}
+	return ""
 }

@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 
@@ -82,6 +83,17 @@ func lessonBadge(l *course.Lesson) string {
 }
 
 // keybar renders "key label · key label" with colored keys.
+// elapsed formats an action's running time. Minutes and seconds, because the
+// actions worth timing take minutes: a cluster create with no clock on it is
+// indistinguishable from a hang.
+func elapsed(d time.Duration) string {
+	s := int(d.Seconds())
+	if s < 60 {
+		return fmt.Sprintf("%ds", s)
+	}
+	return fmt.Sprintf("%dm%02ds", s/60, s%60)
+}
+
 func keybar(pairs ...[2]string) string {
 	var parts []string
 	for _, p := range pairs {
@@ -234,27 +246,24 @@ func (m model) footer() string {
 			dimStyle.Render(fmt.Sprintf("   %d match(es) · ", len(m.sel))) +
 			keybar([2]string{"↑↓", "move"}, [2]string{"↵", "keep"}, [2]string{"esc", "clear"}) + "\n"
 	}
-	if m.confirmDown {
-		return warnStyle.Render("delete the kind cluster? every scenario in progress is lost — ") +
-			keybar([2]string{"y", "yes"}, [2]string{"N", "no"})
+	// The confirmations are pop-ups now, and repeating them down here would be
+	// the same words twice.
+	// The keybar sheds keys as the terminal narrows, dropping from the middle:
+	// the first few are the common actions and the last two are help and quit.
+	// At 100 columns the full bar is 134 cells wide, which wrapped and cost a
+	// row of the frame on every draw.
+	all := [][2]string{
+		{"↵", "play"}, {"i", "init"}, {"v", "verify"}, {"r", "reset"},
+		{"h", "hint"}, {"s", "solution"}, {"t", "shell"},
+		{"/", "find"}, {"n", "next"},
+		{"u", "up"}, {"d", "down"}, {"m", "copy mode"},
+		{"?", "help"}, {"q", "quit"},
 	}
-	if m.confirmSwitch {
-		t := ""
-		if m.switchTarget != nil {
-			t = m.switchTarget.Name
-		}
-		return warnStyle.Render("⚠ scenario '"+m.switchOther+"' still active — ") +
-			keybar([2]string{"d", "destroy & start " + t}, [2]string{"k", "keep & start"}, [2]string{"c", "cancel"})
+	pairs := all
+	for len(pairs) > 4 && lipgloss.Width(keybar(pairs...)) > m.w-1 {
+		pairs = append(append([][2]string{}, pairs[:len(pairs)-3]...), pairs[len(pairs)-2:]...)
 	}
-	if m.confirm {
-		return warnStyle.Render("reveal solution? ") + keybar([2]string{"y", "yes"}, [2]string{"N", "no"})
-	}
-	keys := keybar(
-		[2]string{"↵", "play"}, [2]string{"i", "init"}, [2]string{"v", "verify"}, [2]string{"r", "reset"},
-		[2]string{"h", "hint"}, [2]string{"s", "solution"}, [2]string{"t", "shell"},
-		[2]string{"/", "find"}, [2]string{"n", "next"},
-		[2]string{"u", "up"}, [2]string{"d", "down"}, [2]string{"m", "copy mode"},
-		[2]string{"?", "help"}, [2]string{"q", "quit"})
+	keys := keybar(pairs...)
 	status := ""
 	if m.mouseOff {
 		status = warnStyle.Render("copy mode") +
@@ -263,7 +272,8 @@ func (m model) footer() string {
 	}
 	if m.running {
 		status = startedStyle.Render(m.spin.View()+" running "+m.runLbl) +
-			dimStyle.Render(" … ") + keybar([2]string{"esc", "cancel"})
+			dimStyle.Render(" "+elapsed(time.Since(m.started))+" … ") +
+			keybar([2]string{"esc", "cancel"})
 	} else if m.filter != "" {
 		status = dimStyle.Render("filter ") + keyStyle.Render("/"+m.filter) +
 			dimStyle.Render(fmt.Sprintf("  %d of %d lessons · esc clears", len(m.sel), m.lessonCount()))
