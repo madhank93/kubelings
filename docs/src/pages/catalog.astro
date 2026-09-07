@@ -81,6 +81,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
       <label class="fl" for="searchBox">Search</label>
       <input id="searchBox" type="search" placeholder="slug, scenario, company…" autocomplete="off" spellcheck="false" />
     </div>
+    <button class="pill" id="foldAll" aria-label="Collapse every module">Collapse all</button>
     <span class="rc" id="rc">{total} of {total}</span>
   </div>
 
@@ -105,15 +106,23 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
               last = e.module;
               rows.push(
                 <tr class="mod-row" data-mod={e.module} data-label={mod.label}
-                    data-learn={mod.learn} tabindex="0" role="button" aria-expanded="false">
+                    data-learn={mod.learn} tabindex="0" role="button" aria-expanded="true">
                   <td colspan="5">
+                    <span class="mexp" aria-hidden="true">▾</span>
                     <span class="mdot" style={`background:${mod.color}`}></span>
                     {e.module} — {mod.label}
                     <span class="mcount">{countFor(e.module)} lessons</span>
-                    <span class="mexp">▸</span>
                   </td>
                 </tr>
               );
+              if (mod.learn) {
+                rows.push(
+                  <tr class="learn-row" data-mod={e.module}
+                      data-search={`${e.module} ${mod.label} ${mod.learn}`.toLowerCase()}>
+                    <td colspan="5"><b>You learn:</b> {mod.learn}</td>
+                  </tr>
+                );
+              }
             }
             const search = `${e.slug} ${e.scenario} ${e.type} ${e.module} ${e.company ?? ''}`.toLowerCase();
             rows.push(
@@ -152,11 +161,7 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
   <!-- Floating "what this module teaches" panel. Fixed-positioned so it shows
        even when its module header row is pinned by position:sticky (an inline
        detail row would be scrolled off with the header's natural box). -->
-  <div id="modPop" class="mod-pop" hidden role="dialog" aria-label="Module details">
-    <button class="mod-pop-x" id="modPopX" aria-label="Close">✕</button>
-    <h3 id="modPopTitle"></h3>
-    <p id="modPopLearn"></p>
-  </div>
+  
 
   <details class="cat-reading cat-outcomes">
     <summary>What finishing this actually gives you (and what it doesn't)</summary>
@@ -369,19 +374,15 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     .mdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.5rem; }
     .mcount { margin-left: 0.6rem; font-weight: 400; color: var(--sl-color-gray-3); text-transform: none; letter-spacing: 0; }
     .mexp { float: right; color: var(--sl-color-gray-3); transition: transform 0.12s; }
-    .mod-row[aria-expanded="true"] .mexp { transform: rotate(90deg); color: var(--sl-color-accent-high); }
+    .mod-row[aria-expanded="false"] .mexp { transform: rotate(-90deg); }
 
-    .mod-pop { position: fixed; z-index: 5; box-sizing: border-box;
-      background: var(--sl-color-bg); border: 1px solid var(--sl-color-accent);
-      border-radius: 0.5rem; box-shadow: 0 12px 32px rgb(0 0 0 / 0.4);
-      padding: 0.75rem 2.2rem 0.85rem 0.9rem; }
-    .mod-pop h3 { margin: 0 0 0.35rem; font-size: 0.8rem; text-transform: uppercase;
-      letter-spacing: 0.05em; color: var(--sl-color-accent-high); }
-    .mod-pop p { margin: 0; font-size: 0.84rem; color: var(--sl-color-gray-1); line-height: 1.6; }
-    .mod-pop code { font-size: 0.78rem; }
-    .mod-pop-x { position: absolute; top: 0.5rem; right: 0.6rem; background: none; border: 0;
-      color: var(--sl-color-gray-3); font-size: 0.9rem; cursor: pointer; line-height: 1; padding: 0.2rem; }
-    .mod-pop-x:hover { color: var(--sl-color-white); }
+    /* The module's brief, inline under its header. It was a floating popover,
+       which is a lot of machinery for one sentence that has nowhere further to
+       go — kubelings has no chapter behind a module the way a course has. */
+    .learn-row td { background: color-mix(in oklab, var(--sl-color-accent) 5%, transparent);
+      font-size: 0.82rem; color: var(--sl-color-gray-1); line-height: 1.5; }
+    .learn-row b { color: var(--sl-color-accent-high); font-weight: 600; }
+
 
     .mchip { display: inline-block; font-size: 0.66rem; font-weight: 700; padding: 0.12rem 0.4rem; border-radius: 0.3rem; color: #fff; }
     .slug { font-family: var(--sl-font-mono, monospace); font-size: 0.78rem; color: var(--sl-color-gray-1); }
@@ -527,6 +528,10 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     const typePills = document.querySelectorAll<HTMLButtonElement>('.pill[data-type]');
     const lessonRows = Array.from(body.querySelectorAll<HTMLTableRowElement>('tr.lz-row'));
     const modRows = Array.from(body.querySelectorAll<HTMLTableRowElement>('tr.mod-row'));
+    const learnRows = Array.from(body.querySelectorAll<HTMLTableRowElement>('tr.learn-row'));
+    const foldAll = document.getElementById('foldAll') as HTMLButtonElement;
+    // Modules folded shut by the reader.
+    const collapsed = new Set<string>();
     const total = lessonRows.length;
     let mode = 'all';
     let type = 'all';
@@ -548,6 +553,9 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
     function apply() {
       const q = search.value.toLowerCase().trim();
       const mod = modSel.value;
+      // A search overrides the fold, so a query never reports "no results" for
+      // rows that are merely collapsed.
+      const folded = (m?: string) => !q && !!m && collapsed.has(m);
       let shown = 0;
       lessonRows.forEach((row) => {
         const modeOk =
@@ -559,72 +567,50 @@ const countFor = (m: string) => CATALOG.filter((e) => e.module === m).length;
         const modOk = mod === 'all' || row.dataset.mod === mod;
         const qOk = !q || (row.dataset.search || '').includes(q);
         const ok = modeOk && typeOk && modOk && qOk;
-        row.hidden = !ok;
+        // Collapsed rows still count as matches; folding is a view, not a filter.
+        row.hidden = !ok || folded(row.dataset.mod);
         if (ok) shown++;
       });
+      learnRows.forEach((lr) => {
+        const m = lr.dataset.mod!;
+        const any = lessonRows.some((r) => r.dataset.mod === m && !r.hidden);
+        lr.hidden = !any || folded(m);
+      });
       modRows.forEach((mr) => {
-        const m = mr.dataset.mod;
+        const m = mr.dataset.mod!;
         const any = lessonRows.some((r) => r.dataset.mod === m && !r.hidden);
         mr.hidden = !any;
-        if (!any && mr.getAttribute('aria-expanded') === 'true') closeModPop();
+        mr.setAttribute('aria-expanded', String(!folded(m)));
       });
+      const allFolded = modRows.every((mr) => collapsed.has(mr.dataset.mod!));
+      foldAll.textContent = allFolded ? 'Expand all' : 'Collapse all';
+      foldAll.setAttribute('aria-label', allFolded ? 'Expand every module' : 'Collapse every module');
       rc.textContent = `${shown} of ${total}`;
       empty.hidden = shown !== 0;
     }
 
-    // ---- module narrative popover (absorbed from the old /guides/curriculum) ----
-    // A floating panel rather than an inline row, so it stays visible when the
-    // clicked module header is pinned by position:sticky.
-    const modPop = document.getElementById('modPop')!;
-    const modPopTitle = document.getElementById('modPopTitle')!;
-    const modPopLearn = document.getElementById('modPopLearn')!;
-    let modPopOwner: HTMLTableRowElement | null = null;
-
     const withCode = (s: string) =>
       s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/`([^`]+)`/g, '<code>$1</code>');
 
-    function positionModPop(mr: HTMLTableRowElement) {
-      // The sticky rule is on the <td>, so the <tr> keeps its natural (possibly
-      // off-screen) box — measure the cell that's actually pinned on screen.
-      const cell = mr.querySelector('td') ?? mr;
-      const r = cell.getBoundingClientRect();
-      modPop.style.top = `${r.bottom + 4}px`;
-      modPop.style.left = `${r.left}px`;
-      modPop.style.width = `${r.width}px`;
-    }
-    function closeModPop() {
-      modPop.hidden = true;
-      if (modPopOwner) modPopOwner.setAttribute('aria-expanded', 'false');
-      modPopOwner = null;
-    }
-    function openModPop(mr: HTMLTableRowElement) {
-      modPopTitle.textContent = `${mr.dataset.mod} — ${mr.dataset.label}`;
-      modPopLearn.innerHTML = `<b>You learn:</b> ${withCode(mr.dataset.learn || '')}`;
-      positionModPop(mr);
-      modPop.hidden = false;
-      modPopOwner = mr;
-      mr.setAttribute('aria-expanded', 'true');
-    }
     modRows.forEach((mr) => {
-      const toggle = () => (modPopOwner === mr ? closeModPop() : openModPop(mr));
+      const m = mr.dataset.mod!;
+      const toggle = () => {
+        if (collapsed.has(m)) collapsed.delete(m);
+        else collapsed.add(m);
+        apply();
+      };
       mr.addEventListener('click', toggle);
       mr.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
       });
     });
-    document.getElementById('modPopX')!.addEventListener('click', closeModPop);
-    // Reposition while pinned; dismiss on outside click / Escape.
-    window.addEventListener('scroll', () => { if (modPopOwner) positionModPop(modPopOwner); }, { passive: true });
-    window.addEventListener('resize', () => { if (modPopOwner) positionModPop(modPopOwner); });
-    document.addEventListener('click', (e) => {
-      if (!modPopOwner) return;
-      const t = e.target as Node;
-      if (!modPop.contains(t) && !modPopOwner.contains(t)) closeModPop();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modPopOwner) closeModPop();
-    });
 
+    foldAll.addEventListener('click', () => {
+      const allFolded = modRows.every((mr) => collapsed.has(mr.dataset.mod!));
+      collapsed.clear();
+      if (!allFolded) modRows.forEach((mr) => collapsed.add(mr.dataset.mod!));
+      apply();
+    });
     // ---- modal ----
     const modal = document.getElementById('catModal') as HTMLDialogElement;
     const mBadge = document.getElementById('mBadge')!;
