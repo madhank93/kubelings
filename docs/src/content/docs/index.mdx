@@ -1,9 +1,9 @@
 ---
 title: Kubelings
-description: 116 hands-on Kubernetes lessons — fix broken-on-purpose clusters until an automated check passes. For CKA/CKAD/CKS prep and production troubleshooting muscle memory.
+description: Hands-on Kubernetes lessons — fix broken-on-purpose clusters until an automated check passes. For CKA/CKAD/CKS prep and production troubleshooting muscle memory.
 template: splash
 hero:
-  tagline: Fix broken-on-purpose clusters until an automated check passes — the rustlings way. 116 lessons for engineers building real Kubernetes muscle memory, from first pod to node and control-plane failures below kubectl.
+  tagline: Fix broken-on-purpose clusters until an automated check passes — the rustlings way. For engineers building real Kubernetes muscle memory, from first pod to node and control-plane failures below kubectl.
   image:
     file: ../../assets/kubelings.png
     alt: Kubelings
@@ -28,14 +28,33 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 import AsciinemaPlayer from '../../components/AsciinemaPlayer.astro';
+import { CATALOG, MODULES } from '../../data/catalog';
+
+export const moduleIds = Object.keys(MODULES);
+export const lessonCount = CATALOG.length;
+export const incidentCount = CATALOG.filter((l) => l.real).length;
+export const lessonsIn = (id) => CATALOG.filter((l) => l.module === id).length;
+export const MODULE_BLURBS = {
+  M1: 'pods, Deployments, Services, the triage loop',
+  M2: 'HPA, StatefulSets, PDBs, OOMKill, probes, VPA, KEDA',
+  M3: 'ConfigMaps, Secrets, PV/PVC, Helm, Kustomize',
+  M4: 'Ingress, Gateway API, NetworkPolicy, CoreDNS, CNI',
+  M5: 'affinity, taints, topology spread, preemption',
+  M6: 'RBAC, Pod Security, Gatekeeper, Kyverno, Falco, cosign',
+  M7: 'API server, etcd, scheduler, CRDs, operators, HA',
+  M8: 'SLO burn-rate, OTel tracing, node triage, upgrades',
+  M9: 'multi-concept cascades from real postmortems',
+  M10: 'Argo CD, Flux, Capsule, Cluster API, Crossplane',
+  M11: 'kubelet/containerd/etcd/apiserver on real hosts — iximiuz Labs only',
+};
 
 <AsciinemaPlayer caption="A broken cluster in your terminal: filter to a lesson, inject the broken state into a live kind cluster, and let the automated check decide — it only passes once the cluster is genuinely fixed." />
 
 
 <ul class="stat-row">
-  <li><span class="stat-num">116</span><span class="stat-label">Lessons</span></li>
-  <li><span class="stat-num">11</span><span class="stat-label">Modules</span></li>
-  <li><span class="stat-num">40+</span><span class="stat-label">Real incidents</span></li>
+  <li><span class="stat-num">{lessonCount}</span><span class="stat-label">Lessons</span></li>
+  <li><span class="stat-num">{moduleIds.length}</span><span class="stat-label">Modules</span></li>
+  <li><span class="stat-num">{incidentCount}</span><span class="stat-label">Real incidents</span></li>
 </ul>
 
 ## What is Kubelings?
@@ -63,25 +82,27 @@ same on a browser VM or your own laptop.
   </Card>
 </CardGrid>
 
-## The eleven-module curriculum
+## The curriculum, module by module
 
 From first pod to control-plane internals, platform engineering, and the
 node/host failures below kubectl — with real, cited production incidents
 reproduced as runnable lessons along the way.
 
-| # | Module | You learn | Lessons |
-|---|--------|-----------|---------|
-| 01 | **Foundations** | pods, Deployments, Services, the triage loop | 7 |
-| 02 | **Workloads** | HPA, StatefulSets, PDBs, OOMKill, probes, VPA, KEDA | 21 |
-| 03 | **Config & Storage** | ConfigMaps, Secrets, PV/PVC, Helm, Kustomize | 10 |
-| 04 | **Networking** | Ingress, Gateway API, NetworkPolicy, CoreDNS, CNI | 11 |
-| 05 | **Scheduling & Placement** | affinity, taints, topology spread, preemption | 5 |
-| 06 | **Security** | RBAC, Pod Security, Gatekeeper, Kyverno, Falco, cosign | 18 |
-| 07 | **Internals** | API server, etcd, scheduler, CRDs, operators, HA | 12 |
-| 08 | **Observability & SRE** | SLO burn-rate, OTel tracing, node triage, upgrades | 10 |
-| 09 | **War Stories (capstone)** | multi-concept cascades from real postmortems | 7 |
-| 10 | **Platform Engineering** | Argo CD, Flux, Capsule, Cluster API, Crossplane | 6 |
-| 11 | **Node & Control Plane** | kubelet/containerd/etcd/apiserver on real hosts — iximiuz Labs only | 9 |
+<table>
+  <thead>
+    <tr><th>#</th><th>Module</th><th>You learn</th><th>Lessons</th></tr>
+  </thead>
+  <tbody>
+    {moduleIds.map((id, i) => (
+      <tr>
+        <td>{String(i + 1).padStart(2, '0')}</td>
+        <td><strong>{MODULES[id].label}</strong></td>
+        <td>{MODULE_BLURBS[id]}</td>
+        <td>{lessonsIn(id)}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
 [Browse every lesson, with skill outcomes and the incident write-ups →](/catalog/)
 
@@ -104,7 +125,7 @@ verify-gated) and one **read-only**:
     editing to start. See [The TUI](/guides/tui/).
   </Card>
   <Card title="Real incidents, reproduced" icon="random">
-    40+ cited production postmortems — Zalando, Reddit, OpenAI, Monzo, Grafana —
+    {incidentCount} cited production postmortems — Zalando, Reddit, OpenAI, Monzo, Grafana —
     reproduced as runnable lessons on the same broken state the original team
     faced. Real vs synthetic is labeled honestly. Browse them in the
     [Catalog](/catalog/).
@@ -126,6 +147,6 @@ verify-gated) and one **read-only**:
 
 Kubelings is created and maintained by **Madhan Kumaravelu**
 ([@madhank93](https://github.com/madhank93) · [madhan.app](https://madhan.app)) —
-the 116 lessons, the incident library, the TUI, and the engine that runs every
+the {lessonCount} lessons, the incident library, the TUI, and the engine that runs every
 scenario both on iximiuz Labs and on local `kind`. Found a bug or want a lesson
 added? [Open an issue](https://github.com/madhank93/kubelings/issues).

@@ -5,6 +5,12 @@ import starlight from '@astrojs/starlight';
 // /incidents/<name>/ page, pointing at the catalog row that now carries its
 // write-up. Lesson prose published on iximiuz links these URLs absolutely.
 import incidentRedirects from './src/data/incident-redirects.json' with { type: 'json' };
+import { CATALOG, MODULES } from './src/data/catalog';
+
+// Structured-data counts track the catalog so the schema never drifts from it.
+const lessonCount = CATALOG.length;
+const moduleCount = Object.keys(MODULES).length;
+const incidentCount = CATALOG.filter((l) => l.real).length;
 
 // https://astro.build/config
 export default defineConfig({
@@ -74,8 +80,7 @@ export default defineConfig({
                 '@type': 'Course',
                 '@id': 'https://kubelings.madhan.app/#course',
                 name: 'Kubelings — Learn Kubernetes the Rustlings Way',
-                description:
-                  '107 hands-on Kubernetes lessons across 10 modules: fix broken-on-purpose clusters until an automated check passes. Includes 40+ real, cited production incidents. Runs on iximiuz Labs and, for all but the node-level track, locally on kind.',
+                description: `${lessonCount} hands-on Kubernetes lessons across ${moduleCount} modules: fix broken-on-purpose clusters until an automated check passes. Includes ${incidentCount} real, cited production incidents. Runs on iximiuz Labs and, for all but the node-level track, locally on kind.`,
                 url: 'https://kubelings.madhan.app',
                 provider: { '@id': 'https://kubelings.madhan.app/#author' },
                 author: { '@id': 'https://kubelings.madhan.app/#author' },
