@@ -71,10 +71,34 @@ with large-cluster gossip fixes.
 - **Registration ≠ readiness**: register services when they can serve, not
   when the process starts.
 
-*No check — study, then advance. Next: the war story where deleting every
-cluster was survivable.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-target-cascade-stampede.svg" alt="incident-target-cascade stampede diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. What turned a Kafka blip into failing nodes?
+
+   - **a)** Kafka filled the node disks
+   - **b)** Every workload's sidecars retried at once and together overloaded each node's shared Docker daemon
+   - **c)** The OpenStack upgrade deleted the nodes
+
+2. Why did rescheduling pods off NotReady nodes make things worse?
+
+   - **a)** The new nodes took on the same load and failed in turn: a death spiral
+   - **b)** Rescheduled pods lost their volumes
+   - **c)** The scheduler stopped working
+
+3. Which rule would have kept the reschedule storm out of Consul?
+
+   - **a)** Run Consul on separate nodes
+   - **b)** Use a bigger Consul cluster
+   - **c)** Register a service when it can serve, not when its process starts
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

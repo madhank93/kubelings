@@ -106,9 +106,34 @@ lag, nothing in your stack should be promoting anything.**
 - **Practise the restore.** The same conclusion Reddit reached the hard way
   (M9 `incident-reddit-piday`): an untested restore is a hypothesis.
 
-*No check — study, then advance.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/databases-on-k8s-failover.svg" alt="databases-on-k8s failover diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. What does a StatefulSet guarantee a database?
+
+   - **a)** Automatic failover to the most up-to-date replica
+   - **b)** Stable pod identity, per-pod storage, and ordered rollout
+   - **c)** Consistent data on every PersistentVolume
+
+2. A primary with async replication dies and a replica 60 transactions behind is promoted. What happened to those 60 transactions?
+
+   - **a)** They are lost, even though clients were told they committed
+   - **b)** Kubernetes replays them from the PVC
+   - **c)** They are delayed until the old primary comes back
+
+3. Why is ReadWriteOnce a feature for a database volume?
+
+   - **a)** It makes the volume faster
+   - **b)** It lets every replica share one data directory
+   - **c)** It stops two database processes from writing the same data directory and corrupting it
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

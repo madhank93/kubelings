@@ -88,9 +88,34 @@ kubectl exec <pod> -- cat /var/run/secrets/eks.amazonaws.com/serviceaccount/toke
   conntrack. When latency changes after a lift-and-shift, enumerate the hops that
   are new rather than re-profiling the application.
 
-*No check — study, then advance.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-iam-sidecar-creds.svg" alt="incident-iam-sidecar creds diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. With KIAM or kube2iam, what sits between the pod and its cloud credentials?
+
+   - **a)** Nothing: the pod calls STS directly
+   - **b)** An agent pod that intercepts requests to 169.254.169.254 and assumes a role per pod
+   - **c)** The kubelet's credential cache
+
+2. Why did an identity agent hurt p99 latency far more than p50?
+
+   - **a)** It is a shared per-node resource, so its slow moments hit every pod on the node
+   - **b)** It only runs during deploys
+   - **c)** It caches credentials for too long
+
+3. How do IRSA and Workload Identity remove the interception hop?
+
+   - **a)** They run the agent as a sidecar in every pod
+   - **b)** They give every pod the node's instance role
+   - **c)** The kubelet projects a signed ServiceAccount token that the SDK exchanges with STS directly
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

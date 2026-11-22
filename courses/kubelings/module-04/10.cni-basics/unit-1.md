@@ -125,6 +125,60 @@ kubelet ──► containerd ──► /opt/cni/bin/<type>   (per conflist order
   in the [library](https://kubelings.madhan.app/reference/incident-library/)
   is this at cloud scale.)
 
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. No CNI plugin is installed. What do you see?
+
+   - **a)** Pods run but cannot reach each other
+   - **b)** New pods stay in ContainerCreating and the node reports NetworkPluginNotReady
+   - **c)** The API server refuses to create pods
+
+2. In a conflist, what does each plugin's "type" name?
+
+   - **a)** A binary in /opt/cni/bin/ that is executed in order
+   - **b)** A Kubernetes CRD
+   - **c)** A DaemonSet in kube-system
+
+3. A pod is Running with an IP, but traffic to it does not flow. Where do you look first?
+
+   - **a)** Reinstall the CNI DaemonSet
+   - **b)** The node's /opt/cni/bin/ directory
+   - **c)** NetworkPolicies selecting the pod, then the Service's endpoints
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **b**: the kubelet creates the network namespace and needs a CNI plugin to give the pod an IP. Without one, nothing finishes.
+2. **a**: that is the whole discovery mechanism: the type is a file name in the plugin directory.
+3. **c**: ContainerCreating means plumbing. Running but unreachable means policy or Service wiring.
+
+</details>
+
+
 <!-- d2:plumbing -->
 ```text
     ┌────────┐      

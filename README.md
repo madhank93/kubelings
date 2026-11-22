@@ -57,7 +57,7 @@ refresh · `?` help · `q` quit. Mouse: wheel scrolls, click selects. Markers:
 the CLI). Starting a different scenario while one is still active prompts
 **destroy / keep / cancel**.
 
-With 116 lessons, `/` is the fast path: type any part of a lesson name, title, or
+With well over a hundred lessons, `/` is the fast path: type any part of a lesson name, title, or
 module ("networking", "crashloop") to narrow the list, `↵` to keep the filter,
 `esc` to clear it. `n` jumps to the next lesson you haven't solved.
 

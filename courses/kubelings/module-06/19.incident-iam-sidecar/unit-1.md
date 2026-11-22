@@ -95,7 +95,58 @@ kubectl exec <pod> -- cat /var/run/secrets/eks.amazonaws.com/serviceaccount/toke
   conntrack. When latency changes after a lift-and-shift, enumerate the hops that
   are new rather than re-profiling the application.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. With KIAM or kube2iam, what sits between the pod and its cloud credentials?
+
+   - **a)** Nothing: the pod calls STS directly
+   - **b)** An agent pod that intercepts requests to 169.254.169.254 and assumes a role per pod
+   - **c)** The kubelet's credential cache
+
+2. Why did an identity agent hurt p99 latency far more than p50?
+
+   - **a)** It is a shared per-node resource, so its slow moments hit every pod on the node
+   - **b)** It only runs during deploys
+   - **c)** It caches credentials for too long
+
+3. How do IRSA and Workload Identity remove the interception hop?
+
+   - **a)** They run the agent as a sidecar in every pod
+   - **b)** They give every pod the node's instance role
+   - **c)** The kubelet projects a signed ServiceAccount token that the SDK exchanges with STS directly
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **b**: every credential fetch takes a round trip through a DaemonSet agent with its own limits and pauses.
+2. **a**: contention in a shared agent shows in the tail long before the median.
+3. **c**: the SDK does one AssumeRoleWithWebIdentity call and caches the result until it expires. No agent and no iptables redirect.
+
+</details>
 
 <!-- d2:creds -->
 ```text

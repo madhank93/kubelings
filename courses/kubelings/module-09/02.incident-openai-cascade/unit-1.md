@@ -88,7 +88,58 @@ up — all to win back enough control-plane headroom to issue one delete.
   cluster — because the API server is the one shared service every fix flows
   through.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. Why did a telemetry agent that passed testing overload production?
+
+   - **a)** It had a memory leak
+   - **b)** Its API cost grew with node count, and only the largest clusters had enough nodes to cross the line
+   - **c)** It was deployed without RBAC
+
+2. The rollout looked healthy for about 20 minutes. Why?
+
+   - **a)** DNS caches kept serving stale answers until they expired across the fleet
+   - **b)** The agent started slowly
+   - **c)** Health checks were disabled
+
+3. Why did deleting the bad deployment take hours?
+
+   - **a)** The deployment had a finalizer
+   - **b)** etcd was corrupted
+   - **c)** Deleting it needed the Kubernetes API, which the incident had overloaded
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **b**: staging validates correctness. Aggregate load is a scale product: per-node cost times nodes.
+2. **a**: caches postponed the symptoms until the rollout had reached every cluster, then expired on a timer.
+3. **c**: operators were locked out by their own incident. A break-glass path to the control plane is the lesson.
+
+</details>
 
 <!-- d2:overload -->
 ```text

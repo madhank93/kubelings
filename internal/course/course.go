@@ -24,11 +24,15 @@ type Lesson struct {
 	Playground  string
 	Dir         string // absolute lesson dir
 	HasTasks    bool
-	Type        string // "lab" | "replay" (real cited incident) | "drill" (synthetic pattern) | "read" (no tasks)
+	Type        string // "lab" | "replay" (real cited incident) | "drill" (synthetic pattern) | "read" (no tasks, or a quick check)
 	Source      string // citation URL for replay lessons (frontmatter `source:`)
 	Task        string // unit prose up to the first <details>/::simple-task
 	Hint        string
 	Solution    string
+
+	// QuickCheck marks a reading whose only task is a short knowledge check
+	// (a task named quick_check). It stays a "read", but it can be verified.
+	QuickCheck bool
 
 	// CloudOnly marks a lesson whose tasks need real-VM/host access and so can
 	// only run on iximiuz Labs, never on the local kind cluster. Orthogonal to
@@ -120,6 +124,7 @@ func Discover(root string) ([]Module, error) {
 				Playground: fm.Playground.Name, Dir: ldir, HasTasks: len(fm.Tasks) > 0,
 				Source: strings.TrimSpace(fm.Source),
 			}
+			_, ls.QuickCheck = fm.Tasks["quick_check"]
 			ls.Type = lessonType(ls)
 			if reason, ok := cloud[ls.Name]; ok || fm.CloudOnly {
 				// A task-less lesson has nothing to run anywhere, so "can't run
@@ -148,7 +153,7 @@ func Discover(root string) ([]Module, error) {
 //	lab    — standard hands-on concept lesson
 func lessonType(l Lesson) string {
 	switch {
-	case !l.HasTasks:
+	case !l.HasTasks, l.QuickCheck:
 		return "read"
 	case strings.HasPrefix(l.Name, "incident-"):
 		return "replay"

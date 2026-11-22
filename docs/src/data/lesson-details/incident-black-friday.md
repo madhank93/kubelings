@@ -76,9 +76,34 @@ acceptance is an outage with a delay on it.
 - **Peak day is a freeze + a war room, but above all a *model***: know λ and
   μ for your queues before the day that decides your year.
 
-*No check — study, then take the final boss.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-black-friday-arrival.svg" alt="incident-black-friday arrival diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. Why does one Kubernetes Job per task melt down at peak?
+
+   - **a)** Every Job and pod is an API object, so 10x tasks means 10x object churn through the API server and etcd
+   - **b)** Jobs cannot run in parallel
+   - **c)** The scheduler only runs one Job at a time
+
+2. Which field stops completed Jobs piling up forever?
+
+   - **a)** backoffLimit
+   - **b)** activeDeadlineSeconds
+   - **c)** ttlSecondsAfterFinished
+
+3. What design keeps the work but drops the per-task Job?
+
+   - **a)** A CronJob per task
+   - **b)** A fixed pool of worker pods (a Deployment, maybe with HPA) pulling tasks from a real queue
+   - **c)** Raising the namespace ResourceQuota
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

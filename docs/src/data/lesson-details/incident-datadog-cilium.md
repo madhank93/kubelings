@@ -101,10 +101,34 @@ channel, auditing base images. Postmortems from other companies are only
 valuable if they change *your* fleet — this failure mode has now taken down
 two major platforms, publicly, with the same root shape.
 
-*No check — study, then advance. Module 9 shows what these cascades look like
-from inside the incident channel.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-datadog-cilium-statelost.svg" alt="incident-datadog-cilium statelost diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. What started the Datadog outage?
+
+   - **a)** A bad Cilium release rolled out by Datadog
+   - **b)** An automatic systemd security update that restarted systemd-networkd, which removed Cilium's routes
+   - **c)** An etcd failure in every region
+
+2. Why did five regions on several clouds give no protection?
+
+   - **a)** The update channel was shared by every node and ran in the same window everywhere
+   - **b)** All regions shared one control plane
+   - **c)** The clouds had a joint outage
+
+3. Which practice would have contained it?
+
+   - **a)** More replicas of every workload
+   - **b)** Turning off security patches
+   - **c)** Ring-deploying the OS layer: canary nodes, health checks, then waves
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

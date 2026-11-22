@@ -10,6 +10,8 @@ ROOT = os.path.join(_REPO, "courses", "kubelings")
 # label, colour, and the skill narrative (absorbed from the retired
 # /guides/curriculum page — the catalog module rows are now its only home).
 MODULES = {
+    "M0":  ("Kubernetes Basics",    "#8a9a5b",
+            "for newcomers: clusters, nodes & namespaces, a first pod, YAML manifests & `kubectl apply`, Deployments & self-healing, and the get/describe/logs toolkit"),
     "M1":  ("Foundations",          "#7c6af5",
             "pods, Deployments, Services, namespaces, labels & selectors, the triage loop (`describe` → `logs` → fix → watch)"),
     "M2":  ("Workloads",            "#3b9eff",
@@ -90,6 +92,10 @@ def get_title(fm):
 
 def has_tasks(fm):
     return re.search(r'(?m)^tasks:\s*$', fm) is not None
+
+def has_quick_check(fm):
+    """A reading whose only task is a knowledge check stays typed as a reading."""
+    return re.search(r'(?m)^  quick_check:\s*$', fm) is not None
 
 def get_description(fm):
     lines = fm.splitlines()
@@ -243,7 +249,8 @@ for n in _module_nums:
         # A task-less lesson has nothing to run anywhere, so it stays a reading
         # rather than becoming "cloud-only".
         cloud = tasks and is_cloud_only(fm, slug)
-        if not tasks:
+        quick = has_quick_check(fm)
+        if not tasks or quick:
             typ = "read"
         elif slug.startswith("pattern-"):
             typ = "drill"
@@ -284,7 +291,7 @@ for n in _module_nums:
             # The three are independent: a cloud-only lesson is hands-on and runs
             # on iximiuz, but not on kind.
             "type": typ, "iximiuz": tasks, "kind": tasks and not cloud,
-            "handsOn": tasks, "cloudOnly": cloud, "description": desc,
+            "handsOn": tasks and not quick, "cloudOnly": cloud, "description": desc,
             "real": inc is not None,
             "company": inc[0] if inc else None,
             "source": inc[1] if inc else None,
