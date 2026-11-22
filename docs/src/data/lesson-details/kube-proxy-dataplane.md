@@ -82,9 +82,34 @@ failure-domain choice).
   because it's least often guilty — but when it is, nothing above it will
   show you.
 
-*No check — study, then advance.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/kube-proxy-dataplane-dnat.svg" alt="kube-proxy-dataplane dnat diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. Which interface on which machine owns a Service's ClusterIP?
+
+   - **a)** The kube-proxy pod's interface
+   - **b)** The first node's eth0
+   - **c)** None: the ClusterIP is a rewrite rule in each node's kernel
+
+2. In iptables mode, how is a backend chosen?
+
+   - **a)** At random, once per connection
+   - **b)** Round-robin, once per HTTP request
+   - **c)** The least-loaded pod
+
+3. A Service has no endpoints. What does a client see?
+
+   - **a)** A timeout while kube-proxy waits for pods
+   - **b)** Connection refused, from a REJECT rule
+   - **c)** A 503 from kube-proxy
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

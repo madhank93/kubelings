@@ -97,7 +97,58 @@ The judgement it teaches is the durable part.
   mesh when you need service identity and L7 policy *between* services and you're
   prepared to run a control plane to get them.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. Why did Jobs stop completing after sidecar injection?
+
+   - **a)** The app container exits but the proxy sidecar keeps running, so the pod never completes
+   - **b)** The mesh blocked the Job's API calls
+   - **c)** Jobs cannot run in meshed namespaces
+
+2. Which fix removes that problem in Kubernetes 1.29 and later?
+
+   - **a)** Setting restartPolicy: Never on the pod
+   - **b)** Native sidecar containers: an initContainer with restartPolicy: Always, stopped when the main container exits
+   - **c)** Raising the Job's activeDeadlineSeconds
+
+3. Why does a mesh make the Service port name matter?
+
+   - **a)** Kubernetes rejects unnamed ports when a mesh is installed
+   - **b)** Port names set the proxy's listen port
+   - **c)** The mesh parses traffic and infers the protocol from the port name
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **a**: the proxy is a server and never exits on its own.
+2. **b**: native sidecars give the proxy a lifecycle tied to the main container.
+3. **c**: plain Services forward bytes. A mesh terminates and parses the protocol, and the name tells it which one.
+
+</details>
 
 <!-- d2:sidecar -->
 ```text

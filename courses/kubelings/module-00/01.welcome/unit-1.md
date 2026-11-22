@@ -38,4 +38,9 @@ scripts/run-challenge-local.sh <challenge> init
 scripts/run-challenge-local.sh <challenge> verify
 ```
 
-Ready? Head to **Module 2 — Workloads & Scheduling** and fix your first cluster.
+### Where to start
+
+- **New to Kubernetes?** Carry on with this module. It builds your first pod,
+  manifest and Deployment from nothing, one check at a time.
+- **Already know pods, Deployments and YAML?** Skip to **Module 1 — Foundations**
+  and fix your first broken cluster.

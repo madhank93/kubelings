@@ -107,7 +107,58 @@ steps (`get nodes`, `get pdb`, workload health), and a rehearsed reverse
 gear.** The teams that upgrade quarterly do it calmly; the teams that
 upgrade every three years star in Module 9.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. Which component must be upgraded first?
+
+   - **a)** The kubelets on every node
+   - **b)** kube-apiserver: nothing may be newer than it
+   - **c)** kubectl
+
+2. You are on 1.28 and want 1.30. What is the path?
+
+   - **a)** 1.28 → 1.29 → 1.30, control plane then nodes at each step
+   - **b)** Straight to 1.30 on the control plane, then the nodes
+   - **c)** Nodes to 1.30 first, then the control plane
+
+3. `kubectl get pdb -A` shows ALLOWED DISRUPTIONS 0 for a workload. What happens during the upgrade?
+
+   - **a)** The PDB is ignored during upgrades
+   - **b)** The workload's pods are deleted all at once
+   - **c)** The first drain of a node running that workload hangs
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **b**: the version skew policy lets kubelets lag the API server, never lead it.
+2. **a**: upgrades go one minor version at a time. Skipping a minor is unsupported.
+3. **c**: drain respects PDBs. Fix them before the maintenance window.
+
+</details>
 
 <!-- d2:order -->
 ```text

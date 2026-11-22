@@ -110,7 +110,58 @@ kubectl get events -A --field-selector reason=FailedCreatePodSandBox
   of encapsulation and the debuggability you get from a flat network. Know which
   trade your cluster made.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. A cluster CIDR of 10.244.0.0/16 gives each node a /24. What is the most nodes it can hold?
+
+   - **a)** 595
+   - **b)** 65,536
+   - **c)** 256
+
+2. Pods are Pending because the CNI has no address to hand out. Where does the error show up?
+
+   - **a)** In the pod's events, as FailedCreatePodSandBox
+   - **b)** In the scheduler's logs, as FailedScheduling
+   - **c)** As the node condition NetworkUnavailable
+
+3. Why does lowering max-pods per node free IP addresses without deleting a pod?
+
+   - **a)** It evicts pods above the new limit
+   - **b)** Each node's reserved block is sized from max-pods, not from the pods actually running
+   - **c)** It switches the CNI to an overlay network
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **c**: 65,536 addresses divided into 256-address blocks is 256 blocks, one per node, however few pods each runs.
+2. **a**: the scheduler already placed the pod. Sandbox creation fails one layer down, when IPAM has nothing left.
+3. **b**: GKE reserves twice max-pods per node, so a smaller cap means a smaller block per node.
+
+</details>
 
 <!-- d2:ipam -->
 ```text

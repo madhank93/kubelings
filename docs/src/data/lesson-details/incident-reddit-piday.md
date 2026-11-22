@@ -78,9 +78,34 @@ recovery plans; they're recovery *hypotheses*. Total: ~314 minutes. On Pi Day.
 - **Upgrade the oldest cluster first in staging form, not last in prod form** —
   clone its quirks somewhere disposable if you must keep it.
 
-*No check — study, then advance.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-reddit-piday-label.svg" alt="incident-reddit-piday label diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. What did the 1.24 upgrade change that broke Reddit's pod network?
+
+   - **a)** It removed the node-role.kubernetes.io/master label that Calico's route reflector selector matched on
+   - **b)** It removed Calico from the cluster
+   - **c)** It changed the cluster CIDR
+
+2. Which signal would have shown the problem immediately?
+
+   - **a)** Node Ready status
+   - **b)** Pod-to-pod reachability checks across the data plane
+   - **c)** API server health checks
+
+3. Why did rehearsing the upgrade on other clusters not catch it?
+
+   - **a)** The other clusters ran a different Kubernetes version
+   - **b)** The rehearsal skipped the CNI
+   - **c)** This cluster's hand-built Calico config existed nowhere else
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

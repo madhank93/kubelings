@@ -145,4 +145,55 @@ every platform. If you're on managed Kubernetes and wondering where to spend
 security effort — it's rows 4 and 5, plus everything this module already
 taught inside the cluster.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. You enable Secret encryption at rest. Which Secrets are now encrypted in etcd?
+
+   - **a)** All of them, immediately
+   - **b)** Only Secrets written after the change, until the existing ones are rewritten
+   - **c)** Only Secrets in kube-system
+
+2. What does --authorization-mode=Node add on top of RBAC?
+
+   - **a)** Each kubelet can only read objects for its own node, so one stolen node credential cannot read every Secret
+   - **b)** Nodes can approve their own certificates
+   - **c)** Anonymous requests from nodes are allowed
+
+3. On a managed cluster (EKS, GKE, AKS), which controls stay your job?
+
+   - **a)** API server flags and encryption at rest
+   - **b)** Audit log storage and etcd backups
+   - **c)** Image supply chain and runtime security
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **b**: encryption applies on write. Existing Secrets stay plaintext until something like `kubectl get secrets -A -o json | kubectl replace -f -` rewrites them.
+2. **a**: the Node authorizer, enforced by the NodeRestriction admission plugin, scopes a kubelet to its own pods and their Secrets.
+3. **c**: the provider runs the control plane, but what you run and how you watch it are always yours.
+
+</details>

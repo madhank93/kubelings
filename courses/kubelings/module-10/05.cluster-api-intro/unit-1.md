@@ -126,6 +126,60 @@ heterogeneous fleets is the actual selling point.
 - Try it for real: kind cluster + `clusterctl init --infrastructure
   docker` — a cluster that creates clusters, on your laptop.
 
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. In Cluster API, what plays the role a ReplicaSet plays for pods?
+
+   - **a)** MachineSet, which keeps a number of Machines
+   - **b)** KubeadmControlPlane
+   - **c)** The Cluster object
+
+2. How does Cluster API upgrade worker nodes when you bump `version:`?
+
+   - **a)** It patches the kubelet package on each node in place
+   - **b)** It replaces machines one at a time: cordon, drain, delete, then a fresh machine joins
+   - **c)** It upgrades every node at the same moment
+
+3. Where do the Cluster API controllers run?
+
+   - **a)** On every workload cluster
+   - **b)** On each node as a DaemonSet
+   - **c)** In a separate management cluster that reconciles the workload clusters
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **a**: MachineDeployment → MachineSet → Machine mirrors Deployment → ReplicaSet → Pod.
+2. **b**: nodes are immutable. An upgrade is a rolling replacement, like a Deployment rollout.
+3. **c**: workload clusters are the product. The management cluster runs the machinery, and must be designed for its own failure.
+
+</details>
+
+
 <!-- d2:management -->
 ```text
  ┌───────────────────┐

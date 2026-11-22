@@ -105,7 +105,58 @@ None of it was new. **Mastery is seeing the whole chain while it's happening** �
 which link to cut, which loop is diverging, where the next blast will land. That
 is knowing Kubernetes as a platform, in and out. Take the final boss next.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. What turned a service-discovery blip into an outage?
+
+   - **a)** Clients crashed with a null-pointer exception when handed an empty endpoint list, which churned endpoints further
+   - **b)** etcd lost all its data
+   - **c)** The mesh deleted every Service
+
+2. Which change breaks the chain earliest?
+
+   - **a)** Running more etcd members
+   - **b)** Clients that treat "no endpoints" as a handled error to retry or degrade, not a crash
+   - **c)** Removing the service mesh
+
+3. Why were Kubernetes and the mesh both affected by one etcd change?
+
+   - **a)** They run in the same namespace
+   - **b)** The mesh restarted the API server
+   - **c)** Both depended on the same etcd: shared fate
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **a**: the crashes fed more bad discovery data back into the mesh, a positive feedback loop.
+2. **b**: a client that degrades instead of crashing stops the feedback loop at link 3.
+3. **c**: one disruption made two systems misbehave in correlated ways. Map shared dependencies before the incident.
+
+</details>
 
 <!-- d2:cascade -->
 ```text

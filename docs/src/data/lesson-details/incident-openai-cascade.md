@@ -81,9 +81,34 @@ up — all to win back enough control-plane headroom to issue one delete.
   cluster — because the API server is the one shared service every fix flows
   through.
 
-*No check — study, then advance.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-openai-cascade-overload.svg" alt="incident-openai-cascade overload diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. Why did a telemetry agent that passed testing overload production?
+
+   - **a)** It had a memory leak
+   - **b)** Its API cost grew with node count, and only the largest clusters had enough nodes to cross the line
+   - **c)** It was deployed without RBAC
+
+2. The rollout looked healthy for about 20 minutes. Why?
+
+   - **a)** DNS caches kept serving stale answers until they expired across the fleet
+   - **b)** The agent started slowly
+   - **c)** Health checks were disabled
+
+3. Why did deleting the bad deployment take hours?
+
+   - **a)** The deployment had a finalizer
+   - **b)** etcd was corrupted
+   - **c)** Deleting it needed the Kubernetes API, which the incident had overloaded
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

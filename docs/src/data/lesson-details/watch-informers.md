@@ -1,4 +1,4 @@
-> **Reading with live experiments.** No verify — but every section has a
+> **Reading with live experiments.** Every section has a
 > command to run on your cluster. Open two shells (`t` in the TUI, twice) and
 > actually run them; this mechanism is invisible until you've seen it stream.
 
@@ -117,10 +117,34 @@ from an answer.)
   = fleet incident.
 - API slow? Check APF rejection/queue metrics before blaming etcd.
 
-*No check — run the experiments, then advance: the next lesson builds the
-controller these primitives exist for.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/watch-informers-cache.svg" alt="watch-informers cache diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. How do controllers learn about changes without polling?
+
+   - **a)** LIST once, then a WATCH from that resourceVersion that streams every later change
+   - **b)** The API server pushes webhooks to every controller
+   - **c)** They poll etcd directly every few seconds
+
+2. A client reconnects with a very old resourceVersion and gets 410 Gone. What must it do?
+
+   - **a)** Retry the same watch with backoff
+   - **b)** Re-LIST to get the full current state, then watch again
+   - **c)** Ask etcd for the missing events
+
+3. Why does a dropped watch event not leave a controller permanently wrong?
+
+   - **a)** The API server retries the event until acknowledged
+   - **b)** Events are stored in the workqueue forever
+   - **c)** Reconcile is level-triggered: it reads current state for a key and converges, so the next sync fixes it
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

@@ -5,9 +5,10 @@ name: control-plane-tour-unit
 ---
 
 
-> **Guided reading + live pokes.** No check to pass — run the commands on this
-> cluster as you go, then move on. This ties together reconcile (7.1), scheduler
-> (7.2), and etcd (7.3) into the whole picture.
+> **Guided reading + live pokes.** Run the commands on this
+> cluster as you go, then answer the quick check at the end. This ties
+> together reconcile (7.1), scheduler (7.2), and etcd (7.3) into the whole
+> picture.
 
 ## Part 1 — the life of `kubectl apply -f pod.yaml`
 
@@ -94,7 +95,60 @@ Kubernetes behavior is a black box again — including every failure in the
 [Incident Library](https://kubelings.madhan.app/reference/incident-library/),
 each of which is one of these components doing exactly what it was told.
 
-*No check — you've toured the machine. Module 8 puts you on call inside it.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. When does kubectl get its 201 Created for a new pod?
+
+   - **a)** After the object is persisted to etcd, before any node runs it
+   - **b)** After the scheduler binds it to a node
+   - **c)** After its containers are running
+
+2. What does `kubectl ... --dry-run=server` run?
+
+   - **a)** Only client-side schema validation
+   - **b)** Authentication, authorization and admission, without persisting to etcd
+   - **c)** The whole pipeline, then deletes the object
+
+3. Three kube-scheduler replicas run for HA. How many schedule pods at once?
+
+   - **a)** All three, sharing the work
+   - **b)** Two, with one standby
+   - **c)** One: the replica holding the kube-scheduler Lease
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **a**: the write path ends at etcd. Scheduling and starting containers happen afterwards, as reactions to the watch event.
+2. **b**: it is the full pre-etcd pipeline with the persist step removed, which is why it shows defaulting and mutation.
+3. **c**: leader election over a Lease keeps exactly one active. A standby takes over when the holder stops renewing.
+
+</details>
+
+*You've toured the machine. Module 8 puts you on call inside it.*
 
 <!-- d2:path -->
 ```text

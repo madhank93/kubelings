@@ -98,9 +98,34 @@ None of it was new. **Mastery is seeing the whole chain while it's happening** â
 which link to cut, which loop is diverging, where the next blast will land. That
 is knowing Kubernetes as a platform, in and out. Take the final boss next.
 
-*No check â€” study, then advance.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-monzo-cascade-cascade.svg" alt="incident-monzo-cascade cascade diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. What turned a service-discovery blip into an outage?
+
+   - **a)** Clients crashed with a null-pointer exception when handed an empty endpoint list, which churned endpoints further
+   - **b)** etcd lost all its data
+   - **c)** The mesh deleted every Service
+
+2. Which change breaks the chain earliest?
+
+   - **a)** Running more etcd members
+   - **b)** Clients that treat "no endpoints" as a handled error to retry or degrade, not a crash
+   - **c)** Removing the service mesh
+
+3. Why were Kubernetes and the mesh both affected by one etcd change?
+
+   - **a)** They run in the same namespace
+   - **b)** The mesh restarted the API server
+   - **c)** Both depended on the same etcd: shared fate
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

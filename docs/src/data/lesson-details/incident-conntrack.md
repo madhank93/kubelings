@@ -73,10 +73,34 @@ query volume → volume fills conntrack → conntrack races corrupt what's left.
 Zalando, Preply, and loveholidays are one story told three ways: **the platform's
 invisible defaults are load-bearing.** Module 7 shows you the machinery itself.
 
-*No check for this lesson — mark it done by moving on. The next one has you back
-in the terminal.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-conntrack-table.svg" alt="incident-conntrack table diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. When a node's conntrack table fills up, what fails?
+
+   - **a)** Existing connections are reset
+   - **b)** New connections are silently dropped while existing ones keep working
+   - **c)** The kubelet marks the node NotReady
+
+2. Intermittent DNS lookups that stall for exactly 5 seconds point to what?
+
+   - **a)** A race in conntrack insertion for parallel A and AAAA queries over UDP
+   - **b)** CoreDNS running out of memory
+   - **c)** A wrong ndots setting
+
+3. Which mitigation removes that DNS race rather than working around it?
+
+   - **a)** Scaling CoreDNS to more replicas
+   - **b)** Raising nf_conntrack_max
+   - **c)** NodeLocal DNSCache, so pods query a local daemon with no DNAT
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

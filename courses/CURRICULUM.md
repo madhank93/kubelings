@@ -9,8 +9,13 @@ dir prefix, pattern drills use `pattern-`; the TUI derives the type badge
 lessons carry a verified `source:` URL (see
 `docs/src/content/docs/reference/incident-library.md`).
 
+## Module 0 — Kubernetes Basics (for newcomers)
+- [x] 1.welcome (moved from Module 1)
+- [x] 2.first-pod · [x] 3.pod-manifests · [x] 4.deployments-self-heal
+- [x] 5.read-the-cluster (introduces the answers-in-a-ConfigMap pattern the
+      quick checks reuse)
+
 ## Module 1 — Foundations
-- [x] 1.welcome
 - [x] 2.crashloop-triage · [x] 3.expose-web · [x] 4.selector-mismatch
 - [x] 5.namespace-basics · [x] 6.imagepull-backoff · [x] 7.kubectl-detective
 
@@ -124,6 +129,18 @@ lessons carry a verified `source:` URL (see
       478 services worldwide; restore, then make the reconciler fail closed]
 - [x] 8.incident-istio-integration [REAL Exponea, reading: what a service mesh
       actually costs, workload class by workload class]
+
+## Module 11 — Node & Control Plane [☁ iximiuz-only]
+- [x] 1.kubelet-down · [x] 2.containerd-down · [x] 3.apiserver-broken-flag
+- [x] 4.etcd-defrag · [x] 5.static-pod-create · [x] 6.kubelet-csr-approval
+- [x] 7.cgroup-driver-mismatch · [x] 8.node-clock-skew
+- [x] 9.node-sysctl-networking
+
+## Quick checks on readings
+Every reading except `welcome` ends with a three-question quick check: the
+learner writes letters into a `quick-check` ConfigMap and the `quick_check`
+task grades it. A task named `quick_check` keeps the lesson typed as a reading.
+Add one with `tools/add-quick-check.py <lesson-dir> <spec.json>`.
 
 ## Incident library (docs)
 - [x] Index seeded with 40+ verified [REAL] rows + 14 [PATTERN] stubs; runnable/reading

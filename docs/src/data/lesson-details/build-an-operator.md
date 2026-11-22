@@ -115,4 +115,34 @@ you can now write from memory. Do it once; the whole platform (Deployments,
 StatefulSets, cert-manager, everything in 7.1's controller chain) stops being
 machinery and becomes *peers*: the same 60 lines, tiered.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. What makes deleting a BackupSchedule also delete its CronJob?
+
+   - **a)** A finalizer the operator removes
+   - **b)** An ownerReference on the CronJob pointing at the BackupSchedule
+   - **c)** The operator's delete handler
+
+2. Why must reconcile be idempotent?
+
+   - **a)** The workqueue will hand it the same key more than once
+   - **b)** Go requires it for goroutines
+   - **c)** etcd rejects duplicate writes
+
+3. The need is "run a backup every night at 2 a.m." What should you build?
+
+   - **a)** A kubebuilder operator
+   - **b)** A raw client-go controller
+   - **c)** A CronJob, with no operator at all
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

@@ -78,8 +78,60 @@ with large-cluster gossip fixes.
 - **Registration ≠ readiness**: register services when they can serve, not
   when the process starts.
 
-*No check — study, then advance. Next: the war story where deleting every
-cluster was survivable.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. What turned a Kafka blip into failing nodes?
+
+   - **a)** Kafka filled the node disks
+   - **b)** Every workload's sidecars retried at once and together overloaded each node's shared Docker daemon
+   - **c)** The OpenStack upgrade deleted the nodes
+
+2. Why did rescheduling pods off NotReady nodes make things worse?
+
+   - **a)** The new nodes took on the same load and failed in turn: a death spiral
+   - **b)** Rescheduled pods lost their volumes
+   - **c)** The scheduler stopped working
+
+3. Which rule would have kept the reschedule storm out of Consul?
+
+   - **a)** Run Consul on separate nodes
+   - **b)** Use a bigger Consul cluster
+   - **c)** Register a service when it can serve, not when its process starts
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **b**: each retry was cheap. All of them together were not, and the daemon is shared per node.
+2. **a**: the scheduler does not know why nodes fail, so it moves the load onto nodes that buckle under it next.
+3. **c**: registering at pod start created about 41,000 phantom nodes during the storm.
+
+</details>
+
+*Next: the war story where deleting every cluster was survivable.*
 
 <!-- d2:stampede -->
 ```text

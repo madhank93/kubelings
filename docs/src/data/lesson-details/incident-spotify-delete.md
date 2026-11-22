@@ -70,9 +70,34 @@ Spotify's post-incident changes, from the keynote:
   upgrades. Module 10 builds the GitOps tooling that makes this posture
   practical.
 
-*No check — study, then advance. The final boss awaits.*
+## Quick check
 
-<figure class="lesson-diagram">
-<img src="/diagrams/incident-spotify-delete-survivable.svg" alt="incident-spotify-delete survivable diagram" loading="lazy">
-</figure>
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
 
+1. Spotify deleted most of its production clusters, twice. Why did users barely notice?
+
+   - **a)** The clusters were restored from etcd in minutes
+   - **b)** Many interchangeable clusters, a legacy platform still running, and service state kept outside the clusters
+   - **c)** Traffic was served from a CDN
+
+2. Which state is your real blast radius if a cluster is deleted?
+
+   - **a)** State that exists only in etcd
+   - **b)** Container images in the registry
+   - **c)** Manifests in git
+
+3. Why does running more clusters reduce risk even though there is more to operate?
+
+   - **a)** Each cluster gets its own etcd backup for free
+   - **b)** Kubernetes charges less per cluster
+   - **c)** It forces automation and uniformity, and each cluster has a smaller blast radius
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.

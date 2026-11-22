@@ -83,7 +83,60 @@ acceptance is an outage with a delay on it.
 - **Peak day is a freeze + a war room, but above all a *model***: know λ and
   μ for your queues before the day that decides your year.
 
-*No check — study, then take the final boss.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. Why does one Kubernetes Job per task melt down at peak?
+
+   - **a)** Every Job and pod is an API object, so 10x tasks means 10x object churn through the API server and etcd
+   - **b)** Jobs cannot run in parallel
+   - **c)** The scheduler only runs one Job at a time
+
+2. Which field stops completed Jobs piling up forever?
+
+   - **a)** backoffLimit
+   - **b)** activeDeadlineSeconds
+   - **c)** ttlSecondsAfterFinished
+
+3. What design keeps the work but drops the per-task Job?
+
+   - **a)** A CronJob per task
+   - **b)** A fixed pool of worker pods (a Deployment, maybe with HPA) pulling tasks from a real queue
+   - **c)** Raising the namespace ResourceQuota
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **a**: the cost is control-plane churn, not compute.
+2. **c**: the TTL controller deletes a finished Job and its pods after that many seconds.
+3. **b**: object count stays constant while throughput scales. Kubernetes schedules capacity and the queue schedules work.
+
+</details>
+
+*Next: the final boss.*
 
 <!-- d2:arrival -->
 ```text

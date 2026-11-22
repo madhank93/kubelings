@@ -85,7 +85,58 @@ recovery plans; they're recovery *hypotheses*. Total: ~314 minutes. On Pi Day.
 - **Upgrade the oldest cluster first in staging form, not last in prod form** —
   clone its quirks somewhere disposable if you must keep it.
 
-*No check — study, then advance.*
+## Quick check
+
+Record your answers in a ConfigMap named `quick-check` in the `kubelings`
+namespace: one key per question, the letter as the value.
+
+1. What did the 1.24 upgrade change that broke Reddit's pod network?
+
+   - **a)** It removed the node-role.kubernetes.io/master label that Calico's route reflector selector matched on
+   - **b)** It removed Calico from the cluster
+   - **c)** It changed the cluster CIDR
+
+2. Which signal would have shown the problem immediately?
+
+   - **a)** Node Ready status
+   - **b)** Pod-to-pod reachability checks across the data plane
+   - **c)** API server health checks
+
+3. Why did rehearsing the upgrade on other clusters not catch it?
+
+   - **a)** The other clusters ran a different Kubernetes version
+   - **b)** The rehearsal skipped the CNI
+   - **c)** This cluster's hand-built Calico config existed nowhere else
+
+```sh
+kubectl -n kubelings create configmap quick-check \
+  --from-literal=q1=<letter> \
+  --from-literal=q2=<letter> \
+  --from-literal=q3=<letter>
+```
+
+Wrong answer? `kubectl -n kubelings delete configmap quick-check` and create it again.
+
+::simple-task
+---
+:tasks: tasks
+:name: quick_check
+---
+#active
+Answer the questions above — this check turns green once every answer is right.
+
+#completed
+✅ Solved — nicely done!
+::
+
+<details>
+<summary>Answers</summary>
+
+1. **a**: with the label gone the selector matched zero nodes, so there were no route reflectors and no pod routes.
+2. **b**: nodes and the control plane stayed green. Kubelet heartbeats do not cross the pod network.
+3. **c**: rehearsal covers what clusters share. A snowflake can only be rehearsed on itself.
+
+</details>
 
 <!-- d2:label -->
 ```text
